@@ -51,6 +51,10 @@ $(document).ready(function() {
         }
     }, "json");
     
+    $("#aseguradoras").change(function() {
+        configurarEntradas();
+    });
+    
     $("#busqueda").change(function() {
         configurarEntradas();
     });

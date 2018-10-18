@@ -1,0 +1,51 @@
+<script src="Controlador/ControladorNuevoSiniestro.js"></script>
+
+<div>
+    <table>
+        <tr>
+            <td>
+                <select id="aseguradoras"></select>
+                <input id="n_numero_siniestro" name="nuevo_numero" type="text"/>
+                <input id="n_paso1_ok" name="nuevo_paso1_ok" type="button" value="continuar"/>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <div id="n_panel_poliza">
+                    <table>
+                        <tr>
+                            <td>
+                                <input id="n_numero_poliza" name="n_numero_poliza" type="text"/>
+                                <input id="n_paso2_buscar" name="n_paso2_buscar" type="button" value="buscar"/>
+                            </td>
+                        </tr>
+                        <tr class="n_poliza_detalles">
+                            <td>
+                                <input id="n_cliente_nombre" name="n_cliente_nombre" type="text"/>
+                                <input id="n_cliente_apellido1" name="n_cliente_apellido1" type="text"/>
+                                <input id="n_cliente_apellido2" name="n_cliente_apellido2" type="text"/>
+                                <input id="n_cliente_telefono1" name="n_cliente_telefono1" type="text"/>
+                                <input id="n_cliente_telefono2" name="n_cliente_telefono2" type="text"/>
+                                <select id="n_cliente_tipo" name="n_cliente_tipo">
+                                    <option value="0">normal</option>
+                                    <option value="1">preferente</option>
+                                    <option value="2">VIP</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr class="n_poliza_detalles">
+                            <td>
+                                propiedad
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                
+            </td>
+        </tr>
+    </table>
+</div>
