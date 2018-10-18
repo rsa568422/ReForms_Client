@@ -26,6 +26,19 @@ $(document).ready(function() {
         }
         $("#entradas").show();
     }
+    
+    function cargarLista(datos) {
+        if (datos != null) {
+            $(".filaResultado").remove();
+            var i;
+            for (i = 0; i < datos.length; i++) {
+                $("#resultado").append("<tr class='filaResultado'><td>" + datos[i].poliza.cliente.aseguradora.nombre + "</td><td>" + datos[i].numero + "</td><td>" + datos[i].fechaRegistro + "</td><td>" + datos[i].poliza.propiedad.direccion + "</td><td>" + datos[i].poliza.propiedad.numero + "</td><td>" + (datos[i].poliza.propiedad.piso ? datos[i].poliza.propiedad.piso : "") + "</td><td>" + datos[i].poliza.propiedad.localidad.nombre + "</td></tr>");
+            }
+            $("#resultado").show();
+        } else {
+            alert("siniestro no encontrado");
+        }
+    }
 
     $("#resultado").hide();
     
@@ -45,52 +58,74 @@ $(document).ready(function() {
     configurarEntradas();
     
     $("#buscar").click(function() {
+        $("#resultado").hide();
         switch ($("#busqueda").val()) {
             case "siniestro":
                 if ($("#aseguradoras").val() == -1) {
                     $.get("http://localhost:8080/ReForms_Provider/wr/siniestro/buscarSiniestroPorNumeroSiniestro/" + $("#e_siniestro").val(), function(data, status) {
-                        if (status == "success") {
-                            // data me da una lista de siniestros
-                        } else {
-                            // informar del error
-                        }
+                        cargarLista(data);
                     }, "json");
                 } else {
                     $.get("http://localhost:8080/ReForms_Provider/wr/siniestro/buscarSiniestroPorNumeroSiniestroA/" + $("#aseguradoras").val() + "/" + $("#e_siniestro").val(), function(data, status) {
-                        if (status == "success") {
-                            // data me da un siniestro
-                        } else {
-                            // informar del error
-                        }
+                        cargarLista(data);
                     }, "json");
                 }
                 break;
             case "poliza":
                 if ($("#aseguradoras").val() == -1) {
                     $.get("http://localhost:8080/ReForms_Provider/wr/siniestro/buscarSiniestroPorNumeroPoliza/" + $("#e_poliza").val(), function(data, status) {
-                        if (status == "success") {
-                            alert(data.length);
-                            // data me da una lista de siniestros
-                        } else {
-                            // informar del error
-                        }
+                        cargarLista(data);
                     }, "json");
                 } else {
                     $.get("http://localhost:8080/ReForms_Provider/wr/siniestro/buscarSiniestroPorNumeroPolizaA/" + $("#aseguradoras").val() + "/" + $("#e_poliza").val(), function(data, status) {
-                        if (status == "success") {
-                            alert(data.length);
-                            // data me da un siniestro
-                        } else {
-                            // informar del error
-                        }
+                        cargarLista(data);
                     }, "json");
                 }
                 break;
             case "nombre":
+                if ($("#aseguradoras").val() == -1) {
+                    $.get("http://localhost:8080/ReForms_Provider/wr/siniestro/buscarSiniestroPorNombre/" + $("#e_nombre").val() + "/" + $("#e_apellido1").val() + "/"  + $("#e_apellido2").val(), function(data, status) {
+                        cargarLista(data);
+                    }, "json");
+                } else {
+                    $.get("http://localhost:8080/ReForms_Provider/wr/siniestro/buscarSiniestroPorNombreA/" + $("#aseguradoras").val() + "/" + $("#e_nombre").val() + "/" + $("#e_apellido1").val() + "/"  + $("#e_apellido2").val(), function(data, status) {
+                        cargarLista(data);
+                    }, "json");
+                }
                 break;
             case "telefono":
+                if ($("#aseguradoras").val() == -1) {
+                    $.get("http://localhost:8080/ReForms_Provider/wr/siniestro/buscarSiniestroPorTelefono/" + $("#e_telefono").val(), function(data, status) {
+                        cargarLista(data);
+                    }, "json");
+                } else {
+                    $.get("http://localhost:8080/ReForms_Provider/wr/siniestro/buscarSiniestroPorTelefonoA/" + $("#aseguradoras").val() + "/" + $("#e_telefono").val(), function(data, status) {
+                        cargarLista(data);
+                    }, "json");
+                }
                 break;
             case "direccion":
+                if ($("#aseguradoras").val() == -1) {
+                    $.get("http://localhost:8080/ReForms_Provider/wr/localidad/buscarLocalidadPorCodigoPostal/" + $("#e_cp").val(), function(localidad, status) {
+                        if (localidad != null) {
+                            $.get("http://localhost:8080/ReForms_Provider/wr/siniestro/buscarSiniestroPorDireccion/" + localidad.id + "/" + $("#e_direccion").val() + "/" + $("#e_numero").val() + "/"  + $("#e_piso").val(), function(data, status) {
+                                cargarLista(data);
+                            }, "json");
+                        } else {
+                            cargarLista(null);
+                        }
+                    }, "json");
+                } else {
+                    $.get("http://localhost:8080/ReForms_Provider/wr/localidad/buscarLocalidadPorCodigoPostal/" + $("#e_cp").val(), function(localidad, status) {
+                        if (localidad != null) {
+                            $.get("http://localhost:8080/ReForms_Provider/wr/siniestro/buscarSiniestroPorDireccionA/" + $("#aseguradoras").val() + "/" + localidad.id + "/" + $("#e_direccion").val() + "/" + $("#e_numero").val() + "/"  + $("#e_piso").val(), function(data, status) {
+                                cargarLista(data);
+                            }, "json");
+                        } else {
+                            cargarLista(null);
+                        }
+                    }, "json");
+                }
         }
     });
 });
