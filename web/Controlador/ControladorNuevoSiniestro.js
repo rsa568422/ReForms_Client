@@ -12,7 +12,6 @@ $(document).ready(function() {
     
     function siguientePaso() {
         if (poliza.id == null) {
-            poliza.numero = $("#n_numero_poliza").val;
             poliza.cliente = cliente;
             poliza.propiedad = propiedad;
         }
@@ -184,6 +183,7 @@ $(document).ready(function() {
                 siguientePaso();
             } else {
                 poliza = new Poliza();
+                poliza.numero = $("#n_numero_poliza").val();
             }
         }, "json");
     });
@@ -194,10 +194,10 @@ $(document).ready(function() {
         var telefono2 = $("#n_cliente_telefono2").val();
         if (telefono1 == "" && telefono2 != "") {
             telefono1 = telefono2;
-            telefono2 = "";
+            telefono2 = null;
         }
         if (telefono1 == telefono2) {
-            telefono2 = "";
+            telefono2 = null;
         }
         var parametros, lc;
         if (telefono1 != "") {
@@ -260,8 +260,7 @@ $(document).ready(function() {
         s.peritoOriginal = JSON.parse($("#peritos").val());
         s.original = o;
         s.numero = $("#n_numero_siniestro").val();
-        s.fechaRegistro = "2018-11-11";
-        alert(JSON.stringify(s));
+        s.fechaRegistro = "2018-09-17T00:00:00+02:00";
         $.ajax({
             url: 'http://localhost:8080/ReForms_Provider/wr/siniestro/registrarSiniestro',
             dataType: 'json',
@@ -271,9 +270,11 @@ $(document).ready(function() {
             processData: false,
             success: function(data, textStatus, jQxhr){
                 alert("creado");
+                reiniciar();
             },
             error: function(jQxhr, textStatus, errorThrown){
                 alert("Error: no se ha creado el siniestro");
+                reiniciar();
             }
         });
     });
