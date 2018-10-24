@@ -16,30 +16,41 @@
         <input id="n_numero_poliza" name="n_numero_poliza" type="text"/>
         <input id="n_numero_poliza_continuar" name="n_numero_poliza_continuar" type="button" value="continuar"/>
         <div id="divCliente">
-            <input id="n_cliente_nombre" name="n_cliente_nombre" type="text"/>
-            <input id="n_cliente_apellido1" name="n_cliente_apellido1" type="text"/>
-            <input id="n_cliente_apellido2" name="n_cliente_apellido2" type="text"/>
-            <input id="n_cliente_telefono1" name="n_cliente_telefono1" type="text"/>
-            <input id="n_cliente_telefono2" name="n_cliente_telefono2" type="text"/>
-            <select id="n_cliente_tipo" name="n_cliente_tipo">
-                <option value="0">normal</option>
-                <option value="1">preferente</option>
-                <option value="2">VIP</option>
-            </select>
-            <input id="n_cliente_buscar" name="n_cliente_buscar" type="button" value="buscar"/>
+            <div>
+                <input id="n_cliente_nombre" name="n_cliente_nombre" type="text"/>
+                <input id="n_cliente_apellido1" name="n_cliente_apellido1" type="text"/>
+                <input id="n_cliente_apellido2" name="n_cliente_apellido2" type="text"/>
+                <input id="n_cliente_telefono1" name="n_cliente_telefono1" type="text"/>
+                <input id="n_cliente_telefono2" name="n_cliente_telefono2" type="text"/>
+                <select id="n_cliente_tipo" name="n_cliente_tipo">
+                    <option value="0">normal</option>
+                    <option value="1">preferente</option>
+                    <option value="2">VIP</option>
+                </select>
+                <input id="n_cliente_buscar" name="n_cliente_buscar" type="button" value="buscar"/>
+            </div>
+            <div>
+                <table id="tableClietes"></table>
+            </div>
         </div>
         <div id="divPropiedad">
-            <input id="n_propiedad_direccion" name="n_propiedad_direccion" type="text"/>
-            <input id="n_propiedad_numero" name="n_propiedad_numero" type="number"/>
-            <input id="n_propiedad_piso" name="n_propiedad_piso" type="text"/>
-            <input id="n_propiedad_cp" name="n_propiedad_cp" type="text"/>
-            <input id="n_localidad_nombre" name="n_localidad_nombre" type="text"/>
-            <input id="n_localidad_nombre_continuar" name="n_localidad_nombre_continuar" type="button" value="continuar"/>
-            <input id="n_propiedad_buscar" name="n_propiedad_buscar" type="button" value="buscar"/>
+            <div>
+                <input id="n_propiedad_direccion" name="n_propiedad_direccion" type="text"/>
+                <input id="n_propiedad_numero" name="n_propiedad_numero" type="number"/>
+                <input id="n_propiedad_piso" name="n_propiedad_piso" type="text"/>
+                <input id="n_propiedad_cp" name="n_propiedad_cp" type="text"/>
+                <input id="n_localidad_nombre" name="n_localidad_nombre" type="text"/>
+                <input id="n_localidad_nombre_continuar" name="n_localidad_nombre_continuar" type="button" value="continuar"/>
+                <input id="n_propiedad_buscar" name="n_propiedad_buscar" type="button" value="buscar"/>
+            </div>
+            <div>
+                <table id="tablePropiedades"></table>
+            </div>
         </div>
         <div id="divDetalles">
             <select id="peritos"></select>
-            <input id="n_original_nombre" name="n_original_nombre" type="text"/>
+            <input id="n_original_nombre" name="n_original_nombre" type="file"/>
+            <input id="n_siniestro_fechaRegistro" name="n_siniestro_fechaRegistro" type="date"/>
             <input id="n_siniestro_finalizar" name="n_siniestro_finalizar" type="button" value="finalizar"/>
         </div>
     </div>

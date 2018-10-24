@@ -1,6 +1,6 @@
 $(document).ready(function() {
     
-    var aseguradora, poliza, cliente, propiedad, cok, pok;
+    var aseguradora, poliza, cliente, propiedad, original, cok, pok, clientes, propiedades;
     
     function reiniciar() {
         $("#contenido").load("buscadorSiniestros.html", function(responseTxt, statusTxt) {
@@ -26,6 +26,20 @@ $(document).ready(function() {
         }, "json");
     }
     
+    function siguientePasoCliente() {
+        $("#n_cliente_nombre").prop("readonly", true);
+        $("#n_cliente_apellido1").prop("readonly", true);
+        $("#n_cliente_apellido2").prop("readonly", true);
+        $("#n_cliente_telefono1").prop("readonly", true);
+        $("#n_cliente_telefono2").prop("readonly", true);
+        $("#n_cliente_tipo").prop("disabled", true);
+        $("#n_cliente_buscar").hide();
+        cok = true;
+        if (pok) {
+            siguientePaso();
+        }
+    }
+    
     function siguientePasoPropiedad() {
         $("#n_propiedad_direccion").prop("readonly", true);
         $("#n_propiedad_numero").prop("readonly", true);
@@ -40,19 +54,24 @@ $(document).ready(function() {
     
     function concidenciasCliente(lc) {
         if (lc.length > 0) {
-            alert(lc.length + " coincidencias, mostrar lista");
-            cliente = lc[0];
-            $("#n_cliente_nombre").prop("readonly", true);
-            $("#n_cliente_apellido1").prop("readonly", true);
-            $("#n_cliente_apellido2").prop("readonly", true);
-            $("#n_cliente_telefono1").prop("readonly", true);
-            $("#n_cliente_telefono2").prop("readonly", true);
-            $("#n_cliente_tipo").prop("disabled", true);
-            $("#n_cliente_buscar").hide();
-            cok = true;
-            if (pok) {
-                siguientePaso();
+            clientes = lc;
+            $(".trCliente").remove();
+            var i;
+            for (i = 0; i < clientes.length; i++) {
+                $("#tableClietes").append("<tr class='trCliente'><td>" + clientes[i].nombre + "</td><td>" + clientes[i].apellido1 + "</td><td>" + clientes[i].telefono1 + "</td></tr>");
             }
+            $(".trCliente").dblclick(function() {
+                cliente = clientes[$(this).index()];
+                $(".trCliente").remove();
+                $("#n_cliente_nombre").val(cliente.nombre);
+                $("#n_cliente_apellido1").val(cliente.apellido1);
+                $("#n_cliente_apellido2").val(cliente.apellido2);
+                $("#n_cliente_telefono1").val(cliente.telefono1);
+                $("#n_cliente_telefono2").val(cliente.telefono2);
+                $("#n_cliente_tipo").val(cliente.tipo);
+                siguientePasoCliente();
+            });
+            $("#n_cliente_buscar").hide();
         } else if (confirm("No existen coincidencias, desea crear un nuevo cliente?")) {
             cliente = new Cliente();
             cliente.nombre = $("#n_cliente_nombre").val();
@@ -73,17 +92,7 @@ $(document).ready(function() {
             cliente.telefono2 = telefono2;
             cliente.tipo = $("#n_cliente_tipo").val();
             cliente.aseguradora = JSON.parse($("#aseguradoras").val());
-            $("#n_cliente_nombre").prop("readonly", true);
-            $("#n_cliente_apellido1").prop("readonly", true);
-            $("#n_cliente_apellido2").prop("readonly", true);
-            $("#n_cliente_telefono1").prop("readonly", true);
-            $("#n_cliente_telefono2").prop("readonly", true);
-            $("#n_cliente_tipo").prop("disabled", true);
-            $("#n_cliente_buscar").hide();
-            cok = true;
-            if (pok) {
-                siguientePaso();
-            }
+            siguientePasoCliente();
         } else {
             reiniciar();
         }
@@ -91,9 +100,22 @@ $(document).ready(function() {
     
     function concidenciasPropiedad(lp) {
         if (lp.length > 0) {
-            alert(lp.length + " coincidencias, mostrar lista");
-            propiedad = lp[0];
-            siguientePasoPropiedad();
+            propiedades = lp;
+            $(".trPropiedad").remove();
+            var i;
+            for (i = 0; i < propiedades.length; i++) {
+                $("#tablePropiedades").append("<tr class='trPropiedad'><td>" + propiedades[i].direccion + "</td><td>" + propiedades[i].numero + "</td><td>" + (propiedades[i].piso ? propiedades[i].piso : "") + "</td><td>" + propiedades[i].localidad.nombre + "<td></tr>");
+            }
+            $(".trPropiedad").dblclick(function() {
+                propiedad = propiedades[$(this).index()];
+                $(".trPropiedad").remove();
+                $("#n_propiedad_direccion").val(propiedad.direccion);
+                $("#n_propiedad_numero").val(propiedad.numero);
+                $("#n_propiedad_piso").val(propiedad.piso);
+                $("#n_propiedad_cp").val(propiedad.localidad.cp);
+                siguientePasoPropiedad();
+            });
+            $("#n_propiedad_buscar").hide();
         } else if (confirm("No existen coincidencias, desea crear una nueva propiedad?")) {
             propiedad = new Propiedad();
             propiedad.direccion = $("#n_propiedad_direccion").val();
@@ -162,25 +184,12 @@ $(document).ready(function() {
                 $("#n_cliente_telefono1").val(cliente.telefono1);
                 $("#n_cliente_telefono2").val(cliente.telefono2);
                 $("#n_cliente_tipo").val(cliente.tipo);
-                $("#n_cliente_nombre").prop("readonly", true);
-                $("#n_cliente_apellido1").prop("readonly", true);
-                $("#n_cliente_apellido2").prop("readonly", true);
-                $("#n_cliente_telefono1").prop("readonly", true);
-                $("#n_cliente_telefono2").prop("readonly", true);
-                $("#n_cliente_tipo").prop("disabled", true);
+                siguientePasoCliente();
                 $("#n_propiedad_direccion").val(propiedad.direccion);
                 $("#n_propiedad_numero").val(propiedad.numero);
                 $("#n_propiedad_piso").val(propiedad.piso);
                 $("#n_propiedad_cp").val(propiedad.localidad.cp);
-                $("#n_propiedad_direccion").prop("readonly", true);
-                $("#n_propiedad_numero").prop("readonly", true);
-                $("#n_propiedad_piso").prop("readonly", true);
-                $("#n_propiedad_cp").prop("readonly", true);
-                $("#n_cliente_buscar").hide();
-                $("#n_propiedad_buscar").hide();
-                cok = true;
-                pok = true;
-                siguientePaso();
+                siguientePasoPropiedad();
             } else {
                 poliza = new Poliza();
                 poliza.numero = $("#n_numero_poliza").val();
@@ -255,12 +264,13 @@ $(document).ready(function() {
     $("#n_siniestro_finalizar").click(function() {
         var o = new Recurso();
         o.nombre = $("#n_original_nombre").val();
+        o.fichero = original;
         var s = new Siniestro();
         s.poliza = poliza;
         s.peritoOriginal = JSON.parse($("#peritos").val());
         s.original = o;
         s.numero = $("#n_numero_siniestro").val();
-        s.fechaRegistro = "2018-09-17T00:00:00+02:00";
+        s.fechaRegistro = $("#n_siniestro_fechaRegistro").val() + "T00:00:00+02:00";
         $.ajax({
             url: 'http://localhost:8080/ReForms_Provider/wr/siniestro/registrarSiniestro',
             dataType: 'json',
@@ -277,5 +287,15 @@ $(document).ready(function() {
                 reiniciar();
             }
         });
+    });
+    
+    $("#n_original_nombre").change(function() {
+        var entrada = this.files;
+        var lector = new FileReader();
+        lector.onloadend = function (e) {
+            original = e.target.result.split("base64,")[1];
+            alert(original);
+        }
+        lector.readAsDataURL(entrada[0]);
     });
 });
