@@ -2,6 +2,16 @@ $(document).ready(function() {
     
     var aseguradora, poliza, cliente, propiedad, original, cok, pok, clientes, propiedades;
     
+    function cambiarDeFormulario() {
+        sessionStorage.setItem("idaseguradora", aseguradora.id);
+        sessionStorage.setItem("nsiniestro", $("#n_numero_siniestro").val());
+        $("#contenido").load("edicionSiniestro.html", function(responseTxt, statusTxt) {
+            if(statusTxt !== "success") {
+                alert("Error: no se pudo cargar edicionSiniestro.html");
+            }
+        });
+    }
+    
     function reiniciar() {
         $("#contenido").load("buscadorSiniestros.html", function(responseTxt, statusTxt) {
             if(statusTxt !== "success") {
@@ -280,7 +290,7 @@ $(document).ready(function() {
             processData: false,
             success: function(data, textStatus, jQxhr){
                 alert("creado");
-                reiniciar();
+                cambiarDeFormulario();
             },
             error: function(jQxhr, textStatus, errorThrown){
                 alert("Error: no se ha creado el siniestro");
@@ -294,7 +304,6 @@ $(document).ready(function() {
         var lector = new FileReader();
         lector.onloadend = function (e) {
             original = e.target.result.split("base64,")[1];
-            alert(original);
         }
         lector.readAsDataURL(entrada[0]);
     });

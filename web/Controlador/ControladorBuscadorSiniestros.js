@@ -32,8 +32,17 @@ $(document).ready(function() {
             $(".filaResultado").remove();
             var i;
             for (i = 0; i < datos.length; i++) {
-                $("#resultado").append("<tr class='filaResultado'><td>" + datos[i].poliza.cliente.aseguradora.nombre + "</td><td>" + datos[i].numero + "</td><td>" + datos[i].fechaRegistro + "</td><td>" + datos[i].poliza.propiedad.direccion + "</td><td>" + datos[i].poliza.propiedad.numero + "</td><td>" + (datos[i].poliza.propiedad.piso ? datos[i].poliza.propiedad.piso : "") + "</td><td>" + datos[i].poliza.propiedad.localidad.nombre + "</td></tr>");
+                $("#resultado").append("<tr class='filaResultado'><td class='resultado_aseguradora'>" + datos[i].poliza.cliente.aseguradora.id + "</td><td class='resultado_numero_siniestro'>" + datos[i].numero + "</td><td>" + datos[i].fechaRegistro + "</td><td>" + datos[i].poliza.propiedad.direccion + "</td><td>" + datos[i].poliza.propiedad.numero + "</td><td>" + (datos[i].poliza.propiedad.piso ? datos[i].poliza.propiedad.piso : "") + "</td><td>" + datos[i].poliza.propiedad.localidad.nombre + "</td></tr>");
             }
+            $(".filaResultado").click(function() {
+                sessionStorage.setItem("idaseguradora", $(this).find(".resultado_aseguradora").text());
+                sessionStorage.setItem("nsiniestro", $(this).find(".resultado_numero_siniestro").text());
+                $("#contenido").load("edicionSiniestro.html", function(responseTxt, statusTxt) {
+                    if(statusTxt !== "success") {
+                        alert("Error: no se pudo cargar edicionSiniestro.html");
+                    }
+                });
+            });
             $("#resultado").show();
         } else {
             alert("siniestro no encontrado");
