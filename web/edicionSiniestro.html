@@ -1,5 +1,88 @@
 <script src="Controlador/ControladorEdicionSiniestro.js"></script>
 
-<div>
-    <input id="pruebas" name="pruebas" type="text"/>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-6 col-md-12 grupo_info">
+            <h2 class="pulsable">Siniestro</h2>
+            <div class="ocultable">
+                <label for="e_siniestro_aseguradora">Aseguradora</label>
+                <input id="e_siniestro_aseguradora" name="e_siniestro_aseguradora" class="form-control" type="text"/>
+                <label for="e_siniestro_siniestro">Numero de siniestro</label>
+                <input id="e_siniestro_siniestro" name="e_siniestro_siniestro" class="form-control" type="text"/>
+                <label for="e_siniestro_poliza">Numero de poliza</label>
+                <input id="e_siniestro_poliza" name="e_siniestro_poliza" class="form-control" type="text"/>
+                <label for="e_siniestro_albaran">Numero de albaran</label>
+                <input id="e_siniestro_albaran" name="e_siniestro_albaran" class="form-control" type="text"/>
+                <label for="e_siniestro_perito">Perito original</label>
+                <input id="e_siniestro_perito" name="e_siniestro_perito" class="form-control" type="text"/>
+                <label for="e_siniestro_original">Fichero original</label>
+                <input id="e_siniestro_original" name="e_siniestro_original" class="form-control" type="text"/>
+                <label for="e_siniestro_fechaRegistro">Fecha de Registro</label>
+                <input id="e_siniestro_fechaRegistro" name="e_siniestro_fechaRegistro" class="form-control" type="date"/>
+                <label for="e_siniestro_observaciones">Observaciones</label>
+                <textarea id="e_siniestro_observaciones" name="e_siniestro_observaciones" class="form-control" rows="10" style="resize:none"/>
+                <div id="info_afectado grupo_info">
+                    <h2 class="pulsable">Afectado</h2>
+                    <div class="ocultable">
+                        <label for="e_afectado_direccion">Direccion</label>
+                        <input id="e_afectado_direccion" name="e_afectado_direccion" class="form-control" type="text"/>
+                        <label for="e_afectado_numero">Numero</label>
+                        <input id="e_afectado_numero" name="e_afectado_numero" class="form-control" type="number"/>
+                        <label for="e_afectado_piso">Piso</label>
+                        <input id="e_afectado_piso" name="e_afectado_piso" class="form-control" type="text"/>
+                        <label for="e_afectado_observaciones">Observaciones</label>
+                        <textarea id="e_afectado_observaciones" name="e_afectado_observaciones" class="form-control" rows="10" style="resize:none"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6 col-md-12">
+            <div class="row">
+                <div class="col-md-6 col-sm-12 grupo_info">
+                    <h2 class="pulsable">Cliente</h2>
+                    <div class="ocultable">
+                        <label for="e_cliente_nombre">Nombre</label>
+                        <input id="e_cliente_nombre" name="e_cliente_nombre" class="form-control" type="text"/>
+                        <label for="e_cliente_apellido1">Apellidos</label>
+                        <input id="e_cliente_apellido1" name="e_cliente_apellido1" class="form-control" type="text"/>
+                        <input id="e_cliente_apellido2" name="e_cliente_apellido2" class="form-control" type="text"/>
+                        <label for="e_cliente_telefono1">Telefonos</label>
+                        <input id="e_cliente_telefono1" name="e_cliente_telefono1" class="form-control" type="text"/>
+                        <input id="e_cliente_telefono2" name="e_cliente_telefono2" class="form-control" type="text"/>
+                        <label for="e_cliente_tipo">Tipo</label>
+                        <input id="e_cliente_tipo" name="e_cliente_tipo" class="form-control" type="text"/>
+                        <label for="e_cliente_observaciones">Observaciones</label>
+                        <textarea id="e_cliente_observaciones" name="e_cliente_observaciones" class="form-control" rows="10" style="resize:none"/>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6 col-sm-12 grupo_info">
+                    <h2 class="pulsable">Propiedad</h2>
+                    <div class="ocultable">
+                        <label for="e_propiedad_direccion">Direccion</label>
+                        <input id="e_propiedad_direccion" name="e_propiedad_direccion" class="form-control" type="text"/>
+                        <label for="e_propiedad_numero">Numero</label>
+                        <input id="e_propiedad_numero" name="e_propiedad_numero" class="form-control" type="number"/>
+                        <label for="e_propiedad_piso">Piso</label>
+                        <input id="e_propiedad_piso" name="e_propiedad_piso" class="form-control" type="text"/>
+                        <label for="e_propiedad_localidad">Localidad</label>
+                        <input id="e_propiedad_localidad" name="e_propiedad_localidad" class="form-control" type="text"/>
+                        <label for="e_propiedad_cp">CP</label>
+                        <input id="e_propiedad_cp" name="e_propiedad_cp" class="form-control" type="text"/>
+                        <label for="e_propiedad_observaciones">Observaciones</label>
+                        <textarea id="e_propiedad_observaciones" name="e_propiedad_observaciones" class="form-control" rows="10" style="resize:none"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-6 col-md-12">
+            tareas
+        </div>
+        <div class="col-lg-6 col-md-12">
+            participantes
+        </div>
+    </div>
 </div>
