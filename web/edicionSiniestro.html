@@ -1,6 +1,7 @@
 <script src="Entidad/Gremio.js"></script>
 <script src="Entidad/Tarea.js"></script>
 <script src="Entidad/Trabajo.js"></script>
+<script src="Entidad/Participante.js"></script>
 <script src="Controlador/ControladorEdicionSiniestro.js"></script>
 
 <div class="container-fluid">
@@ -103,6 +104,13 @@
             <h2 class="pulsable">Participantes</h2>
             <div class="ocultable">
                 <table id="e_tabla_participantes"></table>
+                <input id="e_tabla_participantes_nuevo" type="button" class="btn btn-primary" value="Nuevo participante"/>
+                <div id="e_nuevo_participante">
+                    <select id="e_multiservicios"></select>
+                    <br/>
+                    <input id="e_tabla_participantes_aceptar" type="button" class="btn btn-success" value="Aceptar"/>
+                    <input id="e_tabla_participantes_cancelar" type="button" class="btn btn-danger" value="Cancelar"/>
+                </div>
             </div>
         </div>
     </div>

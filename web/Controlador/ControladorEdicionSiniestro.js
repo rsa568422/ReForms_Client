@@ -1,6 +1,6 @@
 $(document).ready(function() {
     
-    var siniestro, tareas, gremios, trabajos;
+    var siniestro, tareas, gremios, trabajos, multiservicios, participantes;
     
     function mostrarDatosSiniestro() {
         //siniestro
@@ -150,7 +150,40 @@ $(document).ready(function() {
         $("#e_tabla_tareas_nueva").show();
     });
     
+    $("#e_tabla_participantes_nuevo").click(function() {
+        $(this).hide();
+        $("#e_nuevo_participante").show();
+    });
+    
+    $("#e_tabla_participantes_aceptar").click(function() {
+        var p = new Participante();
+        p.siniestro = siniestro;
+        p.multiservicios = JSON.parse($("#e_multiservicios").val());
+        $.ajax({
+            url: 'http://localhost:8080/ReForms_Provider/wr/participante/agregarParticipante',
+            dataType: 'json',
+            type: 'post',
+            contentType: 'application/json',
+            data: JSON.stringify(p),
+            processData: false,
+            success: function(data, textStatus, jQxhr){
+                alert("creado");
+                $("#e_tabla_participantes").append("<tr class='filaParticipantes'><td>" + p.multiservicios.nombre + "</td></tr>");
+                $("#e_tabla_participantes_cancelar").click();
+            },
+            error: function(jQxhr, textStatus, errorThrown){
+                alert("Error: no se ha creado el participante");
+            }
+        });
+    });
+    
+    $("#e_tabla_participantes_cancelar").click(function() {
+        $("#e_nuevo_participante").hide();
+        $("#e_tabla_participantes_nuevo").show();
+    });
+    
     $("#e_nueva_tarea").hide();
+    $("#e_nuevo_participante").hide();
     
     $.get("http://localhost:8080/ReForms_Provider/wr/siniestro/buscarSiniestroPorNumeroSiniestroA/" + sessionStorage.idaseguradora + "/" + sessionStorage.nsiniestro, function(data1, status) {
         siniestro = data1[0];
@@ -169,5 +202,23 @@ $(document).ready(function() {
                 cargarTrabajos();
             }
         }, "json");
+        $.get("http://localhost:8080/ReForms_Provider/wr/participante/buscarParticipantePorSiniestro/" + siniestro.id, function(data4, status) {
+            participantes = data4;
+            if (participantes != null && participantes.length > 0) {
+                var i;
+                for (i = 0; i < participantes.length; i++) {
+                    $("#e_tabla_participantes").append("<tr class='filaParticipantes'><td>" + participantes[i].multiservicios.nombre + "</td></tr>");
+                }
+            }
+        }, "json");
+    }, "json");
+    
+    $.get("http://localhost:8080/ReForms_Provider/wr/multiservicios/obtenerMultiservicios/", function(data, status) {
+        multiservicios = data != null ? data : [];
+        var i;
+        for (i = 0; i < multiservicios.length; i++) {
+            var m = multiservicios[i];
+            $("#e_multiservicios").append("<option class='opcion_multiservicios' value=" + JSON.stringify(m) + ">" + m.nombre + "</option>");
+        }
     }, "json");
 });
