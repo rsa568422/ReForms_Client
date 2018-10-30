@@ -1,3 +1,6 @@
+<script src="Entidad/Gremio.js"></script>
+<script src="Entidad/Tarea.js"></script>
+<script src="Entidad/Trabajo.js"></script>
 <script src="Controlador/ControladorEdicionSiniestro.js"></script>
 
 <div class="container-fluid">
@@ -17,11 +20,12 @@
                 <input id="e_siniestro_perito" name="e_siniestro_perito" class="form-control" type="text"/>
                 <label for="e_siniestro_original">Fichero original</label>
                 <input id="e_siniestro_original" name="e_siniestro_original" class="form-control" type="text"/>
+                <a id="e_descargar" href="#">descargar</a><br/>
                 <label for="e_siniestro_fechaRegistro">Fecha de Registro</label>
                 <input id="e_siniestro_fechaRegistro" name="e_siniestro_fechaRegistro" class="form-control" type="date"/>
                 <label for="e_siniestro_observaciones">Observaciones</label>
                 <textarea id="e_siniestro_observaciones" name="e_siniestro_observaciones" class="form-control" rows="10" style="resize:none"/>
-                <div id="info_afectado grupo_info">
+                <div id="info_afectado" class="grupo_info">
                     <h2 class="pulsable">Afectado</h2>
                     <div class="ocultable">
                         <label for="e_afectado_direccion">Direccion</label>
@@ -79,10 +83,27 @@
     </div>
     <div class="row">
         <div class="col-lg-6 col-md-12">
-            tareas
+            <h2 class="pulsable">Tareas</h2>
+            <div class="ocultable">
+                <table id="e_tabla_tareas"></table>
+                <input id="e_tabla_tareas_nueva" type="button" class="btn btn-primary" value="Nueva tarea"/>
+                <div id="e_nueva_tarea">
+                    <select id="e_tarea_gremio"></select>
+                    <select id="e_tarea_trabajo"></select>
+                    <input id="e_tarea_cantidad" name="e_tarea_cantidad" type="number"/>
+                    <br/>
+                    <textarea id="e_tarea_observaciones" name="e_tarea_observaciones" rows="3" style="resize:none"/>
+                    <br/>
+                    <input id="e_tabla_tareas_aceptar" type="button" class="btn btn-success" value="Aceptar"/>
+                    <input id="e_tabla_tareas_cancelar" type="button" class="btn btn-danger" value="Cancelar"/>
+                </div>
+            </div>
         </div>
         <div class="col-lg-6 col-md-12">
-            participantes
+            <h2 class="pulsable">Participantes</h2>
+            <div class="ocultable">
+                <table id="e_tabla_participantes"></table>
+            </div>
         </div>
     </div>
 </div>

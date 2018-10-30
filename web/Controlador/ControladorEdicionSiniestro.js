@@ -1,6 +1,6 @@
 $(document).ready(function() {
     
-    var siniestro;
+    var siniestro, tareas, gremios, trabajos;
     
     function mostrarDatosSiniestro() {
         //siniestro
@@ -13,7 +13,7 @@ $(document).ready(function() {
         $("#e_siniestro_fechaRegistro").val(siniestro.fechaRegistro);
         $("#e_siniestro_observaciones").val(siniestro.observaciones);
         //afectado
-        if (siniestro.afectado) {
+        if (siniestro.afectado && siniestro.afectado != null) {
             $("#e_afectado_direccion").val(siniestro.afectado.direccion);
             $("#e_afectado_numero").val(siniestro.afectado.numero);
             $("#e_afectado_piso").val(siniestro.afectado.piso);
@@ -45,17 +45,129 @@ $(document).ready(function() {
         $("#e_propiedad_localidad").val(siniestro.poliza.propiedad.localidad.nombre);
         $("#e_propiedad_cp").val(siniestro.poliza.propiedad.localidad.cp);
         $("#e_propiedad_observaciones").val(siniestro.poliza.propiedad.observaciones);
+        //tareas
+        if (tareas != null && tareas.length > 0) {
+            var i;
+            for (i = 0; i < tareas.length; i++) {
+                var m, e;
+                switch (tareas[i].trabajo.medida) {
+                    case 0: m = "uds"; break;
+                    case 1: m = "m"; break;
+                    case 2: m = "m2"; break;
+                    case 3: m = "m3"; break;
+                }
+                switch (tareas[i].estado) {
+                    case 0: e = "pendiente"; break;
+                    case 1: e = "en proceso"; break;
+                    case 2: e = "finalizada"; break;
+                    case 3: e = "anulada"; break;
+                }
+                $("#e_tabla_tareas").append("<tr class='filaTareas'><td>" + tareas[i].trabajo.gremio.nombre + "</td><td>" + tareas[i].trabajo.codigo + "</td><td>" + tareas[i].trabajo.descripcion + "</td><td>" + e + "</td><td>" + tareas[i].cantidad + "</td><td>" + m + "</td><td>" + tareas[i].trabajo.dificultad + "</td></tr>");
+            }
+        }
+        //contraer detalles
+        $(".ocultable").hide();
     }
     
-    $.get("http://localhost:8080/ReForms_Provider/wr/siniestro/buscarSiniestroPorNumeroSiniestroA/" + sessionStorage.idaseguradora + "/" + sessionStorage.nsiniestro, function(data, status) {
-        siniestro = data[0];
-        mostrarDatosSiniestro();
-    }, "json");
+    function cargarTrabajos() {
+        $(".opcion_trabajo").remove();
+        $.get("http://localhost:8080/ReForms_Provider/wr/trabajo/buscarTrabajoPorAseguradoraGremio/" + siniestro.peritoOriginal.aseguradora.id + "/" + $("#e_tarea_gremio").val(), function(data, status) {
+            trabajos = data;
+            var i;
+            for (i = 0; i < trabajos.length; i++) {
+                $("#e_tarea_trabajo").append("<option class='opcion_trabajo' value=" + trabajos[i].id + ">" + trabajos[i].codigo + " - " + trabajos[i].descripcion + "</option>");
+            }
+        }, "json");
+    }
     
     $(".pulsable").click(function() {
-        $(this).parent().find(".ocultable").toggle();
-        if (!siniestro.afectado) {
-            $("#info_afectado").hide();
-        }
+        $(this).parent().children(".ocultable").toggle();
     });
+    
+    $("#e_descargar").click(function() {
+        $(this).prop("download", siniestro.original.nombre);
+        $(this).prop("href", "data:text/plain;base64," + siniestro.original.fichero);
+    });
+    
+    $("#e_tabla_tareas_nueva").click(function() {
+        $(this).hide();
+        $("#e_nueva_tarea").show();
+    });
+    
+    $("#e_tarea_gremio").change(function() {
+       cargarTrabajos();
+    });
+    
+    $("#e_tabla_tareas_aceptar").click(function() {
+        var t = new Tarea();
+        t.siniestro = siniestro;
+        var i;
+        for (i = 0; i < trabajos.length; i++) {
+            if ($("#e_tarea_trabajo").val() == trabajos[i].id) {
+                t.trabajo = trabajos[i];
+            }
+        }
+        t.cantidad = $("#e_tarea_cantidad").val() == "" ? 0 : $("#e_tarea_cantidad").val();
+        t.observaciones = $("#e_tarea_observaciones").val() == "" ? null : $("#e_tarea_observaciones").val();
+        $.ajax({
+            url: 'http://localhost:8080/ReForms_Provider/wr/tarea/agregarTarea',
+            dataType: 'json',
+            type: 'post',
+            contentType: 'application/json',
+            data: JSON.stringify(t),
+            processData: false,
+            success: function(data, textStatus, jQxhr){
+                alert("creada");
+                if (tareas != null) {
+                    tareas.push(t);
+                } else {
+                    tareas = [t];
+                }
+                var m, e;
+                switch (t.trabajo.medida) {
+                    case 0: m = "uds"; break;
+                    case 1: m = "m"; break;
+                    case 2: m = "m2"; break;
+                    case 3: m = "m3"; break;
+                }
+                switch (t.estado) {
+                    case 0: e = "pendiente"; break;
+                    case 1: e = "en proceso"; break;
+                    case 2: e = "finalizada"; break;
+                    case 3: e = "anulada"; break;
+                }
+                $("#e_tabla_tareas").append("<tr class='filaTareas'><td>" + t.trabajo.gremio.nombre + "</td><td>" + t.trabajo.codigo + "</td><td>" + t.trabajo.descripcion + "</td><td>" + e + "</td><td>" + t.cantidad + "</td><td>" + m + "</td><td>" + t.trabajo.dificultad + "</td></tr>");
+                $("#e_tabla_tareas_cancelar").click();
+            },
+            error: function(jQxhr, textStatus, errorThrown){
+                alert("Error: no se ha creado la tarea");
+            }
+        });
+    });
+    
+    $("#e_tabla_tareas_cancelar").click(function() {
+        $("#e_nueva_tarea").hide();
+        $("#e_tabla_tareas_nueva").show();
+    });
+    
+    $("#e_nueva_tarea").hide();
+    
+    $.get("http://localhost:8080/ReForms_Provider/wr/siniestro/buscarSiniestroPorNumeroSiniestroA/" + sessionStorage.idaseguradora + "/" + sessionStorage.nsiniestro, function(data1, status) {
+        siniestro = data1[0];
+        siniestro.fechaRegistro = siniestro.fechaRegistro.slice(0, siniestro.fechaRegistro.indexOf("T"));
+        $.get("http://localhost:8080/ReForms_Provider/wr/tarea/buscarTareaPorSiniestro/" + siniestro.id, function(data2, status) {
+            tareas = data2;
+            mostrarDatosSiniestro();
+        }, "json");
+        $.get("http://localhost:8080/ReForms_Provider/wr/gremio/obtenerGremios/", function(data3, status) {
+            gremios = data3;
+            if (gremios != null && gremios.length > 0) {
+                var i;
+                for (i = 0; i < gremios.length; i++) {
+                    $("#e_tarea_gremio").append("<option value=" + gremios[i].id + ">" + gremios[i].nombre + "</option>");
+                }
+                cargarTrabajos();
+            }
+        }, "json");
+    }, "json");
 });

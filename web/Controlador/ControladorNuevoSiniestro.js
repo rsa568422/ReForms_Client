@@ -274,13 +274,16 @@ $(document).ready(function() {
     $("#n_siniestro_finalizar").click(function() {
         var o = new Recurso();
         o.nombre = $("#n_original_nombre").val();
+        while (o.nombre.indexOf("\\") != -1) {
+            o.nombre = o.nombre.slice(o.nombre.indexOf("\\") + 1, o.nombre.length);
+        }
         o.fichero = original;
         var s = new Siniestro();
         s.poliza = poliza;
         s.peritoOriginal = JSON.parse($("#peritos").val());
         s.original = o;
         s.numero = $("#n_numero_siniestro").val();
-        s.fechaRegistro = $("#n_siniestro_fechaRegistro").val() + "T00:00:00+02:00";
+        s.fechaRegistro = new Date($("#n_siniestro_fechaRegistro").val());
         $.ajax({
             url: 'http://localhost:8080/ReForms_Provider/wr/siniestro/registrarSiniestro',
             dataType: 'json',
