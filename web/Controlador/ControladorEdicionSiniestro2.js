@@ -3,6 +3,7 @@ $(document).ready(function() {
     var siniestro, tareas, gremios, trabajos, multiservicios, participantes;
     
     function mostrarDatosSiniestro() {
+        alert(JSON.stringify(siniestro));
         //siniestro
         $("#e_siniestro_aseguradora").val(siniestro.peritoOriginal.aseguradora.nombre);
         $("#e_siniestro_siniestro").val(siniestro.numero);

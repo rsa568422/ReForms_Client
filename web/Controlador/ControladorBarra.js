@@ -1,19 +1,50 @@
 $(document).ready(function() {
-    $("#barra_buscador").click(function() {
-        $(this).addClass("active");
-        $("#barra_nuevoSiniestro").removeClass("active");
-        $("#contenido").load("buscadorSiniestros.html", function(responseTxt, statusTxt) {
+    
+    function paginaNoEncontrada(nombre) {
+        $("#contenido").html("<h2>Error 404: no se encuentra la pagina " + nombre + "</h2>");
+    }
+    
+    $("#barra").addClass("bg-dark");
+    $("#barra").show();
+    
+    $("#btn-siniestros").click(function() {
+        $("#contenido").load("siniestros.html", function(responseTxt, statusTxt) {
             if(statusTxt !== "success") {
-                alert("Error: no se pudo cargar buscadorSiniestros.html");
+                paginaNoEncontrada("siniestros.html");
             }
         });
     });
-    $("#barra_nuevoSiniestro").click(function() {
-        $(this).addClass("active");
-        $("#barra_buscador").removeClass("active");
-        $("#contenido").load("nuevoSiniestro.html", function(responseTxt, statusTxt) {
+    
+    $("#btn-jornadas").click(function() {
+        $("#contenido").load("jornadas.html", function(responseTxt, statusTxt) {
             if(statusTxt !== "success") {
-                alert("Error: no se pudo cargar nuevoSiniestro.html");
+                paginaNoEncontrada("jornadas.html");
+            }
+        });
+    });
+    
+    $("#btn-aseguradoras").click(function() {
+        $("#contenido").load("aseguradoras.html", function(responseTxt, statusTxt) {
+            if(statusTxt !== "success") {
+                paginaNoEncontrada("aseguradoras.html");
+            }
+        });
+    });
+    
+    $("#btn-activos").click(function() {
+        $("#contenido").load("activos.html", function(responseTxt, statusTxt) {
+            if(statusTxt !== "success") {
+                paginaNoEncontrada("activos.html");
+            }
+        });
+    });
+    
+    $("#btn-logout").click(function() {
+        localStorage.removeItem("usuario");
+        $("#barra").html("");
+        $("#contenido").load("login.html", function(responseTxt, statusTxt) {
+            if(statusTxt !== "success") {
+                paginaNoEncontrada("login.html");
             }
         });
     });

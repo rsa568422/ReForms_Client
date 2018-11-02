@@ -5,9 +5,9 @@ $(document).ready(function() {
     function cambiarDeFormulario() {
         sessionStorage.setItem("idaseguradora", aseguradora.id);
         sessionStorage.setItem("nsiniestro", $("#n_numero_siniestro").val());
-        $("#contenido").load("edicionSiniestro.html", function(responseTxt, statusTxt) {
+        $("#contenido").load("edicionSiniestro2.html", function(responseTxt, statusTxt) {
             if(statusTxt !== "success") {
-                alert("Error: no se pudo cargar edicionSiniestro.html");
+                alert("Error: no se pudo cargar edicionSiniestro2.html");
             }
         });
     }
