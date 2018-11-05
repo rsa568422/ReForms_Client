@@ -12,6 +12,17 @@ $(document).ready(function() {
         return "#" + r + g + b;
     }
     
+    var u = JSON.parse(sessionStorage.usuario);
+    if (u.gerente && u.gerente == 1) {
+        $("#cJornadas").parent().show();
+        $("#cAseguradoras").parent().show();
+        $("#cActivos").parent().show();
+    } else {
+        $("#cJornadas").parent().hide();
+        $("#cAseguradoras").parent().hide();
+        $("#cActivos").parent().hide();
+    }
+    
     var color = $("#btn-configuracion").css("background-color");
     $("#ventana").css("border-color", color);
     $("#perfil").css("border-color", color);
