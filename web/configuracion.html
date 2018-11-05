@@ -1,0 +1,41 @@
+<script>
+    if (!sessionStorage.usuario) {
+        window.location.href = "http://localhost:8080/ReForms_Client/";
+    }
+</script>
+
+<script src="Controlador/ControladorConfiguracion.js"></script>
+
+<div id="ventana" style="border: 15px solid; border-radius: 20px;">
+    <div class="container-fluid">
+        <div id="perfil" class="row" style="border: 5px solid; border-radius: 10px; margin: 1%; padding: 1%;">
+            <h2>Mi Perfil</h2>
+        </div>
+        <div id="apariencia" class="row" style="border: 5px solid; border-radius: 10px; margin: 1%; padding: 1%;">
+            <div class="container-fluid">
+                <div class="row">
+                    <h2>Apariencia</h2>
+                </div>
+                <div class="row form-inline">
+                    <input id="cSiniestros" name="cSiniestros" type="color" class="form-control" style="width: 40px; height: 30px"/>
+                    <h4>> Color para siniestros</h4>
+                </div>
+                <div class="row form-inline">
+                    <input id="cJornadas" name="cJornadas" type="color" class="form-control" style="width: 40px; height: 30px"/>
+                    <h4>> Color para jornadas</h4>
+                </div>
+                <div class="row form-inline">
+                    <input id="cAseguradoras" name="cAseguradoras" type="color" class="form-control" style="width: 40px; height: 30px"/>
+                    <h4>> Color para aseguradoras</h4>
+                </div>
+                <div class="row form-inline">
+                    <input id="cActivos" name="cActivos" type="color" class="form-control" style="width: 40px; height: 30px"/>
+                    <h4>> Color para activos</h4>
+                </div>
+                <div class="row">
+                    <input id="resetearColores" name="resetearColores" type="button" value="Colores por defecto" class="btn" style="background-color: rgb(190, 190, 190)"/>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

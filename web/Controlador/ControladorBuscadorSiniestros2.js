@@ -37,8 +37,8 @@ $(document).ready(function() {
             $(".filaResultado").dblclick(function() {
                 sessionStorage.setItem("idaseguradora", $(this).find(".resultado_aseguradora").text());
                 sessionStorage.setItem("nsiniestro", $(this).find(".resultado_numero_siniestro").text());
-                $("#contenido").load("edicionSiniestro2.html", function(responseTxt, statusTxt) {
-                //$("#ventana").load("edicionSiniestro2.html", function(responseTxt, statusTxt) {
+                //$("#contenido").load("edicionSiniestro2.html", function(responseTxt, statusTxt) {
+               $("#ventana").load("edicionSiniestro2.html", function(responseTxt, statusTxt) {
                     if(statusTxt !== "success") {
                         alert("Error: no se pudo cargar edicionSiniestro2.html");
                     }

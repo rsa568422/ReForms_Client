@@ -1,11 +1,18 @@
+<script>
+    if (!sessionStorage.usuario) {
+        window.location.href = "http://localhost:8080/ReForms_Client/";
+    }
+</script>
+
 <script src="Controlador/ControladorBarra.js"></script>
 
-<div>
-    <input id="btn-siniestros" type="button" class="btn btn-lg" value="Siniestros" style="background-color: mediumseagreen; border-radius: 20px 20px 0px 0px; margin-left: 1%;"/>
-    <input id="btn-jornadas" type="button" class="btn btn-lg" value="Jornadas" style="background-color: dodgerblue; border-radius: 20px 20px 0px 0px; margin-left: 1%;"/>
-    <input id="btn-aseguradoras" type="button" class="btn btn-lg" value="Aseguradoras" style="background-color: orange; border-radius: 20px 20px 0px 0px; margin-left: 1%;"/>
-    <input id="btn-activos" type="button" class="btn btn-lg" value="Activos" style="background-color: violet; border-radius: 20px 20px 0px 0px; margin-left: 1%;"/>
+<div style="margin-left: 3%">
+    <input id="btn-siniestros" type="button" class="btn btn-lg" value="Siniestros" style="border-radius: 20px 20px 0px 0px;"/>
+    <input id="btn-jornadas" type="button" class="btn btn-lg" value="Jornadas" style="border-radius: 20px 20px 0px 0px;"/>
+    <input id="btn-aseguradoras" type="button" class="btn btn-lg" value="Aseguradoras" style="border-radius: 20px 20px 0px 0px;"/>
+    <input id="btn-activos" type="button" class="btn btn-lg" value="Activos" style="border-radius: 20px 20px 0px 0px;"/>
 </div>
-<div>
-    <input id="btn-logout" type="button" class="btn btn-lg" value="Logout" style="background-color: tomato; border-radius: 20px 20px 0px 0px;position: absolute; right: 1%; top: 0;"/>
+<div style="position: absolute; top: 0; right: 3%">
+    <a id="btn-configuracion" class="btn btn-lg" href="#" style="border-radius: 20px 20px 0px 0px;"><i class="material-icons text-dark">build</i></a>
+    <a id="btn-logout" class="btn btn-lg" href="#" style="border-radius: 20px 20px 0px 0px;"><i class="material-icons text-dark">power_settings_new</i></a>
 </div>

@@ -1,4 +1,7 @@
 $(document).ready(function() {
-    $("#ventana").css("border-color", $("#btn-jornadas").css("background-color"));
+    var color = $("#btn-jornadas").css("background-color");
+    $("#ventana").css("border-color", color);
+    color = color.substring(0, color.length - 1) + ", 0.3)";
+    $("#ventana").css("background-color", color);
     
 });

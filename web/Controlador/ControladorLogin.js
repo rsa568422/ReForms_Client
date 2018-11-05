@@ -3,18 +3,15 @@ $(document).ready(function() {
     var operadores;
     
     function acceder() {
-        $("#barra").css("background-image", "url(Imagen/fondo_barra.jpg)");
-        $("body").css("background-image", "url(Imagen/fondo_contenido.jpg)");
-        $("body").css("background-repeat", "repeat");
-        $("body").css("background-size", "cover");
         $("#barra").load("barra.html", function(responseTxt, statusTxt) {
-            if(statusTxt !== "success") {
+            if(statusTxt === "success") {
+                $("#contenido").load("siniestros.html", function(responseTxt, statusTxt) {
+                    if(statusTxt !== "success") {
+                        alert("Error: no se pudo cargar siniestros.html");
+                    }
+                });
+            } else {
                 alert("Error: no se pudo cargar barra.html");
-            }
-        });
-        $("#contenido").load("siniestros.html", function(responseTxt, statusTxt) {
-            if(statusTxt !== "success") {
-                alert("Error: no se pudo cargar siniestros.html");
             }
         });
     }
