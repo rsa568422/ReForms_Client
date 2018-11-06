@@ -1,6 +1,6 @@
 $(document).ready(function() {
     
-    var u = JSON.parse(sessionStorage.usuario);
+    var color, u = JSON.parse(sessionStorage.usuario);
     if (u.gerente && u.gerente == 1) {
         $("#btn-jornadas").show();
         $("#btn-aseguradoras").show();
@@ -15,7 +15,6 @@ $(document).ready(function() {
         $("#contenido").html("<h2>Error 404: no se encuentra la pagina " + nombre + "</h2>");
     }
     
-    var color;
     color = localStorage.colorSiniestros ? localStorage.colorSiniestros : "rgb(60, 179, 113)";
     $("#btn-siniestros").css("background-color", color);
     color = localStorage.colorJornadas ? localStorage.colorJornadas : "rgb(255, 165, 0)";
@@ -24,7 +23,7 @@ $(document).ready(function() {
     $("#btn-aseguradoras").css("background-color", color);
     color = localStorage.colorActivos ? localStorage.colorActivos : "rgb(30, 144, 255)";
     $("#btn-activos").css("background-color", color);
-    $("#btn-configuracion").css("background-color", "rgb(190, 190, 190)");
+    $("#btn-configuracion").css("background-color", "rgb(160, 160, 160)");
     $("#btn-logout").css("background-color", "rgb(255, 99, 71)");
     
     $("#barra").show();

@@ -6,13 +6,26 @@
 
 <script src="Controlador/ControladorBarra.js"></script>
 
+<style>
+    .textoBotonesOculto {
+        display: inline;
+    }
+    
+    @media only screen and (max-width: 1024px) {
+        .textoBotonesOculto {
+            display: none;
+        }
+    }
+</style>
+
 <div style="margin-left: 3%">
-    <input id="btn-siniestros" type="button" class="btn btn-lg" value="Siniestros" style="border-radius: 20px 20px 0px 0px;"/>
-    <input id="btn-jornadas" type="button" class="btn btn-lg" value="Jornadas" style="border-radius: 20px 20px 0px 0px;"/>
-    <input id="btn-aseguradoras" type="button" class="btn btn-lg" value="Aseguradoras" style="border-radius: 20px 20px 0px 0px;"/>
-    <input id="btn-activos" type="button" class="btn btn-lg" value="Activos" style="border-radius: 20px 20px 0px 0px;"/>
+    <a id="btn-siniestros" class="btn btn-lg" href="#" style="border-radius: 20px 20px 0px 0px;"><p class="text-dark"><i class="material-icons">inbox</i><span class="textoBotonesOculto"> Siniestros</span></p></a>
+    <a id="btn-jornadas" class="btn btn-lg" href="#" style="border-radius: 20px 20px 0px 0px;"><p class="text-dark"><i class="material-icons">event</i><span class="textoBotonesOculto"> Jornadas</span></p></a>
+    <a id="btn-aseguradoras" class="btn btn-lg" href="#" style="border-radius: 20px 20px 0px 0px;"><p class="text-dark"><i class="material-icons">account_balance</i><span class="textoBotonesOculto"> Aseguradoras</span></p></a>
+    <a id="btn-activos" class="btn btn-lg" href="#" style="border-radius: 20px 20px 0px 0px;"><p class="text-dark"><i class="material-icons">assignment_ind</i><span class="textoBotonesOculto"> Activos</span></p></a>
 </div>
+
 <div style="position: absolute; top: 0; right: 3%">
-    <a id="btn-configuracion" class="btn btn-lg" href="#" style="border-radius: 20px 20px 0px 0px;"><i class="material-icons text-dark">build</i></a>
-    <a id="btn-logout" class="btn btn-lg" href="#" style="border-radius: 20px 20px 0px 0px;"><i class="material-icons text-dark">power_settings_new</i></a>
+    <a id="btn-configuracion" class="btn btn-lg" href="#" style="border-radius: 20px 20px 0px 0px;"><p class="text-dark"><i class="material-icons">settings</i></p></a>
+    <a id="btn-logout" class="btn btn-lg" href="#" style="border-radius: 20px 20px 0px 0px;"><p class="text-dark"><i class="material-icons">power_settings_new</i></p></a>
 </div>

@@ -6,10 +6,38 @@
 
 <script src="Controlador/ControladorConfiguracion.js"></script>
 
+<style>
+    .logo {
+        margin-right: 1%;
+        padding: 0.5%;
+        border: solid 1px;
+        border-radius: 5px;
+        width: 96px;
+        height: 72px;
+    }
+    
+    .predeterminada {
+        margin-right: 1%;
+        padding: 0.25%;
+        border: solid 3px;
+        border-radius: 5px;
+        width: 96px;
+        height: 72px;
+    }
+</style>
+
 <div id="ventana" style="border: 15px solid; border-radius: 20px;">
     <div class="container-fluid">
         <div id="perfil" class="row" style="border: 5px solid; border-radius: 10px; margin: 1%; padding: 1%;">
             <h2>Mi Perfil</h2>
+        </div>
+        <div id="aseguradora" class="row" style="border: 5px solid; border-radius: 10px; margin: 1%; padding: 1%;">
+            <div class="container-fluid">
+                <div class="row">
+                    <h2>Aseguradora predeterminada</h2>
+                </div>
+                <div id="logos" class="row"></div>
+            </div>
         </div>
         <div id="apariencia" class="row" style="border: 5px solid; border-radius: 10px; margin: 1%; padding: 1%;">
             <div class="container-fluid">

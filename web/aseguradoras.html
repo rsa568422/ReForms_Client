@@ -6,6 +6,35 @@
 
 <script src="Controlador/ControladorAseguradoras.js"></script>
 
+<style>
+    .logo {
+        margin-right: 1%;
+        padding: 0.5%;
+        border: solid 1px;
+        border-radius: 5px;
+        width: 96px;
+        height: 72px;
+    }
+    
+    .seleccionada {
+        margin-right: 1%;
+        padding: 0.25%;
+        border: solid 3px;
+        border-radius: 5px;
+        width: 96px;
+        height: 72px;
+    }
+    
+    #btnNuevaAseguradora {
+        margin-right: 1%;
+        padding: 0.5%;
+        border: solid 1px;
+        border-radius: 5px;
+        width: 96px;
+        height: 72px;
+    }
+</style>
+
 <div id="ventana" style="border: 15px solid; border-radius: 20px;">
     <div class="container-fluid">
         <div id="aseguradoras" class="row" style="border: 5px solid; border-radius: 10px; margin: 1%; padding: 1%;">
@@ -13,11 +42,24 @@
                 <div class="row">
                     <h2>Aseguradoras</h2>
                 </div>
-                <div id="listaAseguradoras" style="border: 5px solid; border-radius: 10px; margin: 1%; padding: 1%;"></div>
+                <div id="logos" style="border: 5px solid; border-radius: 10px; margin: 1%; padding: 1%;"></div>
                 <div class="row">
                     <div class="container-fluid">
                         <div id="peritos" class="row" style="border: 5px solid; border-radius: 10px; margin: 1%; padding: 1%;">
                             <h2>Peritos</h2>
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Nombre</th>
+                                        <th>Apellidos</th>
+                                        <th>Telefonos</th>
+                                        <th>Fax</th>
+                                        <th>Email</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                            <button id="btnNuevoPerito" type='button' class='btn'>nuevo</button>
                         </div>
                         <div id="trabajos" class="row" style="border: 5px solid; border-radius: 10px; margin: 1%; padding: 1%;">
                             <h2>Trabajos</h2>
