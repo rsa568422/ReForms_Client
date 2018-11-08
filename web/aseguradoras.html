@@ -4,8 +4,6 @@
     }
 </script>
 
-<script src="Controlador/ControladorAseguradoras.js"></script>
-
 <style>
     .logo {
         margin-right: 1%;
@@ -25,6 +23,11 @@
         height: 72px;
     }
     
+    .gremio {
+        margin-right: 1%;
+        border-radius: 20px 20px 0px 0px;
+    }
+    
     #btnNuevaAseguradora {
         margin-right: 1%;
         padding: 0.5%;
@@ -33,21 +36,46 @@
         width: 96px;
         height: 72px;
     }
+    
+    #ventana {
+        border: 15px solid;
+        border-radius: 20px;
+    }
+    
+    #aseguradoras, #peritos, #logos, #trabajos {
+        border: 5px solid;
+        border-radius: 10px;
+        margin: 1%;
+        padding: 1%;
+    }
+    
+    #btnNuevoPerito, #btnNuevoPeritoAceptar, #btnNuevoTrabajo, #btnNuevoTrabajoAceptar {
+        margin-right: 1%;
+    }
+    
+    #btnNuevoGremioAceptar, #btnNuevoGremioCancelar {
+        margin-left: 1%;
+    }
 </style>
 
-<div id="ventana" style="border: 15px solid; border-radius: 20px;">
+<script src="Entidad/Perito.js"></script>
+<script src="Entidad/Gremio.js"></script>
+<script src="Entidad/Trabajo.js"></script>
+<script src="Controlador/ControladorAseguradoras.js"></script>
+
+<div id="ventana">
     <div class="container-fluid">
-        <div id="aseguradoras" class="row" style="border: 5px solid; border-radius: 10px; margin: 1%; padding: 1%;">
+        <div id="aseguradoras" class="row">
             <div class="container-fluid">
                 <div class="row">
                     <h2>Aseguradoras</h2>
                 </div>
-                <div id="logos" style="border: 5px solid; border-radius: 10px; margin: 1%; padding: 1%;"></div>
+                <div id="logos"></div>
                 <div class="row">
                     <div class="container-fluid">
-                        <div id="peritos" class="row" style="border: 5px solid; border-radius: 10px; margin: 1%; padding: 1%;">
+                        <div id="peritos" class="row">
                             <h2>Peritos</h2>
-                            <table class="table">
+                            <table class="table table-hover">
                                 <thead>
                                     <tr>
                                         <th>Nombre</th>
@@ -60,9 +88,31 @@
                                 <tbody></tbody>
                             </table>
                             <button id="btnNuevoPerito" type='button' class='btn'>nuevo</button>
+                            <button id="btnNuevoPeritoAceptar" type='button' class='btn'>aceptar</button>
+                            <button id="btnNuevoPeritoCancelar" type='button' class='btn'>cancelar</button>
                         </div>
-                        <div id="trabajos" class="row" style="border: 5px solid; border-radius: 10px; margin: 1%; padding: 1%;">
-                            <h2>Trabajos</h2>
+                        <div id="trabajos" class="row">
+                            <h2>Gremios y Trabajos</h2>
+                            <div class="container-fluid">
+                                <div id="gremios" class="row">
+                                    
+                                </div>
+                                <div class="row">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Codigo</th>
+                                                <th>Descripcion</th>
+                                                <th>Dificultad</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody></tbody>
+                                    </table>
+                                    <button id="btnNuevoTrabajo" type='button' class='btn'>nuevo</button>
+                                    <button id="btnNuevoTrabajoAceptar" type='button' class='btn'>aceptar</button>
+                                    <button id="btnNuevoTrabajoCancelar" type='button' class='btn'>cancelar</button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

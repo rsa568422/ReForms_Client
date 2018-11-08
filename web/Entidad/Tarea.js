@@ -7,4 +7,5 @@ function Tarea() {
     this.trabajo = null;
     this.ampliacion = null;
     this.fechaAmpliacion = null;
+    this.importe = 0.0;
 }

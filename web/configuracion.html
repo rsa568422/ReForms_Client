@@ -4,9 +4,28 @@
     }
 </script>
 
-<script src="Controlador/ControladorConfiguracion.js"></script>
-
 <style>
+    #ventana {
+        border: 15px solid;
+        border-radius: 20px;
+    }
+    
+    #perfil, #aseguradora, #apariencia {
+        border: 5px solid;
+        border-radius: 10px;
+        margin: 1%;
+        padding: 1%;
+    }
+    
+    #cSiniestros, #cJornadas, #cAseguradoras , #cActivos {
+        width: 40px;
+        height: 30px;
+    }
+    
+    #resetearColores {
+        background-color: rgb(190, 190, 190);
+    }
+    
     .logo {
         margin-right: 1%;
         padding: 0.5%;
@@ -26,12 +45,14 @@
     }
 </style>
 
-<div id="ventana" style="border: 15px solid; border-radius: 20px;">
+<script src="Controlador/ControladorConfiguracion.js"></script>
+
+<div id="ventana">
     <div class="container-fluid">
-        <div id="perfil" class="row" style="border: 5px solid; border-radius: 10px; margin: 1%; padding: 1%;">
+        <div id="perfil" class="row">
             <h2>Mi Perfil</h2>
         </div>
-        <div id="aseguradora" class="row" style="border: 5px solid; border-radius: 10px; margin: 1%; padding: 1%;">
+        <div id="aseguradora" class="row">
             <div class="container-fluid">
                 <div class="row">
                     <h2>Aseguradora predeterminada</h2>
@@ -39,29 +60,29 @@
                 <div id="logos" class="row"></div>
             </div>
         </div>
-        <div id="apariencia" class="row" style="border: 5px solid; border-radius: 10px; margin: 1%; padding: 1%;">
+        <div id="apariencia" class="row">
             <div class="container-fluid">
                 <div class="row">
                     <h2>Apariencia</h2>
                 </div>
                 <div class="row form-inline">
-                    <input id="cSiniestros" name="cSiniestros" type="color" class="form-control" style="width: 40px; height: 30px"/>
+                    <input id="cSiniestros" name="cSiniestros" type="color" class="form-control"/>
                     <h4>> Color para siniestros</h4>
                 </div>
                 <div class="row form-inline">
-                    <input id="cJornadas" name="cJornadas" type="color" class="form-control" style="width: 40px; height: 30px"/>
+                    <input id="cJornadas" name="cJornadas" type="color" class="form-control"/>
                     <h4>> Color para jornadas</h4>
                 </div>
                 <div class="row form-inline">
-                    <input id="cAseguradoras" name="cAseguradoras" type="color" class="form-control" style="width: 40px; height: 30px"/>
+                    <input id="cAseguradoras" name="cAseguradoras" type="color" class="form-control"/>
                     <h4>> Color para aseguradoras</h4>
                 </div>
                 <div class="row form-inline">
-                    <input id="cActivos" name="cActivos" type="color" class="form-control" style="width: 40px; height: 30px"/>
+                    <input id="cActivos" name="cActivos" type="color" class="form-control"/>
                     <h4>> Color para activos</h4>
                 </div>
                 <div class="row">
-                    <input id="resetearColores" name="resetearColores" type="button" value="Colores por defecto" class="btn" style="background-color: rgb(190, 190, 190)"/>
+                    <input id="resetearColores" name="resetearColores" type="button" value="Colores por defecto" class="btn"/>
                 </div>
             </div>
         </div>
