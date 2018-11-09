@@ -1,0 +1,61 @@
+<script>
+    if (!sessionStorage.usuario) {
+        window.location.href = "http://localhost:8080/ReForms_Client/";
+    }
+</script>
+
+<style>
+    textarea {
+        resize: none;
+    }
+    
+    .btn-aceptar, .btn-cancelar {
+        background-color: rgb(0, 0, 0, 0);
+        margin-top: 1%;
+    }
+    
+    .btn-aceptar {
+        border-color: green;
+        color: green;
+        margin-right: 1%;
+    }
+    
+    .btn-cancelar {
+        border-color: red;
+        color: red;
+    }
+</style>
+
+<script>
+    
+</script>
+
+<div class="marco container-fluid">
+    <div class="row">
+        <label for="nombre">Nombre</label>
+        <input name="nombre" class="form-control" type="text" maxlength="100" required/>
+    </div>
+    <div class="row">
+        <label for="telefono1">Telefonos</label>
+        <input name="telefono1" class="form-control" type="tel" maxlength="9" required/>
+    </div>
+    <div class="row">
+        <input name="telefono2" class="form-control" type="tel" maxlength="9"/>
+    </div>
+    <div class="row">
+        <label for="fax">Fax</label>
+        <input name="fax" class="form-control" type="tel" maxlength="9"/>
+    </div>
+    <div class="row">
+        <label for="email">Email</label>
+        <input name="email" class="form-control" type="email" maxlength="100" required/>
+    </div>
+    <div class="row">
+        <label for="logo">Logo</label>
+        <input name="logo" class="form-control" type="file" accept="image/gif"/>
+    </div>
+    <div class="row form-inline">
+        <button class="btn-aceptar btn">aceptar</button>
+        <button class="btn-cancelar btn">cancelar</button>
+    </div>
+</div>

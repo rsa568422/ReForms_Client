@@ -40,10 +40,11 @@ $(document).ready(function() {
     
     function cargarPeritosTrabajos() {
         $.get("http://localhost:8080/ReForms_Provider/wr/perito/buscarPeritoPorAseguradora/" + aseguradora.id, function(data, status) {
+            var tbody = $("#peritos").find("table").children("tbody");
+            tbody.children("tr").remove();
             if (status == "success") {
-                var i, tbody = $("#peritos").find("table").children("tbody");
+                var i;
                 peritos = data;
-                tbody.children("tr").remove();
                 for (i = 0; i < peritos.length; i++) {
                     var nombre = "<td>" + peritos[i].nombre + "</td>",
                         apellidos = "<td>" + peritos[i].apellido1,
@@ -175,6 +176,71 @@ $(document).ready(function() {
         $("#nuevaAseguradora").hide();
         cargarPeritosTrabajos();
     }
+    
+    function nuevaAseguradora_aceptar_click() {
+        var error = false,
+            a = new Aseguradora(),
+            marco = $(this).parents(".marco"),
+            nombre = marco.find("input[name='nombre']"),
+            telefono1 = marco.find("input[name='telefono1']"),
+            telefono2 = marco.find("input[name='telefono2']"),
+            fax = marco.find("input[name='fax']"),
+            email = marco.find("input[name='email']"),
+            logo = marco.find("input[name='logo']");
+        if (nombre.prop("validity").valid) {
+            a.nombre = nombre.val();
+        } else {
+            error = true;
+        }
+        if (telefono1.prop("validity").valid) {
+            a.telefono1 = telefono1.val();
+        } else {
+            error = true;
+        }
+        if (telefono2.prop("validity").valid) {
+            a.telefono2 = telefono2.val() != "" ? telefono2.val() : null;
+        } else {
+            error = true;
+        }
+        if (fax.prop("validity").valid) {
+            a.fax = fax.val() != "" ? fax.val() : null;
+        } else {
+            error = true;
+        }
+        if (email.prop("validity").valid) {
+            a.email = email.val();
+        } else {
+            error = true;
+        }
+        if (true /*comprobar logo*/) {
+            a.logo = /*el blob con el logo.gif a subir*/ null; 
+        } else {
+            error = true;
+        }
+        if (!error) {
+            $.ajax({
+                url: 'http://localhost:8080/ReForms_Provider/wr/aseguradora/registrarAseguradora',
+                dataType: 'json',
+                type: 'post',
+                contentType: 'application/json',
+                data: JSON.stringify(a),
+                processData: false,
+                success: function(data, textStatus, jQxhr){
+                    $("#btn-aseguradoras").click();
+                },
+                error: function(jQxhr, textStatus, errorThrown){
+                    alert("Error: no se ha creado la aseguradora");
+                }
+            });
+        } else {
+            alert("Error: revise los datos de la aseguradora");
+            nombre.focus();
+        }
+    }
+    
+    function nuevaAseguradora_cancelar_click() {
+        $(".logo").eq(0).click();
+    }
         
     $("#ventana").css("border-color", color);
     $("#aseguradoras").css("border-color", color);
@@ -231,11 +297,24 @@ $(document).ready(function() {
             $("#btnNuevaAseguradora").css("color", $("#btn-aseguradoras").css("background-color"));
             $("#btnNuevaAseguradora").css("background-color", "rgb(0, 0, 0, 0)");
             $(".logo").click(logo_click);
+            $(".logo").dblclick(function() {
+                aseguradora = la[$(this).index()];
+                alert(JSON.stringify(aseguradora));
+            });
             $("#btnNuevaAseguradora").click(function() {
                 aseguradora = null;
                 $(".seleccionada").removeClass("seleccionada");
                 $("#peritos").hide();
                 $("#trabajos").hide();
+                $("#nuevaAseguradora").load("Html/aseguradora.html", function(responseTxt, statusTxt) {
+                    if(statusTxt === "success") {
+                        //comportamiento de los botones
+                        $(this).find(".btn-aceptar").click(nuevaAseguradora_aceptar_click);
+                        $(this).find(".btn-cancelar").click(nuevaAseguradora_cancelar_click);
+                    } else {
+                        alert("Error: no se pudo cargar aseguradora.html");
+                    }
+                });
                 $("#nuevaAseguradora").show();
             });
         }
@@ -340,16 +419,16 @@ $(document).ready(function() {
                 $(this).find(".input-aceptar").click(function() {
                     var error = false,
                         t = new Trabajo(),
-                        subContenido = $(this).parents(".sub-contenido"),
-                        codigo = subContenido.find(".input-codigo"),
-                        descripcion = subContenido.find(".input-descripcion"),
-                        cantidadMin = subContenido.find(".input-cantidadMin"),
-                        precioMin = subContenido.find(".input-precioMin"),
-                        cantidadMed = subContenido.find(".input-cantidadMed"),
-                        precioMed = subContenido.find(".input-precioMed"),
-                        precioExtra = subContenido.find(".input-precioExtra"),
-                        dificultad = subContenido.find(".input-dificultad"),
-                        medida = subContenido.find(".input-medida");
+                        marco = $(this).parents(".marco"),
+                        codigo = marco.find(".input-codigo"),
+                        descripcion = marco.find(".input-descripcion"),
+                        cantidadMin = marco.find(".input-cantidadMin"),
+                        precioMin = marco.find(".input-precioMin"),
+                        cantidadMed = marco.find(".input-cantidadMed"),
+                        precioMed = marco.find(".input-precioMed"),
+                        precioExtra = marco.find(".input-precioExtra"),
+                        dificultad = marco.find(".input-dificultad"),
+                        medida = marco.find(".input-medida");
                     if (codigo.prop("validity").valid) {
                         t.codigo = codigo.val();
                     } else {
