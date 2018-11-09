@@ -42,7 +42,7 @@
         border-radius: 20px;
     }
     
-    #aseguradoras, #peritos, #logos, #trabajos {
+    #aseguradoras, #peritos, #logos, #trabajos, #nuevaAseguradora {
         border: 5px solid;
         border-radius: 10px;
         margin: 1%;
@@ -68,7 +68,7 @@
         <div id="aseguradoras" class="row">
             <div class="container-fluid">
                 <div class="row">
-                    <h2>Aseguradoras</h2>
+                    <h2 style="margin-left: 2%">Aseguradoras</h2>
                 </div>
                 <div id="logos"></div>
                 <div class="row">
@@ -94,9 +94,7 @@
                         <div id="trabajos" class="row">
                             <h2>Gremios y Trabajos</h2>
                             <div class="container-fluid">
-                                <div id="gremios" class="row">
-                                    
-                                </div>
+                                <div id="gremios" class="row"></div>
                                 <div class="row">
                                     <table class="table table-hover">
                                         <thead>
@@ -111,9 +109,11 @@
                                     <button id="btnNuevoTrabajo" type='button' class='btn'>nuevo</button>
                                     <button id="btnNuevoTrabajoAceptar" type='button' class='btn'>aceptar</button>
                                     <button id="btnNuevoTrabajoCancelar" type='button' class='btn'>cancelar</button>
+                                    <div id="nuevoTrabajo"></div>
                                 </div>
                             </div>
                         </div>
+                        <div id="nuevaAseguradora" class="row">nueva aseguradora</div>
                     </div>
                 </div>
             </div>

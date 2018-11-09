@@ -1,7 +1,7 @@
 $(document).ready(function() {
     
     var peritos, gremios, trabajos,
-        la, aseguradora = null,
+        la, aseguradora = null, gremio = null,
         color = $("#btn-aseguradoras").css("background-color");
     
     function generarLogo(aseguradora) {
@@ -30,7 +30,9 @@ $(document).ready(function() {
                     $("#trabajos").find("tbody").append("<tr class='trabajo'>" + codigo + descripcion + dificultad + "</tr>");
                 }
                 $(".trabajo").dblclick(function() {
-                    alert("editar trabajo");
+                    var aux = trabajos[$(this).index()];
+                    aux.aseguradora.logo = null;
+                    alert(JSON.stringify(aux));
                 });
             }
         }, "json");
@@ -71,7 +73,7 @@ $(document).ready(function() {
                     tbody.append("<tr>" + nombre + apellidos + telefonos + fax + email + "</tr>");
                 }
                 tbody.children("tr").not("#trNuevoPerito").dblclick(function() {
-                    alert($(this).index());
+                    alert(JSON.stringify(peritos[$(this).index()]));
                     $("#btnNuevoPerito").prop("disabled", false);
                     $("#btnNuevoPeritoAceptar").hide();
                     $("#btnNuevoPeritoCancelar").hide();
@@ -84,6 +86,10 @@ $(document).ready(function() {
                 var i;
                 gremios = data;
                 $(".gremio").remove();
+                $("#nuevoTrabajo").html("");
+                $("#btnNuevaAseguradora").prop("disabled", false);
+                $("#btnNuevoPerito").prop("disabled", false);
+                $("#btnNuevoTrabajo").show();
                 for (i = 0; i < gremios.length; i++) {
                     $("#gremios").append("<button type='button' class='btn gremio'>" + gremios[i].nombre + "</button>");
                 }
@@ -94,7 +100,8 @@ $(document).ready(function() {
                 $(".gremio").not("#btnNuevoGremio").click(function() {
                     $(this).css("background-color", $("#btn-aseguradoras").css("background-color"));
                     $(this).siblings(".gremio").css("background-color", "rgb(0, 0, 0, 0)");
-                    cargarTrabajos(gremios[$(this).index()]);
+                    gremio = gremios[$(this).index()];
+                    cargarTrabajos(gremio);
                 });
                 $("#btnNuevoGremio").click(function() {
                     var nombreGremio = "<input id='nombreGremio' type='text' class='form-control' maxlength='20' required>",
@@ -147,16 +154,26 @@ $(document).ready(function() {
                         $("#btnNuevoTrabajo").prop("disabled", false);
                         $("#btnNuevoGremio").css("background-color", "rgb(0, 0, 0, 0)");
                         $(".gremio").eq(0).css("background-color", $("#btn-aseguradoras").css("background-color"));
-                        cargarTrabajos(gremios[0]);
+                        gremio = gremios[0];
+                        cargarTrabajos(gremio);
                     });
                 });
-                cargarTrabajos(gremios[0]);
+                gremio = gremios[0];
+                cargarTrabajos(gremio);
             }
         }, "json");
         $("#peritos").show();
         $("#trabajos").show();
         $("#btnNuevoPeritoAceptar").hide();
         $("#btnNuevoPeritoCancelar").hide();
+    }
+    
+    function logo_click() {
+        aseguradora = la[$(this).index()];
+        $(this).siblings(".seleccionada").removeClass("seleccionada");
+        $(this).addClass("seleccionada");
+        $("#nuevaAseguradora").hide();
+        cargarPeritosTrabajos();
     }
         
     $("#ventana").css("border-color", color);
@@ -184,11 +201,13 @@ $(document).ready(function() {
     $("#btnNuevoTrabajoCancelar").css("border-color", "red");
     $("#btnNuevoTrabajoCancelar").css("color", "red");
     $("#btnNuevoTrabajoCancelar").css("background-color", "rgb(0, 0, 0, 0)");
+    $("#nuevaAseguradora").css("border-color", color);
     color = color.substring(0, color.length - 1) + ", 0.1)";
     $("#ventana").css("background-color", color);
     
     $("#peritos").hide();
     $("#trabajos").hide();
+    $("#nuevaAseguradora").hide();
     
     $.get("http://localhost:8080/ReForms_Provider/wr/aseguradora/obtenerAseguradoras", function(data, status) {
         if (status == "success") {
@@ -211,17 +230,13 @@ $(document).ready(function() {
             $("#btnNuevaAseguradora").css("border-color", $("#btn-aseguradoras").css("background-color"));
             $("#btnNuevaAseguradora").css("color", $("#btn-aseguradoras").css("background-color"));
             $("#btnNuevaAseguradora").css("background-color", "rgb(0, 0, 0, 0)");
-            $(".logo").click(function() {
-                aseguradora = la[$(this).index()];
-                $(this).siblings(".seleccionada").removeClass("seleccionada");
-                $(this).addClass("seleccionada");
-                cargarPeritosTrabajos();
-            });
+            $(".logo").click(logo_click);
             $("#btnNuevaAseguradora").click(function() {
                 aseguradora = null;
                 $(".seleccionada").removeClass("seleccionada");
                 $("#peritos").hide();
                 $("#trabajos").hide();
+                $("#nuevaAseguradora").show();
             });
         }
     }, "json");
@@ -317,5 +332,98 @@ $(document).ready(function() {
         $("#btnNuevoTrabajo").prop("disabled", false);
         $("#btnNuevoPeritoAceptar").hide();
         $("#peritos").find("table").children("tbody").children("#trNuevoPerito").remove();
+    });
+    
+    $("#btnNuevoTrabajo").click(function() {
+        $("#nuevoTrabajo").load("Html/trabajo.html", function(responseTxt, statusTxt) {
+            if(statusTxt === "success") {
+                $(this).find(".input-aceptar").click(function() {
+                    var error = false,
+                        t = new Trabajo(),
+                        subContenido = $(this).parents(".sub-contenido"),
+                        codigo = subContenido.find(".input-codigo"),
+                        descripcion = subContenido.find(".input-descripcion"),
+                        cantidadMin = subContenido.find(".input-cantidadMin"),
+                        precioMin = subContenido.find(".input-precioMin"),
+                        cantidadMed = subContenido.find(".input-cantidadMed"),
+                        precioMed = subContenido.find(".input-precioMed"),
+                        precioExtra = subContenido.find(".input-precioExtra"),
+                        dificultad = subContenido.find(".input-dificultad"),
+                        medida = subContenido.find(".input-medida");
+                    if (codigo.prop("validity").valid) {
+                        t.codigo = codigo.val();
+                    } else {
+                        error = true;
+                    }
+                    if (descripcion.prop("validity").valid) {
+                        t.descripcion = descripcion.val() != "" ? descripcion.val() : null;
+                    } else {
+                        error = true;
+                    }
+                    if (cantidadMin.prop("validity").valid) {
+                        t.cantidadMin = cantidadMin.val() != "" ? cantidadMin.val() : 0.0;
+                    } else {
+                        error = true;
+                    }
+                    if (precioMin.prop("validity").valid) {
+                        t.precioMin = precioMin.val() != "" ? precioMin.val() : 0.0;
+                    } else {
+                        error = true;
+                    }
+                    if (cantidadMed.prop("validity").valid) {
+                        t.cantidadMed = cantidadMed.val() != "" ? cantidadMed.val() : 0.0;
+                    } else {
+                        error = true;
+                    }
+                    if (precioMed.prop("validity").valid) {
+                        t.precioMed = precioMed.val() != "" ? precioMed.val() : 0.0;
+                    } else {
+                        error = true;
+                    }
+                    if (precioExtra.prop("validity").valid) {
+                        t.precioExtra = precioExtra.val() != "" ? precioExtra.val() : 0.0;
+                    } else {
+                        error = true;
+                    }
+                    if (!error) {
+                        t.aseguradora = aseguradora;
+                        t.gremio = gremio;
+                        t.dificultad = dificultad.val();
+                        t.medida = medida.val();
+                        $.ajax({
+                            url: 'http://localhost:8080/ReForms_Provider/wr/trabajo/agregarTrabajo',
+                            dataType: 'json',
+                            type: 'post',
+                            contentType: 'application/json',
+                            data: JSON.stringify(t),
+                            processData: false,
+                            success: function(data, textStatus, jQxhr){
+                                $("#nuevoTrabajo").find(".input-cancelar").click();
+                                cargarPeritosTrabajos();
+                            },
+                            error: function(jQxhr, textStatus, errorThrown){
+                                alert("Error: no se ha creado el trabajo");
+                            }
+                        });
+                    } else {
+                        alert("Error: revise los datos del trabajo");
+                        codigo.focus();
+                    }
+                });
+                $(this).find(".input-cancelar").click(function() {
+                    $("#nuevoTrabajo").html("");
+                    $("#btnNuevaAseguradora").prop("disabled", false);
+                    $("#btnNuevoPerito").prop("disabled", false);
+                    $(".gremio").prop("disabled", false);
+                    $("#btnNuevoTrabajo").show();
+                });
+            } else {
+                paginaNoEncontrada("nuevoTrabajo.html");
+            }
+        });
+        $(this).hide();
+        $("#btnNuevaAseguradora").prop("disabled", true);
+        $("#btnNuevoPerito").prop("disabled", true);
+        $(".gremio").prop("disabled", true);
     });
 });
