@@ -1,0 +1,123 @@
+<script>
+    if (!sessionStorage.usuario) {
+        window.location.href = "http://localhost:8080/ReForms_Client/";
+    }
+</script>
+
+<style>
+    textarea {
+        resize: none;
+    }
+    
+    .btn-aceptar, .btn-cancelar {
+        background-color: rgb(0, 0, 0, 0);
+        margin-top: 1%;
+    }
+    
+    .btn-aceptar {
+        border-color: green;
+        color: green;
+        margin-right: 1%;
+    }
+    
+    .btn-cancelar {
+        border-color: red;
+        color: red;
+    }
+    
+    .detalles {
+        border: 5px solid;
+        border-radius: 10px;
+        padding: 1%;
+    }
+</style>
+
+<script>
+    
+</script>
+
+<div class="marco container-fluid">
+    <div class="row">
+        <div class="vehiculo col-6">
+            <form action="#">
+                <div class="form-group">
+                    <label for="matricula">Matricula</label>
+                    <input name="matricula" class="form-control" type="text" maxlength="11" required/>
+                </div>
+                <div class="form-group">
+                    <label for="marca">Marca</label>
+                    <input name="marca" class="form-control" type="text" maxlength="10"/>
+                </div>
+                <div class="form-group">
+                    <label for="modelo">Modelo</label>
+                    <input name="modelo" class="form-control" type="text" maxlength="20"/>
+                </div>
+                <div class="form-group">
+                    <label for="matriculacion">Fecha de matriculacion</label>
+                    <input name="matriculacion" class="form-control" type="date"/>
+                </div>
+                <div class="form-group">
+                    <label for="adquisicion">Fecha de adquisicion</label>
+                    <input name="adquisicion" class="form-control" type="date"/>
+                </div>
+                <div class="form-group">
+                    <label for="km">Km</label>
+                    <input name="km" class="form-control" type="number" value=0 step=1 min=0 />
+                </div>
+                <div class="form-group">
+                    <label for="observaciones">Observaciones</label>
+                    <textarea name="observaciones" class="form-control" rows="4" maxlength="250"/>
+                </div>
+                <button class="btn-aceptar btn" type="button">aceptar</button>
+                <button class="btn-cancelar btn" type="button">cancelar</button>
+            </form>
+        </div>
+        <div class="mantenimientos col-6">
+            <div class="row">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Tipo</th>
+                            <th>Importe</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+                <button class="btn" type="button">nuevo</button>
+            </div>
+            <div class="detalles row">
+                <form action="#">
+                    <div class="form-group">
+                        <label for="tipo">Tipo</label>
+                        <select name="tipo" class="form-control">
+                            <option value=0 selected>repostaje</option>
+                            <option value=1>itv</option>
+                            <option value=2>seguro</option>
+                            <option value=3>impuestos</option>
+                            <option value=4>multa</option>
+                            <option value=5>taller</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="fecha">Fecha</label>
+                        <input name="fecha" class="form-control" type="date" required/>
+                    </div>
+                    <div class="form-group">
+                        <label for="coste">Coste</label>
+                        <input name="coste" class="form-control" type="number" value=0.0 step=0.01 min=0.0 max=9999.99/>
+                    </div>
+                    <div class="form-group">
+                        <label for="descripcion">Descripcion</label>
+                        <textarea name="descripcion" class="form-control" rows="4" maxlength="250"/>
+                    </div>
+                    <button class="btn-aceptar btn" type="button">aceptar</button>
+                    <button class="btn-cancelar btn" type="button">cancelar</button>
+                </from>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+falta descripcion VARCHAR(250) DEFAULT NULL para los mantenimientos

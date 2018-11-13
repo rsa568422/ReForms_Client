@@ -1,7 +1,7 @@
 $(document).ready(function() {
     
     var peritos, gremios, trabajos,
-        la, aseguradora = null, gremio = null,
+        la, aseguradora = null, gremio = null, logoGif = null,
         color = $("#btn-aseguradoras").css("background-color");
     
     function generarLogo(aseguradora) {
@@ -174,6 +174,12 @@ $(document).ready(function() {
         $(this).siblings(".seleccionada").removeClass("seleccionada");
         $(this).addClass("seleccionada");
         $("#nuevaAseguradora").hide();
+        $("#btnNuevoPerito").prop("disabled", false);
+        $("#btnNuevoTrabajo").prop("disabled", false);
+        $("#btnNuevoGremio").prop("disabled", false);
+        $("#nombreGremio").remove();
+        $("#btnNuevoGremioAceptar").remove();
+        $("#btnNuevoGremioCancelar").remove();
         cargarPeritosTrabajos();
     }
     
@@ -186,7 +192,8 @@ $(document).ready(function() {
             telefono2 = marco.find("input[name='telefono2']"),
             fax = marco.find("input[name='fax']"),
             email = marco.find("input[name='email']"),
-            logo = marco.find("input[name='logo']");
+            logo = marco.find("input[name='logo']"),
+            extension = logo.val().slice(logo.val().length - 4, logo.val().length);
         if (nombre.prop("validity").valid) {
             a.nombre = nombre.val();
         } else {
@@ -212,8 +219,8 @@ $(document).ready(function() {
         } else {
             error = true;
         }
-        if (true /*comprobar logo*/) {
-            a.logo = /*el blob con el logo.gif a subir*/ null; 
+        if (extension.toLowerCase() === ".gif") {
+            a.logo = logoGif; 
         } else {
             error = true;
         }
@@ -234,12 +241,22 @@ $(document).ready(function() {
             });
         } else {
             alert("Error: revise los datos de la aseguradora");
+            alert(JSON.stringify(a));
             nombre.focus();
         }
     }
     
     function nuevaAseguradora_cancelar_click() {
         $(".logo").eq(0).click();
+    }
+    
+    function input_logo_change() {
+        var entrada = this.files,
+            lector = new FileReader();
+        lector.onloadend = function (e) {
+            logoGif = e.target.result.split("base64,")[1];
+        }
+        lector.readAsDataURL(entrada[0]);
     }
         
     $("#ventana").css("border-color", color);
@@ -308,9 +325,10 @@ $(document).ready(function() {
                 $("#trabajos").hide();
                 $("#nuevaAseguradora").load("Html/aseguradora.html", function(responseTxt, statusTxt) {
                     if(statusTxt === "success") {
-                        //comportamiento de los botones
+                        //comportamiento de los controles
                         $(this).find(".btn-aceptar").click(nuevaAseguradora_aceptar_click);
                         $(this).find(".btn-cancelar").click(nuevaAseguradora_cancelar_click);
+                        $(this).find("input[name='logo']").change(input_logo_change);
                     } else {
                         alert("Error: no se pudo cargar aseguradora.html");
                     }
@@ -497,7 +515,7 @@ $(document).ready(function() {
                     $("#btnNuevoTrabajo").show();
                 });
             } else {
-                paginaNoEncontrada("nuevoTrabajo.html");
+                alert("Error: no se pudo cargar nuevoTrabajo.html");
             }
         });
         $(this).hide();
