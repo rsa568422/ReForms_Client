@@ -5,11 +5,17 @@ $(document).ready(function() {
     var colorBorde = $('#btn-activos').css('background-color'),
         colorFondo = colorBorde.substring(0, colorBorde.length - 1) + ', 0.1)',
         sinColor = 'rgb(0, 0, 0, 0)',
+        lt = [], ts = null
         lv = [], vs = null,
-        lm = [], ms = null;
+        lvm = [], vms = null;
     
     // Funciones auxiliares
     // ====================================================================== //
+    function mostrar_tabla_trabajadores(cuerpo) {
+        alert('cargar tabla de trabajadores');
+        cuerpo.children('.trabajador').click(trabajador_click);
+    }
+    
     function mostrar_tabla_vehiculos(cuerpo) {
         var i;
         for (i = 0; i < lv.length; i++) {
@@ -66,6 +72,28 @@ $(document).ready(function() {
     
     // Funciones controladoras para componentes
     // ====================================================================== //
+    function ocultable_click() {
+        $(this).siblings('.ocultable-contenido').slideToggle();
+        $(this).parent('.ocultable').siblings('.ocultable').children('.ocultable-contenido').slideUp()();
+    }
+    
+    function trabajador_click() {
+        alert('click en trabajador ' + $(this).index() + ' de la tabla');
+        $(this).parents('.principal').siblings('.detalles').show();
+    }
+    
+    function nuevo_trabajador_click() {
+        alert('click en boton para nuevo trabajador');
+        $(this).siblings('table').find('.trabajador').remove();
+        $(this).parents('.principal').siblings('.detalles').show();
+    }
+    
+    function trabajador_tipo_click() {
+        alert('click en tipo de trabajador ' + $(this).index());
+        $(this).siblings('.btn-tipo').css({'border-color':colorBorde, 'background-color':sinColor});
+        $(this).css('background-color', colorBorde);
+        $(this).parents('.principal').siblings('.detalles').hide();
+    }
     
     function vehiculo_click() {
         var detalles = $(this).parents('.tabla').siblings('.detalles');
@@ -200,6 +228,7 @@ $(document).ready(function() {
         } else {
             // problema en datos del cliente
             alert("revise los datos del vehiculo");
+            matricula.focus();
         }
     }
     
@@ -211,15 +240,142 @@ $(document).ready(function() {
         detalles.hide();
     }
     
-    function mantenimiento_click() {
-        $(this).parents('.mantenimientos').children('.detalles').show();
+    function mantenimiento_dblclick() {
+        var mantenimientos = $(this).parents('.mantenimientos'),
+            detalles = mantenimientos.find('.detalles'),
+            tipo = detalles.find('select[name="tipo"]'),
+            fecha = detalles.find('input[name="fecha"]'),
+            coste = detalles.find('input[name="coste"]'),
+            descripcion = detalles.find('textarea[name="descripcion"]');
+        vms = lvm[$(this).index()];
+        tipo.val(vms.tipo);
+        fecha.val(vms.fecha.slice(0, vms.fecha.indexOf('T')));
+        coste.val(vms.coste);
+        descripcion.val(vms.descripcion);
+        mantenimientos.find('.btn-nuevo').prop('disabled', true);
+        mantenimientos.children('.detalles').show();
+    }
+    
+    function nuevo_mantenimiento_click() {
+        var mantenimientos = $(this).parents('.mantenimientos'),
+            detalles = mantenimientos.find('.detalles'),
+            tipo = detalles.find('select[name="tipo"]'),
+            fecha = detalles.find('input[name="fecha"]'),
+            coste = detalles.find('input[name="coste"]'),
+            descripcion = detalles.find('textarea[name="descripcion"]');
+        vms = null;
+        tipo.val(0);
+        fecha.val('');
+        coste.val(0.0);
+        descripcion.val('');
+        detalles.show();
+        mantenimientos.find('.mantenimiento').remove();
+        $(this).prop('disabled', true);
+    }
+    
+    function mantenimiento_aceptar_click() {
+        var detalles = $(this).parents('.detalles'),
+            tipo = detalles.find('select[name="tipo"]'),
+            fecha = detalles.find('input[name="fecha"]'),
+            coste = detalles.find('input[name="coste"]'),
+            descripcion = detalles.find('textarea[name="descripcion"]'),
+            edicion = false, error = false;
+        if (vms != null && vms.id != null) {
+            edicion = true;
+        } else {
+            vms = new Mantenimiento();
+        }
+        if (tipo.prop('validity')) {
+            vms.tipo = tipo.val();
+        } else {
+            error = true;
+        }
+        if (fecha.prop('validity') && fecha.val() != '') {
+            vms.fecha = new Date(fecha.val());
+        } else {
+            error = true;
+        }
+        if (coste.prop('validity')) {
+            vms.coste = coste.val() !== '' ? new Number(coste.val()) : 0.0;
+        }
+        if (descripcion.prop('validity')) {
+            vms.descripcion = descripcion.val() !== '' ? descripcion.val() : null;
+        }
+        if (!error) {
+            // datos bien, enviar al proveedor
+            if (edicion) {
+                // edicion del mantenimiento en el proveedor
+                $.ajax({
+                    url: 'http://localhost:8080/ReForms_Provider/wr/mantenimiento/actualizarMantenimiento/' + vms.id,
+                    dataType: 'json',
+                    type: 'put',
+                    contentType: 'application/json',
+                    data: JSON.stringify(vms),
+                    processData: false,
+                    success: function(data, textStatus, jQxhr){
+                        vs = null;
+                        vms = null;
+                        $('#vehiculos').load('Html/vehiculos.html', cargar_vehiculos);
+                    },
+                    error: function(jqXhr, textStatus, errorThrown){
+                        alert('no ha sido posible actualizar el mantenimiento');
+                    }
+                });
+            } else {
+                // registro del mantenimiento en el proveedor
+                vms.vehiculo = vs;
+                $.ajax({
+                    url: 'http://localhost:8080/ReForms_Provider/wr/mantenimiento/agregarMantenimiento',
+                    dataType: 'json',
+                    type: 'post',
+                    contentType: 'application/json',
+                    data: JSON.stringify(vms),
+                    processData: false,
+                    success: function(data, textStatus, jQxhr){
+                        vs = null;
+                        vms = null;
+                        $('#vehiculos').load('Html/vehiculos.html', cargar_vehiculos);
+                    },
+                    error: function(jQxhr, textStatus, errorThrown){
+                        alert('no ha sido posible registrar el mantenimiento');
+                    }
+                });
+            }
+        } else {
+            // problema en datos del cliente
+            alert("revise los datos del mantenimiento");
+            fecha.focus();
+        }
+    }
+    
+    function mantenimiento_cancelar_click() {
+        var detalles = $(this).parents('.marco').parent('.detalles');
+        detalles.load('Html/vehiculo.html', cargar_vehiculo);
     }
     
     // Funciones para cargar paginas y definir su comportamiento
     // ====================================================================== //
     function cargar_trabajadores(responseTxt, statusTxt) {
         if (statusTxt == 'success') {
-            //rellenar
+            var principal = $(this).find('.principal'),
+                detalles = $(this).find('.detalles'),
+                filtro = principal.find('.filtro'),
+                tabla = principal.find('.tabla'),
+                cuerpo = tabla.children('table').children('tbody'),
+                boton = tabla.children('button');
+            $.get('http://localhost:8080/ReForms_Provider/wr/vehiculo/obtenerVehiculos', function(data, status) {
+                if (status == 'success') {
+                    lt = data;
+                    mostrar_tabla_trabajadores(cuerpo);
+                }
+            }, 'json');
+            boton.click(nuevo_trabajador_click);
+            filtro.find('.btn-tipo').click(trabajador_tipo_click);
+            boton.css({'border-color':colorBorde, 'background-color':sinColor});
+            filtro.find('.btn-tipo').css({'border-color':colorBorde, 'background-color':sinColor});
+            filtro.find('.btn-tipo').eq(0).css('background-color', colorBorde);
+            tabla.find('thead').css('background-color', colorBorde);
+            detalles.hide();
         } else {
             alert('Error: no se pudo cargar trabajadores.html');
         }
@@ -237,11 +393,11 @@ $(document).ready(function() {
             cuerpo.children('.mantenimiento').remove();
             $.get('http://localhost:8080/ReForms_Provider/wr/mantenimiento/buscarMantenimientoPorVehiculo/' + vs.id, function(data, status) {
                 if (status == "success") {
-                    lm = data;
-                    for (i = 0; i < lm.length; i++) {
-                        var fechaStr = lm[i].fecha, tipoStr;
+                    lvm = data;
+                    for (i = 0; i < lvm.length; i++) {
+                        var fechaStr = lvm[i].fecha, tipoStr;
                         fechaStr = fechaStr.slice(0, fechaStr.indexOf('T'));
-                        switch (lm[i].tipo) {
+                        switch (lvm[i].tipo) {
                             case 0: tipoStr = 'repostaje'; break;
                             case 1: tipoStr = 'itv'; break;
                             case 2: tipoStr = 'seguro'; break;
@@ -250,14 +406,18 @@ $(document).ready(function() {
                             case 5: tipoStr = 'taller'; break;
                             default: tipoStr = '';
                         }
-                        cuerpo.append('<tr class="mantenimiento"><td>' + fechaStr + '</td><td>' + tipoStr + '</td><td>' + lm[i].coste + ' €</td></tr>');
+                        cuerpo.append('<tr class="mantenimiento"><td>' + fechaStr + '</td><td>' + tipoStr + '</td><td>' + lvm[i].coste + ' €</td></tr>');
                     }
-                    cuerpo.children('.mantenimiento').click(mantenimiento_click);
+                    cuerpo.children('.mantenimiento').dblclick(mantenimiento_dblclick);
                 }
             }, 'json');
+            mantenimientos.find('.btn-nuevo').click(nuevo_mantenimiento_click);
+            mantenimientos.find('.btn-aceptar').click(mantenimiento_aceptar_click);
+            mantenimientos.find('.btn-cancelar').click(mantenimiento_cancelar_click);
             mantenimientos.find('table').children('thead').css('background-color', colorBorde);
             mantenimientos.find('.detalles').css('border-color', colorBorde);
             mantenimientos.find('.detalles').hide();
+            mantenimientos.find('.btn-nuevo').css({'border-color':colorBorde, 'background-color':sinColor});
             $(this).css('border-color', colorBorde);
             $(this).show();
         } else {
@@ -291,8 +451,7 @@ $(document).ready(function() {
                 }
             }, 'json');
             boton.click(nuevo_vehiculo_click);
-            boton.css('border-color', colorBorde);
-            boton.css('background-color', sinColor);
+            boton.css({'border-color':colorBorde, 'background-color':sinColor});
             tabla.children('table').children('thead').css('background-color', colorBorde);
             $(this).find('.detalles').hide();
         } else {
@@ -313,12 +472,12 @@ $(document).ready(function() {
     $('#trabajadores').load('Html/trabajadores.html', cargar_trabajadores);
     $('#vehiculos').load('Html/vehiculos.html', cargar_vehiculos);
     $('#materiales').load('Html/materiales.html', cargar_materiales);
+    $('.ocultable-titulo').click(ocultable_click);
     
-    // Inicializacion de los colores
+    // Inicializacion de aspecto y colores
     // ====================================================================== //
     $('#ventana').css('border-color', colorBorde);
     $('#ventana').css('background-color', colorFondo);
-    $('#trabajadores').css('border-color', colorBorde);
-    $('#vehiculos').css('border-color', colorBorde);
-    $('#materiales').css('border-color', colorBorde);
+    $('.ocultable').css('border-color', colorBorde);
+    $('.ocultable-contenido').hide();
 });

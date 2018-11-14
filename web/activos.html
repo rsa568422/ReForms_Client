@@ -10,7 +10,7 @@
         border-radius: 20px;
     }
     
-    #trabajadores, #vehiculos, #materiales {
+    .ocultable {
         border: 5px solid;
         border-radius: 10px;
         margin: 1%;
@@ -18,14 +18,35 @@
     }
 </style>
 
-<script src="Entidad/Gremio.js"></script>
 <script src="Entidad/Vehiculo.js"></script>
+<script src="Entidad/Mantenimiento.js"></script>
 <script src="Controlador/ControladorActivos.js"></script>
 
 <div id="ventana">
     <div class="container-fluid">
-        <div id="trabajadores" class="row"></div>
-        <div id="vehiculos" class="row"></div>
-        <div id="materiales" class="row"></div>
+        <div class="ocultable">
+            <div class="ocultable-titulo">
+                <h2>Trabajadores</h2>
+            </div>
+            <div class="ocultable-contenido">
+                <div id="trabajadores" class="row"></div>
+            </div>
+        </div>
+        <div class="ocultable">
+            <div class="ocultable-titulo">
+                <h2>Vehiculos</h2>
+            </div>
+            <div class="ocultable-contenido">
+                <div id="vehiculos" class="row"></div>
+            </div>
+        </div>
+        <div class="ocultable">
+            <div class="ocultable-titulo">
+                <h2>Materiales</h2>
+            </div>
+            <div class="ocultable-contenido">
+                <div id="materiales" class="row"></div>
+            </div>
+        </div>
     </div>
 </div>
