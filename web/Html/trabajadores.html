@@ -5,27 +5,7 @@
 </script>
 
 <style>
-    textarea {
-        resize: none;
-    }
-    
-    .btn-aceptar, .btn-cancelar {
-        background-color: rgb(0, 0, 0, 0);
-        margin-top: 1%;
-    }
-    
-    .btn-aceptar {
-        border-color: green;
-        color: green;
-        margin-right: 1%;
-    }
-    
-    .btn-cancelar {
-        border-color: red;
-        color: red;
-    }
-    
-    .btn-tipo {
+    .marco .filtro .btn-tipo {
         margin-right: 1%;
         border-radius: 20px 20px 0px 0px;
     }
@@ -34,14 +14,14 @@
 
 <div class="marco container-fluid">
     <div class="row">
-        <div class="principal col-lg-5 col-xl-6">
+        <div class="principal col-xl-5">
             <div class="container-fluid">
                 <div class="filtro row">
                     <a class="btn-tipo btn text-dark" href="#">Todos</a>
                     <a class="btn-tipo btn text-dark" href="#">Operadores</a>
                     <a class="btn-tipo btn text-dark" href="#">Operarios</a>
                 </div>
-                <div class="tabla row">
+                <div class="tabla table-responsive-md row">
                     <table class="table table-hover">
                         <thead>
                             <tr>
@@ -49,16 +29,14 @@
                                 <th>Apellidos</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            <tr class="trabajador"><td>Prueba</td><td>Prueba Prueba</td></tr>
-                        </tbody>
+                        <tbody></tbody>
                     </table>
                     <button class="btn" type="button">nuevo</button>
                 </div>
             </div>
         </div>
-        <div class="detalles col-lg-7 col-xl-6">
-            detalles
+        <div class="detalles col-xl-7">
+            <div class="vista"></div>
         </div>
     </div>
 </div>

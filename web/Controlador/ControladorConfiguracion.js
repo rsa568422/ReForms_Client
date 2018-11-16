@@ -19,14 +19,13 @@ $(document).ready(function() {
         return i = "<img class='logo' src='data:image/gif;base64," + aseguradora.logo + "' width='480' height='360' alt='" + aseguradora.nombre + "'/>";
     }
     
-    if (u.gerente && u.gerente == 1) {
-        $("#cJornadas").parent().show();
-        $("#cAseguradoras").parent().show();
-        $("#cActivos").parent().show();
+    if (u[1] == 'operador') {
+        if (u[0].gerente == 0) {
+            $("#cAseguradoras").parent().hide();
+            $("#cActivos").parent().hide();
+        }
     } else {
-        $("#cJornadas").parent().hide();
-        $("#cAseguradoras").parent().hide();
-        $("#cActivos").parent().hide();
+        $('#logout').click();
     }
     
     $("#ventana").css("border-color", color);

@@ -8,13 +8,46 @@
     #ventana {
         border: 15px solid;
         border-radius: 20px;
+        padding: 1%;
     }
     
     .ocultable {
         border: 5px solid;
         border-radius: 10px;
-        margin: 1%;
+        margin-top: 1%;
         padding: 1%;
+    }
+    textarea {
+        resize: none;
+    }
+    
+    .btn-aceptar, .btn-cancelar {
+        background-color: rgb(0, 0, 0, 0);
+        margin-top: 1%;
+    }
+    
+    .btn-aceptar {
+        border-color: green;
+        color: green;
+        margin-right: 1%;
+    }
+    
+    .btn-cancelar {
+        border-color: red;
+        color: red;
+    }
+    
+    .marco .vista {
+        margin-top: 0px;
+        border: 5px solid;
+        border-radius: 10px;
+        padding: 1%;
+    }
+    
+    @media only screen and (max-width: 1200px) {
+        .marco .vista {
+            margin-top: 1%;
+        }
     }
 </style>
 

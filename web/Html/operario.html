@@ -1,0 +1,96 @@
+<script>
+    if (!sessionStorage.usuario) {
+        window.location.href = "http://localhost:8080/ReForms_Client/";
+    }
+</script>
+
+<style>
+    .marco .capacidades .vista, .marco .dispositivo .vista, .marco .carnet {
+        margin-top: 1%;
+    }
+    
+    .marco .capacidades .tabla .btn-nuevo {
+        margin-top: 1%;
+        margin-right: 1%;
+    }
+</style>
+
+<div class="marco container-fluid">
+    <div class="row">
+        <h3>Operario</h3>
+    </div>
+    <div class="capacidades row">
+        <div class="col-12">
+            <div class="tabla table-responsive-md">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Gremio</th>
+                            <th>Capacidad</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>prueba</td><td>prueba</td></tr>
+                        <tr>
+                            <td>
+                                <select name="gremio" class="form-control custom-select">
+                                    <option value=0 selected>prueba</option>
+                                </select>
+                            </td>
+                            <td>
+                                <select name="capacidad" class="form-control custom-select">
+                                    <option value=0>no cualificado</option>
+                                    <option value=1>ayudante</option>
+                                    <option value=2 selected>profesional</option>
+                                    <option value=3>experto</option>
+                                </select>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div>
+                    <button class="btn-nuevo btn" type="button">nuevo</button>
+                    <button class="btn-aceptar btn" type="button">aceptar</button>
+                    <button class="btn-cancelar btn" type="button">cancelar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="dispositivo row">
+        <div class="col-12">
+            <div class="vista">
+                <h3>Telefono</h3>
+                <div class="form-group">
+                    <label for="dispositivo">Dispositivo</label>
+                    <input name="dispositivo" class="form-control" type="text" maxlength="100"/>
+                </div>
+                <div class="form-group">
+                    <label for="telefono">Numero</label>
+                    <input name="telefono" class="form-control" type="tel" maxlength="9"/>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input name="email" class="form-control" type="email" maxlength="100"/>
+                </div>
+                <div class="form-group">
+                    <label for="pass">Password</label>
+                    <input name="pass" class="form-control" type="password" maxlength="100"/>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="carnet row">
+        <div class="col-12">
+            <div class="custom-control custom-checkbox">
+                <input id="carnet" name="carnet" class="custom-control-input" type="checkbox">
+                <label class="custom-control-label" for="carnet">Carnet de conducir</label>
+            </div>
+        </div>
+    </div>
+    <div class="botones row">
+        <div class="col-12">
+            <button class="btn-aceptar btn" type="button">aceptar</button>
+            <button class="btn-cancelar btn" type="button">cancelar</button>
+        </div>
+    </div>
+</div>

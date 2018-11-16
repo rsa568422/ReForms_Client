@@ -1,1 +1,109 @@
-trabajador.html
+<script>
+    if (!sessionStorage.usuario) {
+        window.location.href = "http://localhost:8080/ReForms_Client/";
+    }
+</script>
+
+<style>
+    .marco .cargos .detalles, .marco .nominas {
+        margin-top: 1%;
+    }
+    
+    .marco .cargos .tabla .btn-nuevo {
+        margin-top: 1%;
+        margin-right: 1%;
+    }
+    
+    @media only screen and (max-width: 1200px) {
+        .marco .cargos {
+            margin-top: 1%;
+        }
+    }
+</style>
+
+<div class="marco container-fluid">
+    <div class="row">
+        <div class="trabajador col-xl-6">
+            <div class="form-group">
+                <label for="dni">D.N.I.</label>
+                <input name="dni" class="form-control" type="text" maxlength="9" required/>
+            </div>
+            <div class="form-group">
+                <label for="nombre">Nombre</label>
+                <input name="nombre" class="form-control" type="text" maxlength="50" required/>
+            </div>
+            <div class="form-group">
+                <label for="apellido1">Apellidos</label>
+                <div class="input-group mb-3">
+                    <input name="apellido1" class="form-control" type="text" maxlength="50" required/>
+                    <input name="apellido2" class="form-control" type="text" maxlength="50"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="telefono1">Telefonos</label>
+                <div class="input-group mb-3">
+                    <input name="telefono1" class="form-control" type="tel" maxlength="9"/>
+                    <input name="telefono2" class="form-control" type="tel" maxlength="9"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input name="email" class="form-control" type="email" maxlength="100"/>
+            </div>
+            <div class="password">
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input name="password" class="form-control" type="password" maxlength="100"/>
+                </div>
+            </div>
+            <div class="propiedad">
+                <div class="form-group">
+                    <label for="propiedad">Direccion</label>
+                    <input name="propiedad" class="form-control" type="text" maxlength="100"/>
+                </div>
+            </div>
+            <div class="botones">
+                <button class="btn-aceptar btn" type="button">aceptar</button>
+                <button class="btn-cancelar btn" type="button">cancelar</button>
+            </div>
+        </div>
+        <div class="cargos col-xl-6">
+            <div class="container-fluid">
+                <div class="lista row">
+                    <div class="col-12">
+                        <div class="tabla table-responsive-md">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Cargo</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td>prueba</td></tr>
+                                    <tr>
+                                        <td>
+                                            <select name="cargo" class="form-control custom-select">
+                                                <option value=0 selected>Gerente</option>
+                                                <option value=1>Operador</option>
+                                                <option value=2>Operario</option>
+                                            </select>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <button class="btn-nuevo btn" type="button">nuevo</button>
+                            <button class="btn-aceptar btn" type="button">aceptar</button>
+                            <button class="btn-cancelar btn" type="button">cancelar</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="detalles row">
+                    <div class="vista col-12"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="nominas row">
+        <div class="vista col-12"></div>
+    </div>
+</div>

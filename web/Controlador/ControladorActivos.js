@@ -12,7 +12,8 @@ $(document).ready(function() {
     // Funciones auxiliares
     // ====================================================================== //
     function mostrar_tabla_trabajadores(cuerpo) {
-        alert('cargar tabla de trabajadores');
+        cuerpo.children('.trabajador').remove();
+        cuerpo.append('<tr class="trabajador"><td>Prueba</td><td>Prueba Prueba</td></tr>');
         cuerpo.children('.trabajador').click(trabajador_click);
     }
     
@@ -78,8 +79,8 @@ $(document).ready(function() {
     }
     
     function trabajador_click() {
-        alert('click en trabajador ' + $(this).index() + ' de la tabla');
         $(this).parents('.principal').siblings('.detalles').show();
+        $(this).parents('.principal').siblings('.detalles').children('.vista').load('Html/trabajador.html', cargar_trabajador);
     }
     
     function nuevo_trabajador_click() {
@@ -89,7 +90,9 @@ $(document).ready(function() {
     }
     
     function trabajador_tipo_click() {
+        var cuerpo = $(this).parent('.filtro').siblings('.tabla').find('tbody');
         alert('click en tipo de trabajador ' + $(this).index());
+        mostrar_tabla_trabajadores(cuerpo);
         $(this).siblings('.btn-tipo').css({'border-color':colorBorde, 'background-color':sinColor});
         $(this).css('background-color', colorBorde);
         $(this).parents('.principal').siblings('.detalles').hide();
@@ -99,7 +102,7 @@ $(document).ready(function() {
         var detalles = $(this).parents('.tabla').siblings('.detalles');
         if (vs == null || vs.id != lv[$(this).index()].id) {
             vs = lv[$(this).index()];
-            detalles.load('Html/vehiculo.html', cargar_vehiculo);
+            detalles.children('.vista').load('Html/vehiculo.html', cargar_vehiculo);
             $(this).css('background-color', colorFondo);
             $(this).siblings('.vehiculo').css('background-color', sinColor);
         } else {
@@ -160,7 +163,7 @@ $(document).ready(function() {
     }
     
     function vehiculo_cancelar_click() {
-        var detalles = $(this).parents('.marco').parent('.detalles'),
+        var detalles = $(this).parents('.marco').parent('.vista').parent('.detalles'),
             tbody = detalles.siblings('.tabla').find('tbody');
         vs = null;
         detalles.hide();
@@ -172,7 +175,7 @@ $(document).ready(function() {
         vs = null;
         $(this).parents('.tabla').find('.vehiculo').remove();
         $(this).prop('disabled', true);
-        detalles.load('Html/vehiculo.html', cargar_nuevo_vehiculo);
+        detalles.children('.vista').load('Html/vehiculo.html', cargar_nuevo_vehiculo);
     }
     
     function nuevo_vehiculo_aceptar_click() {
@@ -233,14 +236,14 @@ $(document).ready(function() {
     }
     
     function nuevo_vehiculo_cancelar_click() {
-        var detalles = $(this).parents('.marco').parent('.detalles'),
+        var detalles = $(this).parents('.marco').parent('.vista').parent('.detalles'),
             tabla = detalles.siblings('.tabla');
         $('.tabla').find('button').prop('disabled', false);
         mostrar_tabla_vehiculos(tabla.find('tbody'));
         detalles.hide();
     }
     
-    function mantenimiento_dblclick() {
+    function mantenimiento_click() {
         var mantenimientos = $(this).parents('.mantenimientos'),
             detalles = mantenimientos.find('.detalles'),
             tipo = detalles.find('select[name="tipo"]'),
@@ -349,8 +352,8 @@ $(document).ready(function() {
     }
     
     function mantenimiento_cancelar_click() {
-        var detalles = $(this).parents('.marco').parent('.detalles');
-        detalles.load('Html/vehiculo.html', cargar_vehiculo);
+        var vista = $(this).parents('.marco').parent('.vista');
+        vista.load('Html/vehiculo.html', cargar_vehiculo);
     }
     
     // Funciones para cargar paginas y definir su comportamiento
@@ -375,9 +378,34 @@ $(document).ready(function() {
             filtro.find('.btn-tipo').css({'border-color':colorBorde, 'background-color':sinColor});
             filtro.find('.btn-tipo').eq(0).css('background-color', colorBorde);
             tabla.find('thead').css('background-color', colorBorde);
+            detalles.children('.vista').css('border-color', colorBorde);
             detalles.hide();
         } else {
             alert('Error: no se pudo cargar trabajadores.html');
+        }
+    }
+    
+    function cargar_operario(responseTxt, statusTxt) {
+        if (statusTxt == 'success') {
+            $(this).children('.marco').children('.dispositivo').find('.vista').css('border-color', colorBorde);
+            $(this).children('.marco').children('.capacidades').find('.tabla').find('thead').css('background-color', colorBorde);
+            $(this).children('.marco').children('.capacidades').find('.tabla').find('.btn-nuevo').css({'border-color':colorBorde, 'background-color':sinColor});
+        }
+    }
+    
+    function cargar_nominas(responseTxt, statusTxt) {
+        if (statusTxt == 'success') {
+            $(this).find('thead').css('background-color', colorBorde);
+            $(this).find('.btn-nuevo').css({'border-color':colorBorde, 'background-color':sinColor});
+        }
+    }
+    
+    function cargar_trabajador(responseTxt, statusTxt) {
+        if (statusTxt == 'success') {
+            $(this).find('.cargos').find('thead').css('background-color', colorBorde);
+            $(this).find('.cargos').find('.btn-nuevo').css({'border-color':colorBorde, 'background-color':sinColor});
+            $(this).find('.detalles').children('.vista').css('border-color', colorBorde).load('Html/operario.html', cargar_operario);
+            $(this).find('.nominas').children('.vista').css('border-color', colorBorde).load('Html/nominas.html', cargar_nominas);
         }
     }
     
@@ -408,18 +436,18 @@ $(document).ready(function() {
                         }
                         cuerpo.append('<tr class="mantenimiento"><td>' + fechaStr + '</td><td>' + tipoStr + '</td><td>' + lvm[i].coste + ' €</td></tr>');
                     }
-                    cuerpo.children('.mantenimiento').dblclick(mantenimiento_dblclick);
+                    cuerpo.children('.mantenimiento').click(mantenimiento_click);
                 }
             }, 'json');
             mantenimientos.find('.btn-nuevo').click(nuevo_mantenimiento_click);
             mantenimientos.find('.btn-aceptar').click(mantenimiento_aceptar_click);
             mantenimientos.find('.btn-cancelar').click(mantenimiento_cancelar_click);
-            mantenimientos.find('table').children('thead').css('background-color', colorBorde);
-            mantenimientos.find('.detalles').css('border-color', colorBorde);
-            mantenimientos.find('.detalles').hide();
             mantenimientos.find('.btn-nuevo').css({'border-color':colorBorde, 'background-color':sinColor});
+            mantenimientos.find('table').children('thead').css('background-color', colorBorde);
+            mantenimientos.find('.vista').css('border-color', colorBorde);
             $(this).css('border-color', colorBorde);
-            $(this).show();
+            mantenimientos.find('.detalles').hide();
+            $(this).parent('.detalles').show();
         } else {
             alert('Error: no se pudo cargar vehiculo.html');
         }
@@ -433,7 +461,7 @@ $(document).ready(function() {
             vehiculo.find('.btn-cancelar').click(nuevo_vehiculo_cancelar_click);
             mantenimientos.hide();
             $(this).css('border-color', colorBorde);
-            $(this).show();
+            $(this).parent('.detalles').show();
         } else {
             alert('Error: no se pudo cargar vehiculo.html');
         }

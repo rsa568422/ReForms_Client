@@ -1,0 +1,58 @@
+<script>
+    if (!sessionStorage.usuario) {
+        window.location.href = "http://localhost:8080/ReForms_Client/";
+    }
+</script>
+
+<style>
+    .marco .btn-nuevo{
+        margin-top: 1%;
+        margin-right: 1%;
+    }
+</style>
+
+<div class="marco container-fluid">
+    <div class="row">
+        <h3>Nominas</h3>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="table-responsive-md">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Estado</th>
+                            <th>Importe</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>prueba</td><td>prueba</td><td>prueba</td></tr>
+                        <tr>
+                            <td>
+                                <div class="form-group">
+                                    <input name="fecha" class="form-control" type="date" required/>
+                                </div>
+                            </td>
+                            <td>
+                                <select name="estado" class="form-control custom-select">
+                                    <option value=0 selected>prueba</option>
+                                </select>
+                            </td>
+                            <td>
+                                <div class="form-group">
+                                    <input name="importe" class="form-control" type="number" value=0.0 step=0.1 min=0.0 max=9999.99 />
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div>
+                    <button class="btn-nuevo btn" type="button">nuevo</button>
+                    <button class="btn-aceptar btn" type="button">aceptar</button>
+                    <button class="btn-cancelar btn" type="button">cancelar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
