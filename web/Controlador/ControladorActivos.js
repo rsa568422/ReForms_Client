@@ -5,15 +5,73 @@ $(document).ready(function() {
     var colorBorde = $('#btn-activos').css('background-color'),
         colorFondo = colorBorde.substring(0, colorBorde.length - 1) + ', 0.1)',
         sinColor = 'rgb(0, 0, 0, 0)',
-        lt = [], ts = null
-        lv = [], vs = null,
-        lvm = [], vms = null;
+        lt = [], ts = null, cs = null, os = null,
+        lv = [], vs = null, lvm = [], vms = null;
     
     // Funciones auxiliares
     // ====================================================================== //
+    function mostrar_tabla_cargos(cuerpo) {
+        var gerente = false,
+            operador = false,
+            operario = false,
+            nuevo = cuerpo.children('.cargo-nuevo').find('select[name="cargo"]');
+        cuerpo.parent('table').siblings('.btn').show();
+        nuevo.children('option').remove();
+        $.get('http://localhost:8080/ReForms_Provider/wr/operador/buscarOperadorPorTrabajador/' + ts.id, function(data, status) {
+            if (status == 'success') {
+                operador = true;
+                if (data.gerente && data.gerente == 1) {
+                    gerente = true;
+                    cuerpo.append('<tr class="cargo cargo-gerente"><td>Gerente</td></tr>');
+                    
+                }
+                cuerpo.append('<tr class="cargo cargo-operador"><td>Operador</td></tr>');
+            }
+            $.get('http://localhost:8080/ReForms_Provider/wr/operario/buscarOperarioPorTrabajador/' + ts.id, function(data, status) {
+                if (status == 'success') {
+                    operario = true;
+                    cuerpo.append('<tr class="cargo cargo-operario"><td>Operario</td></tr>');
+                }
+                if (gerente && operario) {
+                    cuerpo.parent('table').siblings('.btn').hide();
+                } else if (gerente) {
+                    // solo operario
+                    nuevo.append('<option value=2 selected>Operario</option>');
+                } else if (operador && operario) {
+                    // solo gerente
+                    nuevo.append('<option value=0 selected>Gerente</option>');
+                } else if (operador) {
+                    // gerente y operario
+                    nuevo.append('<option value=0 selected>Gerente</option>');
+                    nuevo.append('<option value=2>Operario</option>');
+                } else if (operario) {
+                    // gerente y operador
+                    nuevo.append('<option value=0 selected>Gerente</option>');
+                    nuevo.append('<option value=1>Operador</option>');
+                } else {
+                    // todos
+                    nuevo.append('<option value=0 selected>Gerente</option>');
+                    nuevo.append('<option value=2>Operario</option>');
+                    nuevo.append('<option value=1>Operador</option>');
+                }
+                cuerpo.children('.cargo-gerente').click(cargo_gerente_click);
+                cuerpo.children('.cargo-operador').click(cargo_operador_click);
+                cuerpo.children('.cargo-operario').click(cargo_operario_click);
+                cuerpo.children('.cargo').click(cargo_click);
+            }, 'json');
+        }, 'json');
+    }
+    
     function mostrar_tabla_trabajadores(cuerpo) {
-        cuerpo.children('.trabajador').remove();
-        cuerpo.append('<tr class="trabajador"><td>Prueba</td><td>Prueba Prueba</td></tr>');
+        var i;
+        for (i = 0; i < lt.length; i++) {
+            var apellidos = lt[i].apellido1;
+            if (lt[i].apellido2 && lt[i].apellido2 !== '') {
+                alert(lt[i].apellido2);
+                apellidos += ' ' + lt[i].apellido2;
+            }
+            cuerpo.append('<tr class="trabajador"><td>' + lt[i].nombre + '</td><td>' + apellidos + '</td></tr>');
+        }
         cuerpo.children('.trabajador').click(trabajador_click);
     }
     
@@ -66,6 +124,11 @@ $(document).ready(function() {
         }
     }
     
+    function dni_valido(dniStr) {
+        // comprobar si la cadena pasada vale como dni
+        return true;
+    }
+    
     function matricula_valida(matriculaStr) {
         // comprobar si la cadena pasada vale como matricula
         return true;
@@ -79,8 +142,93 @@ $(document).ready(function() {
     }
     
     function trabajador_click() {
-        $(this).parents('.principal').siblings('.detalles').show();
-        $(this).parents('.principal').siblings('.detalles').children('.vista').load('Html/trabajador.html', cargar_trabajador);
+        var detalles = $(this).parents('.principal').siblings('.detalles');
+        if (ts == null || ts.id != lt[$(this).index()].id) {
+            ts = lt[$(this).index()];
+            $(this).css('background-color', colorFondo);
+            $(this).siblings('.trabajador').css('background-color', sinColor);
+            detalles.children('.vista').load('Html/trabajador.html', cargar_trabajador);
+            detalles.show();
+        } else {
+            ts = null;
+            $(this).css('background-color', sinColor);
+            detalles.hide();
+        }
+    }
+    
+    function trabajador_editar_click() {
+        alert('editar');
+        $(this).siblings('.btn-aceptar').show();
+        $(this).siblings('.btn-cancelar').show();
+        $(this).hide();
+    }
+    
+    function trabajador_aceptar_click() {
+        alert('aceptar');
+        $(this).siblings('.btn-cancelar').click();
+    }
+    
+    function trabajador_cancelar_click() {
+        alert('cancelar');
+        $(this).siblings('.btn-editar').show();
+        $(this).siblings('.btn-aceptar').hide();
+        $(this).hide();
+    }
+    
+    function cargo_nuevo_click() {
+        var cuerpo = $(this).siblings('table').find('tbody');
+        cuerpo.children('.cargo').remove();
+        cuerpo.children('.cargo-nuevo').show();
+        $(this).siblings('.btn-aceptar').show();
+        $(this).siblings('.btn-cancelar').show();
+        $(this).hide();
+    }
+    
+    function cargo_aceptar_click() {
+        alert('aceptar');
+        $(this).siblings('.btn-cancelar').click();
+    }
+    
+    function cargo_cancelar_click() {
+        var cuerpo = $(this).siblings('table').children('tbody');
+        mostrar_tabla_cargos(cuerpo);
+        cuerpo.children('.cargo-nuevo').hide();
+        $(this).hide();
+        $(this).siblings('.btn-aceptar').hide();
+        $(this).siblings('.btn-nuevo').show();
+    }
+    
+    function cargo_click() {
+        var detalles = $(this).parents('.lista').siblings('.detalles');
+        if (cs == null || cs != $(this).index()) {
+            cs = $(this).index();
+            $(this).css('background-color', colorFondo);
+            $(this).siblings('.cargo').css('background-color', sinColor);
+        } else {
+            cs = null;
+            $(this).css('background-color', sinColor);
+            detalles.hide();
+        }
+    }
+    
+    function cargo_gerente_click() {
+        var detalles = $(this).parents('.lista').siblings('.detalles');
+        detalles.children('.vista').html('<div class="marco container-fluid"><div class="row"><h3>Gerente</h3></div></div>');
+        detalles.show();
+    }
+    
+    function cargo_operador_click() {
+        var detalles = $(this).parents('.lista').siblings('.detalles');
+        detalles.children('.vista').html('<div class="marco container-fluid"><div class="row"><h3>Operador</h3></div></div>');
+        detalles.show();
+    }
+    
+    function cargo_operario_click() {
+        var detalles = $(this).parents('.lista').siblings('.detalles');
+        if (cs == null || cs != $(this).index()) {
+            detalles.children('.vista').load('Html/operario.html', cargar_operario);
+            detalles.show();
+        }
     }
     
     function nuevo_trabajador_click() {
@@ -91,8 +239,33 @@ $(document).ready(function() {
     
     function trabajador_tipo_click() {
         var cuerpo = $(this).parent('.filtro').siblings('.tabla').find('tbody');
-        alert('click en tipo de trabajador ' + $(this).index());
-        mostrar_tabla_trabajadores(cuerpo);
+        cuerpo.children('.trabajador').remove();
+        switch ($(this).index()) {
+            case 0: // Trabajadores
+                $.get('http://localhost:8080/ReForms_Provider/wr/trabajador/obtenerTrabajadores', function(data, status) {
+                    if (status == 'success') {
+                        lt = data;
+                        mostrar_tabla_trabajadores(cuerpo);
+                    }
+                }, 'json');
+                break;
+            case 1: // Operadores
+                $.get('http://localhost:8080/ReForms_Provider/wr/trabajador/obtenerOperadores', function(data, status) {
+                    if (status == 'success') {
+                        lt = data;
+                        mostrar_tabla_trabajadores(cuerpo);
+                    }
+                }, 'json');
+                break;
+            case 2: // Operarios
+                $.get('http://localhost:8080/ReForms_Provider/wr/trabajador/obtenerOperarios', function(data, status) {
+                    if (status == 'success') {
+                        lt = data;
+                        mostrar_tabla_trabajadores(cuerpo);
+                    }
+                }, 'json');
+                break;
+        }
         $(this).siblings('.btn-tipo').css({'border-color':colorBorde, 'background-color':sinColor});
         $(this).css('background-color', colorBorde);
         $(this).parents('.principal').siblings('.detalles').hide();
@@ -366,7 +539,7 @@ $(document).ready(function() {
                 tabla = principal.find('.tabla'),
                 cuerpo = tabla.children('table').children('tbody'),
                 boton = tabla.children('button');
-            $.get('http://localhost:8080/ReForms_Provider/wr/vehiculo/obtenerVehiculos', function(data, status) {
+            $.get('http://localhost:8080/ReForms_Provider/wr/trabajador/obtenerTrabajadores', function(data, status) {
                 if (status == 'success') {
                     lt = data;
                     mostrar_tabla_trabajadores(cuerpo);
@@ -387,9 +560,12 @@ $(document).ready(function() {
     
     function cargar_operario(responseTxt, statusTxt) {
         if (statusTxt == 'success') {
+            alert('estoy trabajando aqui:\ncargar_operario()');
             $(this).children('.marco').children('.dispositivo').find('.vista').css('border-color', colorBorde);
             $(this).children('.marco').children('.capacidades').find('.tabla').find('thead').css('background-color', colorBorde);
             $(this).children('.marco').children('.capacidades').find('.tabla').find('.btn-nuevo').css({'border-color':colorBorde, 'background-color':sinColor});
+        } else {
+            alert('Error: no se pudo cargar operario.html');
         }
     }
     
@@ -397,15 +573,50 @@ $(document).ready(function() {
         if (statusTxt == 'success') {
             $(this).find('thead').css('background-color', colorBorde);
             $(this).find('.btn-nuevo').css({'border-color':colorBorde, 'background-color':sinColor});
+        } else {
+            alert('Error: no se pudo cargar nominas.html');
         }
     }
     
     function cargar_trabajador(responseTxt, statusTxt) {
         if (statusTxt == 'success') {
-            $(this).find('.cargos').find('thead').css('background-color', colorBorde);
-            $(this).find('.cargos').find('.btn-nuevo').css({'border-color':colorBorde, 'background-color':sinColor});
-            $(this).find('.detalles').children('.vista').css('border-color', colorBorde).load('Html/operario.html', cargar_operario);
-            $(this).find('.nominas').children('.vista').css('border-color', colorBorde).load('Html/nominas.html', cargar_nominas);
+            var trabajador = $(this).find('.trabajador'),
+                dni = trabajador.find('input[name="dni"]'),
+                nombre = trabajador.find('input[name="nombre"]'),
+                apellido1 = trabajador.find('input[name="apellido1"]'),
+                apellido2 = trabajador.find('input[name="apellido2"]'),
+                telefono1 = trabajador.find('input[name="telefono1"]'),
+                telefono2 = trabajador.find('input[name="telefono2"]'),
+                email = trabajador.find('input[name="email"]'),
+                password = trabajador.find('input[name="password"]'),
+                propiedad = trabajador.find('input[name="propiedad"]'),
+                cargos = $(this).find('.cargos'),
+                cuerpoCargos = cargos.find('tbody'),
+                detalles = $(this).find('.detalles'),
+                nominas = $(this).find('.nominas');
+            dni.val(ts.dni).prop('readonly', true);
+            nombre.val(ts.nombre).prop('readonly', true);
+            apellido1.val(ts.apellido1).prop('readonly', true);
+            apellido2.val(ts.apellido2).prop('readonly', true);
+            telefono1.val(ts.telefono1).prop('readonly', true);
+            telefono2.val(ts.telefono2).prop('readonly', true);
+            propiedad.val(ts.propiedad.direccion + ' ' + ts.propiedad.numero + ', ' + ts.propiedad.localidad.nombre).prop('readonly', true);
+            email.parent().remove();
+            password.parent().remove();
+            trabajador.find('.btn-editar').css({'border-color':colorBorde, 'background-color':sinColor}).click(trabajador_editar_click);
+            trabajador.find('.btn-aceptar').hide().click(trabajador_aceptar_click);
+            trabajador.find('.btn-cancelar').hide().click(trabajador_cancelar_click);
+            mostrar_tabla_cargos(cuerpoCargos);
+            cargos.find('thead').css('background-color', colorBorde);
+            cargos.find('.btn-nuevo').css({'border-color':colorBorde, 'background-color':sinColor}).click(cargo_nuevo_click);
+            cargos.find('.btn-aceptar').hide().click(cargo_aceptar_click);
+            cargos.find('.btn-cancelar').hide().click(cargo_cancelar_click);
+            cuerpoCargos.children('.cargo-nuevo').hide();
+            detalles.children('.vista').css('border-color', colorBorde)
+            detalles.hide();
+            nominas.children('.vista').css('border-color', colorBorde).load('Html/nominas.html', cargar_nominas);
+        } else {
+            alert('Error: no se pudo cargar trabajador.html');
         }
     }
     
