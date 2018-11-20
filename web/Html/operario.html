@@ -30,8 +30,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr><td>prueba</td><td>prueba</td></tr>
-                        <tr>
+                        <tr class="capacidad-nueva">
                             <td>
                                 <select name="gremio" class="form-control custom-select">
                                     <option value=0 selected>prueba</option>
@@ -82,13 +81,14 @@
     <div class="carnet row">
         <div class="col-12">
             <div class="custom-control custom-checkbox">
-                <input id="carnet" name="carnet" class="custom-control-input" type="checkbox">
+                <input id="carnet" name="carnet" class="custom-control-input" type="checkbox" value=1>
                 <label class="custom-control-label" for="carnet">Carnet de conducir</label>
             </div>
         </div>
     </div>
     <div class="botones row">
         <div class="col-12">
+            <button class="btn-editar btn" type="button">editar</button>
             <button class="btn-aceptar btn" type="button">aceptar</button>
             <button class="btn-cancelar btn" type="button">cancelar</button>
         </div>

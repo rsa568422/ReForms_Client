@@ -1,0 +1,67 @@
+<script>
+    if (!sessionStorage.usuario) {
+        window.location.href = "http://localhost:8080/ReForms_Client/";
+    }
+</script>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <h3>Residencia</h3>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="form-group">
+                <label for="direccion">Direccion</label>
+                <input name="direccion" class="form-control" type="text" maxlength="250"/>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="form-group">
+                <label for="numero">Numero</label>
+                <input name="numero" class="form-control" type="number" value=0 step=1 />
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="form-group">
+                <label for="piso">Piso</label>
+                <input name="piso" class="form-control" type="text" maxlength="20"/>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="localidad">
+                <label for="cp">C.P.</label>
+                <input name="cp" class="form-control" type="number" value=0 step=1 max=99999 />
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="coincidencias vista">
+                coincidencias
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="mapa">
+                mapa
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="form-group">
+                <label for="observaciones">Observaciones</label>
+                <textarea name="observaciones" class="form-control" rows="4" maxlength="250"/>
+            </div>
+        </div>
+    </div>
+</div>
