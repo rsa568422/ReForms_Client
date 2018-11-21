@@ -6,6 +6,17 @@ $(document).ready(function() {
         colorFondo = colorBorde.substring(0, colorBorde.length - 1) + ', 0.1)',
         sinColor = 'rgb(0, 0, 0, 0)',
         lt = [], ts = null, cs = null, os = null, ocs = null, loc = [], ln = [], ns = null,
+        trabajadores = {
+            'listaTrabajadores': [],
+            'trabajadorSeleccionado': null,
+            'cargoSeleccionado' : null,
+            'operarioSeleccionado': null,
+            'listaCapacidades': [],
+            'capacidadSeleccionada': null,
+            'listaNominas': [],
+            'nominaSeleccionada': null
+        },
+        validacionDatos = null,
         lv = [], vs = null, lvm = [], vms = null,
         edicion = false;
     
@@ -124,6 +135,7 @@ $(document).ready(function() {
         }
         cuerpo.children('.vehiculo').click(vehiculo_click);
     }
+    
     function mostrar_datos_vehiculo(vehiculo) {
         var matricula = vehiculo.find('input[name=matricula]'),
             marca = vehiculo.find('input[name=marca]'),
@@ -156,13 +168,49 @@ $(document).ready(function() {
     }
     
     function dni_valido(dniStr) {
-        // comprobar si la cadena pasada vale como dni
-        return true;
+        var patronN = /^\d{8}[a-zA-Z]$/,
+            patronE = /^[a-zA-Z]\d{7}[a-zA-Z]$/;
+        return patronN.test(dniStr) || patronE.test(dniStr);
+    }
+    
+    function cp_valido(cpStr) {
+        var patron = /^\d{5}$/;
+        return patron.test(cpStr);
     }
     
     function matricula_valida(matriculaStr) {
-        // comprobar si la cadena pasada vale como matricula
-        return true;
+        var patron1 = /^\d{4}[ ][a-zA-Z]{3}$/,
+            patron2 = /^[a-zA-Z]{1,2}[ ]\d{4}[ ][a-zA-Z]{2,3}$/;
+        return patron1.test(matriculaStr) || patron2.test(matriculaStr);
+    }
+    
+    function testValidacion(vd) {
+        var test = true;
+        for (x in vd) {
+            if (typeof vd[x] == 'object') {
+                test &= testValidacion(vd[x]);
+            } else {
+                test &= vd[x];
+            }
+        }
+        return test;
+    }
+    
+    function comprobacionDatos(btn) {
+        if (testValidacion(validacionDatos)) {
+            btn.prop('disabled', false);
+        } else {
+            btn.prop('disabled', true);
+        }
+    }
+    
+    function busquedaPropiedad(coincidencias) {
+        if (testValidacion(validacionDatos.propiedad)) {
+            alert('buscar propiedad');
+            coincidencias.show();
+        } else {
+            coincidencias.hide();
+        }
     }
     
     // Funciones controladoras para componentes
@@ -293,6 +341,106 @@ $(document).ready(function() {
         $(this).prop('disabled', true);
         detalles.children('.vista').load('Html/trabajador.html', cargar_nuevo_trabajador);
         detalles.show();
+    }
+    
+    function trabajador_dni_change() {
+        var dniStr = $(this).val(),
+            btn = $(this).parent('div').siblings('.botones').children('.btn-aceptar');
+        if ($(this).prop('validity') && dni_valido(dniStr)) {
+            $(this).val($(this).val().toUpperCase());
+            $.get('http://localhost:8080/ReForms_Provider/wr/trabajador/comprobarDni/' + dniStr, function(data, status) {
+                if (status == 'success') {
+                    validacionDatos.dni = true;
+                } else {
+                    alert('ya existe un trabajador con este dni');
+                    validacionDatos.dni = false;
+                }
+                comprobacionDatos(btn);
+            }, 'json');
+        } else {
+            alert('dni incorrecto');
+            validacionDatos.dni = false;
+            comprobacionDatos(btn);
+        }
+    }
+    
+    function trabajador_nombre_change() {
+        var btn = $(this).parent('div').siblings('.botones').children('.btn-aceptar');
+        if ($(this).prop('validity') && $(this).val() != '') {
+            validacionDatos.nombre = true;
+        } else {
+            validacionDatos.nombre = false;
+        }
+        comprobacionDatos(btn);
+    }
+    
+    function trabajador_apellido1_change() {
+        var btn = $(this).parent('div').parent('div').siblings('.botones').children('.btn-aceptar');
+        if ($(this).prop('validity') && $(this).val() != '') {
+            validacionDatos.apellido1 = true;
+        } else {
+            validacionDatos.apellido1 = false;
+        }
+        comprobacionDatos(btn);
+    }
+    
+    function propiedad_cp_change() {
+        var cpStr = $(this).val(),
+            btn = $(this).parents('.propiedad').siblings('.trabajador').children('.botones').children('.btn-aceptar'),
+            nombreLocalidad = $(this).siblings('input[name="nombreLocalidad"]'),
+            coincidencias = $(this).parent('div').parent('.localidad').parent('div').parent('.row').parent('.container-fluid').find('.coincidencias');
+        if ($(this).prop('validity') && cp_valido(cpStr)) {
+            $.get('http://localhost:8080/ReForms_Provider/wr/localidad/buscarLocalidadPorCodigoPostal/' + $(this).val(), function(data, status) {
+                if (status == 'success') {
+                    validacionDatos.propiedad.cp = true;
+                    nombreLocalidad.val(data.nombre);
+                } else {
+                    validacionDatos.propiedad.cp = false;
+                    nombreLocalidad.prop('readonly', false).val('');
+                }
+                busquedaPropiedad(coincidencias);
+                comprobacionDatos(btn);
+            }, 'json');
+        } else {
+            alert('c.p. incorrecto');
+            validacionDatos.cp = false;
+            busquedaPropiedad(coincidencias);
+            comprobacionDatos(btn);
+        }
+    }
+    
+    function propiedad_nombreLocalidad_change() {
+        var btn = $(this).parents('.propiedad').siblings('.trabajador').children('.botones').children('.btn-aceptar');
+        if ($(this).prop('validity') && $(this).val() != '') {
+            validacionDatos.propiedad.cp = true;
+        } else {
+            validacionDatos.propiedad.cp = false;
+        }
+        comprobacionDatos(btn);
+    }
+    
+    function propiedad_direccion_change() {
+        var btn = $(this).parents('.propiedad').siblings('.trabajador').children('.botones').children('.btn-aceptar'),
+            coincidencias = $(this).parent('div').parent('.col-12').parent('.row').parent('.container-fluid').find('.coincidencias');
+        if ($(this).prop('validity') && $(this).val() != '') {
+            validacionDatos.propiedad.direccion = true;
+        } else {
+            validacionDatos.propiedad.direccion = false;
+        }
+        busquedaPropiedad(coincidencias);
+        comprobacionDatos(btn);
+    }
+    
+    function propiedad_numero_change() {
+        var btn = $(this).parents('.propiedad').siblings('.trabajador').children('.botones').children('.btn-aceptar'),
+            coincidencias = $(this).parent('div').parent('.col-12').parent('.row').parent('.container-fluid').find('.coincidencias');
+        if ($(this).prop('validity') && $(this).val() != '') {
+            validacionDatos.propiedad.numero = true;
+        } else {
+            validacionDatos.propiedad.numero = false;
+        }
+        busquedaPropiedad(coincidencias);
+        comprobacionDatos(btn);
     }
     
     function nuevo_trabajador_aceptar_click() {
@@ -438,7 +586,7 @@ $(document).ready(function() {
             km = form.find('input[name="km"]'),
             observaciones = form.find('textarea[name="observaciones"]');
         if (matricula.prop('validity') && matricula.val() !== '' && matricula_valida(matricula.val())) {
-            nv.matricula = matricula.val();
+            nv.matricula = matricula.val().toUpperCase();
         } else {
             error = true;
         }
@@ -734,7 +882,7 @@ $(document).ready(function() {
             cargos.find('.btn-aceptar').hide().click(cargo_aceptar_click);
             cargos.find('.btn-cancelar').hide().click(cargo_cancelar_click);
             cuerpoCargos.children('.cargo-nuevo').hide();
-            detalles.children('.vista').css('border-color', colorBorde)
+            detalles.children('.vista').css('border-color', colorBorde);
             detalles.hide();
             nominas.children('.vista').css('border-color', colorBorde).load('Html/nominas.html', cargar_nominas);
             nominas.show();
@@ -745,7 +893,13 @@ $(document).ready(function() {
     
     function cargar_propiedad(responseTxt, statusTxt) {
         if (statusTxt == 'success') {
-            alert($(this).parents('.propiedad').html());
+            $(this).find('input[name="cp"]').change(propiedad_cp_change);
+            $(this).find('input[name="nombreLocalidad"]').prop('readonly', true).change(propiedad_nombreLocalidad_change);
+            $(this).find('input[name="direccion"]').change(propiedad_direccion_change);
+            $(this).find('input[name="numero"]').change(propiedad_numero_change);
+            $(this).find('.titulo').append('Residencia');
+            $(this).find('.coincidencias').css('border-color', colorBorde).hide();
+            $(this).find('.mapa').hide();
         } else {
             alert('Error: no se pudo cargar propiedad.html');
         }
@@ -755,8 +909,21 @@ $(document).ready(function() {
         if (statusTxt == 'success') {
             var trabajador = $(this).find('.trabajador'),
                 cargos = $(this).find('.cargos');
-            trabajador.find('.btn-aceptar').click(nuevo_trabajador_aceptar_click);
+            validacionDatos = {
+                'dni': false,
+                'nombre': false,
+                'apellido1': false,
+                'propiedad': {
+                    'cp': false,
+                    'direccion': false,
+                    'numero': false
+                }
+            };
+            trabajador.find('.btn-aceptar').click(nuevo_trabajador_aceptar_click).prop('disabled', true);
             trabajador.find('.btn-cancelar').click(nuevo_trabajador_cancelar_click);
+            trabajador.find('input[name="dni"]').change(trabajador_dni_change);
+            trabajador.find('input[name="nombre"]').change(trabajador_nombre_change);
+            trabajador.find('input[name="apellido1"]').change(trabajador_apellido1_change);
             trabajador.find('.propiedad').remove();
             trabajador.find('.btn-editar').remove();
             cargos.removeClass('cargos').addClass('propiedad');

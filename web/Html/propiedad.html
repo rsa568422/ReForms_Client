@@ -4,16 +4,33 @@
     }
 </script>
 
+<style>
+    .row .coincidencias {
+        margin-top: 1%;
+    }
+</style>
+
 <div class="container-fluid">
     <div class="row">
         <div class="col-12">
-            <h3>Residencia</h3>
+            <h3 class="titulo"></h3>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="localidad">
+                <label for="cp">C.P. *</label>
+                <div class="input-group mb-3">
+                    <input name="cp" class="form-control" type="text" size="5" maxlength="5" required/>
+                    <input name="nombreLocalidad" class="form-control" type="text" maxlength="100" required/>
+                </div>
+            </div>
         </div>
     </div>
     <div class="row">
         <div class="col-12">
             <div class="form-group">
-                <label for="direccion">Direccion</label>
+                <label for="direccion">Direccion *</label>
                 <input name="direccion" class="form-control" type="text" maxlength="250"/>
             </div>
         </div>
@@ -21,7 +38,7 @@
     <div class="row">
         <div class="col-12">
             <div class="form-group">
-                <label for="numero">Numero</label>
+                <label for="numero">Numero *</label>
                 <input name="numero" class="form-control" type="number" value=0 step=1 />
             </div>
         </div>
@@ -36,9 +53,9 @@
     </div>
     <div class="row">
         <div class="col-12">
-            <div class="localidad">
-                <label for="cp">C.P.</label>
-                <input name="cp" class="form-control" type="number" value=0 step=1 max=99999 />
+            <div class="mapa">
+                mapa
+                <iframe allowfullscreen frameborder="0" width="100%" height="320px" src="https://www.google.com/maps/embed/v1/place?key= AIzaSyAXbKfuAiW-Rus1c_64I1rp5kAZOjc5Nvo &q=India&zoom=4"></iframe>
             </div>
         </div>
     </div>
@@ -46,13 +63,6 @@
         <div class="col-12">
             <div class="coincidencias vista">
                 coincidencias
-            </div>
-        </div>
-    </div>
-    <div class="row">
-        <div class="col-12">
-            <div class="mapa">
-                mapa
             </div>
         </div>
     </div>
