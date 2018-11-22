@@ -14,7 +14,8 @@ $(document).ready(function() {
             'listaCapacidades': [],
             'capacidadSeleccionada': null,
             'listaNominas': [],
-            'nominaSeleccionada': null
+            'nominaSeleccionada': null,
+            'propiedad' : null
         },
         validacionDatos = null,
         lv = [], vs = null, lvm = [], vms = null,
@@ -205,9 +206,20 @@ $(document).ready(function() {
     }
     
     function busquedaPropiedad(coincidencias) {
+        var contenedor = coincidencias.parent('.col-12').parent('.row').parent('.container-fluid'),
+            cp = contenedor.find('input[name="cp"]'),
+            direccion = contenedor.find('input[name="direccion"]'),
+            numero = contenedor.find('input[name="numero"]'),
+            piso = contenedor.find('input[name="piso"]'),
+            direccionCompleta = cp.val() + '/' + direccion.val() + '/' + numero.val() + '/' + piso.val();
         if (testValidacion(validacionDatos.propiedad)) {
-            alert('buscar propiedad');
-            coincidencias.show();
+            $.get('http://localhost:8080/ReForms_Provider/wr/propiedad/buscarPropiedadPorDireccionCompleta/' + direccionCompleta, function(data, status) {
+                if (status == 'success') {
+                    coincidencias.show();
+                } else {
+                    coincidencias.hide();
+                }
+            }, 'json');
         } else {
             coincidencias.hide();
         }
@@ -441,6 +453,14 @@ $(document).ready(function() {
         }
         busquedaPropiedad(coincidencias);
         comprobacionDatos(btn);
+    }
+    
+    function propiedad_piso_change() {
+        var btn = $(this).parents('.propiedad').siblings('.trabajador').children('.botones').children('.btn-aceptar'),
+            coincidencias = $(this).parent('div').parent('.col-12').parent('.row').parent('.container-fluid').find('.coincidencias');
+        if ($(this).prop('validity') && $(this).val() != '') {
+            busquedaPropiedad(coincidencias);
+        }
     }
     
     function nuevo_trabajador_aceptar_click() {
@@ -897,6 +917,7 @@ $(document).ready(function() {
             $(this).find('input[name="nombreLocalidad"]').prop('readonly', true).change(propiedad_nombreLocalidad_change);
             $(this).find('input[name="direccion"]').change(propiedad_direccion_change);
             $(this).find('input[name="numero"]').change(propiedad_numero_change);
+            $(this).find('input[name="piso"]').change(propiedad_piso_change);
             $(this).find('.titulo').append('Residencia');
             $(this).find('.coincidencias').css('border-color', colorBorde).hide();
             $(this).find('.mapa').hide();
