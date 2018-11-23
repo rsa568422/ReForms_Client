@@ -46,4 +46,10 @@ $(document).ready(function() {
     }, 'json');
     
     $('#barra').hide();
+    
+    $('#mapaGoogle').mouseenter(function () {
+        alert();
+        $('#mapaGoogle').prop('center', {lat: -25.344, lng: 131.036});
+    });
+    
 });

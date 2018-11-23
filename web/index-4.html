@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html lang="es-ES">
+    <head>
+        <title>ReForms</title>
+        <meta charset="UTF-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+        <script src="Controlador/ControladorPrincipal.js"></script>
+        <script>
+            $(document).ready(function() {
+                $('#entrada').change(function () {
+                    $.get('https://maps.googleapis.com/maps/api/geocode/json?address=' + $('#entrada').val() + '&key=AIzaSyBlZgbIxGsYtfpc6uJFFXsnrRdxDA08paI', function(data) {
+                        $('#salida').val(JSON.stringify(data));
+                    });
+                });
+            });
+        </script>
+    </head>
+    <body>
+        <input id="entrada" type="text"/>
+        <textarea id="salida" rows="6"></textarea>
+    </body>
+</html>

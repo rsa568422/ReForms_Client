@@ -5,7 +5,6 @@ $(document).ready(function() {
     var colorBorde = $('#btn-activos').css('background-color'),
         colorFondo = colorBorde.substring(0, colorBorde.length - 1) + ', 0.1)',
         sinColor = 'rgb(0, 0, 0, 0)',
-        lt = [], ts = null, cs = null, os = null, ocs = null, loc = [], ln = [], ns = null,
         trabajadores = {
             'listaTrabajadores': [],
             'trabajadorSeleccionado': null,
@@ -15,39 +14,48 @@ $(document).ready(function() {
             'capacidadSeleccionada': null,
             'listaNominas': [],
             'nominaSeleccionada': null,
-            'propiedad' : null
+            'propiedad' : null,
+            'listaCoincidencias': []
+        }
+        vehiculos = {
+            'listaVehiculos': [],
+            'vehiculoSeleccionado': null,
+            'listaMantenimientos': [],
+            'mantenimientoSeleccionado': null
+        },
+        materiales = {
+            
         },
         validacionDatos = null,
-        lv = [], vs = null, lvm = [], vms = null,
         edicion = false;
     
     // Funciones auxiliares
     // ====================================================================== //
     function mostrar_tabla_trabajadores(cuerpo) {
         var i;
-        for (i = 0; i < lt.length; i++) {
-            var apellidos = lt[i].apellido1;
-            if (lt[i].apellido2 && lt[i].apellido2 !== '') {
-                alert(lt[i].apellido2);
-                apellidos += ' ' + lt[i].apellido2;
+        for (i = 0; i < trabajadores.listaTrabajadores.length; i++) {
+            var apellidos = trabajadores.listaTrabajadores[i].apellido1;
+            if (trabajadores.listaTrabajadores[i].apellido2 && trabajadores.listaTrabajadores[i].apellido2 !== '') {
+                alert(trabajadores.listaTrabajadores[i].apellido2);
+                apellidos += ' ' + trabajadores.listaTrabajadores[i].apellido2;
             }
-            cuerpo.append('<tr class="trabajador"><td>' + lt[i].nombre + '</td><td>' + apellidos + '</td></tr>');
+            cuerpo.append('<tr class="trabajador"><td>' + trabajadores.listaTrabajadores[i].nombre + '</td><td>' + apellidos + '</td></tr>');
         }
         cuerpo.children('.trabajador').click(trabajador_click);
     }
     
     function mostrar_tabla_nominas(cuerpo) {
         var i;
-        for (i = 0; i < ln.length; i++) {
-            var fecha = ln[i].fecha.slice(0, ln[i].fecha.indexOf('T')),
+        for (i = 0; i < trabajadores.listaNominas.length; i++) {
+            var fecha = trabajadores.listaNominas[i].fecha.slice(0, trabajadores.listaNominas[i].fecha.indexOf('T')),
                 estado;
-            switch (ln[i].estado) {
+            switch (trabajadores.listaNominas[i].estado) {
                 case 0: estado = 'pendiente'; break;
                 case 1: estado = 'pagada'; break;
                 case 2: estado = 'adelanto'; break;
                 default: estado = '';
             }
-            cuerpo.append('<tr class="nomina"><td>' + fecha + '</td><td>' + estado + '</td><td>' + ln[i].importe + '</td></tr>');
+            cuerpo.append('<tr class="nomina"><td>' + fecha + '</td><td>' + estado + '</td><td>' + trabajadores.listaNominas[i].importe + '</td></tr>');
         }
     }
     
@@ -58,7 +66,7 @@ $(document).ready(function() {
             nuevo = cuerpo.children('.cargo-nuevo').find('select[name="cargo"]');
         cuerpo.parent('table').siblings('.btn').show();
         nuevo.children('option').remove();
-        $.get('http://localhost:8080/ReForms_Provider/wr/operador/buscarOperadorPorTrabajador/' + ts.id, function(data, status) {
+        $.get('http://localhost:8080/ReForms_Provider/wr/operador/buscarOperadorPorTrabajador/' + trabajadores.trabajadorSeleccionado.id, function(data, status) {
             if (status == 'success') {
                 operador = true;
                 if (data.gerente && data.gerente == 1) {
@@ -68,7 +76,7 @@ $(document).ready(function() {
                 }
                 cuerpo.append('<tr class="cargo cargo-operador"><td>Operador</td></tr>');
             }
-            $.get('http://localhost:8080/ReForms_Provider/wr/operario/buscarOperarioPorTrabajador/' + ts.id, function(data, status) {
+            $.get('http://localhost:8080/ReForms_Provider/wr/operario/buscarOperarioPorTrabajador/' + trabajadores.trabajadorSeleccionado.id, function(data, status) {
                 if (status == 'success') {
                     operario = true;
                     cuerpo.append('<tr class="cargo cargo-operario"><td>Operario</td></tr>');
@@ -105,34 +113,68 @@ $(document).ready(function() {
     
     function mostrar_tabla_capacidades(cuerpo) {
         var i;
-        for (i = 0; i < loc.length; i++) {
+        for (i = 0; i < trabajadores.listaCapacidades.length; i++) {
             var dificultad;
-            switch (loc[i].dificultad) {
+            switch (trabajadores.listaCapacidades[i].dificultad) {
                 case 0: dificultad = 'no cualificado'; break;
                 case 1: dificultad = 'ayudante'; break;
                 case 2: dificultad = 'profesional'; break;
                 case 3: dificultad = 'experto'; break;
             }
-            cuerpo.append('<tr class="capacidad"><td>' + loc[i].gremio.nombre + '</td><td>' + dificultad + '</td></tr>');
+            cuerpo.append('<tr class="capacidad"><td>' + trabajadores.listaCapacidades[i].gremio.nombre + '</td><td>' + dificultad + '</td></tr>');
         }
         cuerpo.children('.capacidad').click(capacidad_click);
     }
     
+    function buscarDireccionGoogle(direccion, coincidencias, cuerpo, mapa) {
+        $.get('https://maps.googleapis.com/maps/api/geocode/json?address=' + direccion + '&key=AIzaSyBlZgbIxGsYtfpc6uJFFXsnrRdxDA08paI', function(data) {
+            if (data.results.length > 0) {
+                var i;
+                for (i = 0; i < data.results.length; i++) {
+                    alert(data.results[i].formatted_address);
+                    var d = data.results[i].formatted_address;
+                    cuerpo.append('<tr class="coincidencia"><td><p>' + d + '</p></td></tr>');
+                }
+                cuerpo.children('.coincidencia').click(coincidencia_click);
+                coincidencias.show();
+                alert('falta cargar posicion en el mapa');
+                mapa.show();
+            } else {
+                coincidencias.hide();
+                mapa.hide();
+            }
+        });
+    }
+    
+    function mostrar_tabla_coincidencias(cuerpo) {
+        var i;
+        for (i = 0; i < trabajadores.listaCoincidencias.length; i++) {
+            var direccion = trabajadores.listaCoincidencias[i].direccion + ' ' + trabajadores.listaCoincidencias[i].numero;
+            if (trabajadores.listaCoincidencias[i].piso && trabajadores.listaCoincidencias[i].piso != '') {
+                direccion += ', ' + trabajadores.listaCoincidencias[i].piso;
+            }
+            cuerpo.append('<tr class="coincidencia"><td><p>' + direccion + '</p></td></tr>');
+        }
+        cuerpo.children('.coincidencia').mouseenter(coincidencia_mouseenter);
+        cuerpo.children('.coincidencia').mouseleave(coincidencia_mouseleave);
+        cuerpo.children('.coincidencia').click(coincidencia_click);
+    }
+    
     function mostrar_tabla_vehiculos(cuerpo) {
         var i;
-        for (i = 0; i < lv.length; i++) {
+        for (i = 0; i < vehiculos.listaVehiculos.length; i++) {
             var marca, modelo;
-            if (lv[i].marca && lv[i].marca !== '') {
-                marca = lv[i].marca;
+            if (vehiculos.listaVehiculos[i].marca && vehiculos.listaVehiculos[i].marca !== '') {
+                marca = vehiculos.listaVehiculos[i].marca;
             } else {
                 marca = '-';
             }
-            if (lv[i].modelo && lv[i].modelo !== '') {
-                modelo = lv[i].modelo;
+            if (vehiculos.listaVehiculos[i].modelo && vehiculos.listaVehiculos[i].modelo !== '') {
+                modelo = vehiculos.listaVehiculos[i].modelo;
             } else {
                 modelo = '-';
             }
-            cuerpo.append('<tr class="vehiculo"><td>' + marca + '</td><td>' + modelo + '</td><td>' + lv[i].matricula + '</td></tr>');
+            cuerpo.append('<tr class="vehiculo"><td>' + marca + '</td><td>' + modelo + '</td><td>' + vehiculos.listaVehiculos[i].matricula + '</td></tr>');
         }
         cuerpo.children('.vehiculo').click(vehiculo_click);
     }
@@ -145,26 +187,26 @@ $(document).ready(function() {
             adquisicion = vehiculo.find('input[name=adquisicion]'),
             km = vehiculo.find('input[name=km]'),
             observaciones = vehiculo.find('textarea[name=observaciones]');
-        if (vs.matricula && vs.matricula != null) {
-            matricula.val(vs.matricula);
+        if (vehiculos.vehiculoSeleccionado.matricula && vehiculos.vehiculoSeleccionado.matricula != null) {
+            matricula.val(vehiculos.vehiculoSeleccionado.matricula);
         }
-        if (vs.marca && vs.marca != null) {
-            marca.val(vs.marca);
+        if (vehiculos.vehiculoSeleccionado.marca && vehiculos.vehiculoSeleccionado.marca != null) {
+            marca.val(vehiculos.vehiculoSeleccionado.marca);
         }
-        if (vs.modelo && vs.modelo != null) {
-            modelo.val(vs.modelo);
+        if (vehiculos.vehiculoSeleccionado.modelo && vehiculos.vehiculoSeleccionado.modelo != null) {
+            modelo.val(vehiculos.vehiculoSeleccionado.modelo);
         }
-        if (vs.matriculacion && vs.matriculacion != null) {
-            matriculacion.val(vs.matriculacion.slice(0, vs.matriculacion.indexOf('T')));
+        if (vehiculos.vehiculoSeleccionado.matriculacion && vehiculos.vehiculoSeleccionado.matriculacion != null) {
+            matriculacion.val(vehiculos.vehiculoSeleccionado.matriculacion.slice(0, vehiculos.vehiculoSeleccionado.matriculacion.indexOf('T')));
         }
-        if (vs.adquisicion && vs.adquisicion != null) {
-            adquisicion.val(vs.adquisicion.slice(0, vs.adquisicion.indexOf('T')));
+        if (vehiculos.vehiculoSeleccionado.adquisicion && vehiculos.vehiculoSeleccionado.adquisicion != null) {
+            adquisicion.val(vehiculos.vehiculoSeleccionado.adquisicion.slice(0, vehiculos.vehiculoSeleccionado.adquisicion.indexOf('T')));
         }
-        if (vs.km && vs.km != null) {
-            km.val(vs.km);
+        if (vehiculos.vehiculoSeleccionado.km && vehiculos.vehiculoSeleccionado.km != null) {
+            km.val(vehiculos.vehiculoSeleccionado.km);
         }
-        if (vs.observaciones && vs.observaciones != null) {
-            observaciones.val(vs.observaciones);
+        if (vehiculos.vehiculoSeleccionado.observaciones && vehiculos.vehiculoSeleccionado.observaciones != null) {
+            observaciones.val(vehiculos.vehiculoSeleccionado.observaciones);
         }
     }
     
@@ -208,16 +250,25 @@ $(document).ready(function() {
     function busquedaPropiedad(coincidencias) {
         var contenedor = coincidencias.parent('.col-12').parent('.row').parent('.container-fluid'),
             cp = contenedor.find('input[name="cp"]'),
+            nombreLocalidad = contenedor.find('input[name="nombreLocalidad"]'),
             direccion = contenedor.find('input[name="direccion"]'),
             numero = contenedor.find('input[name="numero"]'),
             piso = contenedor.find('input[name="piso"]'),
-            direccionCompleta = cp.val() + '/' + direccion.val() + '/' + numero.val() + '/' + piso.val();
+            direccionCompleta = cp.val() + '/' + direccion.val() + '/' + numero.val() + '/' + piso.val(),
+            cuerpo = coincidencias.find('tbody'),
+            mapa = contenedor.find('.mapa');
         if (testValidacion(validacionDatos.propiedad)) {
+            cuerpo.children('.coincidencia').remove();
             $.get('http://localhost:8080/ReForms_Provider/wr/propiedad/buscarPropiedadPorDireccionCompleta/' + direccionCompleta, function(data, status) {
                 if (status == 'success') {
+                    trabajadores.listaCoincidencias = data;
+                    mostrar_tabla_coincidencias(cuerpo);
                     coincidencias.show();
+                    alert('falta cargar posicion en el mapa');
+                    mapa.show();
                 } else {
-                    coincidencias.hide();
+                    var direccionStr = direccion.val() + ' ' + numero.val() + ', ' + nombreLocalidad.val();
+                    buscarDireccionGoogle(direccionStr, coincidencias, cuerpo, mapa);
                 }
             }, 'json');
         } else {
@@ -237,16 +288,16 @@ $(document).ready(function() {
     function trabajador_click() {
         var detalles = $(this).parents('.principal').siblings('.detalles');
         if (!edicion) {
-            cs = null;
-            os = null;
-            if (ts == null || ts.id != lt[$(this).index()].id) {
-                ts = lt[$(this).index()];
+            trabajadores.cargoSeleccionado = null;
+            trabajadores.operarioSeleccionado = null;
+            if (trabajadores.trabajadorSeleccionado == null || trabajadores.trabajadorSeleccionado.id != trabajadores.listaTrabajadores[$(this).index()].id) {
+                trabajadores.trabajadorSeleccionado = trabajadores.listaTrabajadores[$(this).index()];
                 $(this).css('background-color', colorFondo);
                 $(this).siblings('.trabajador').css('background-color', sinColor);
                 detalles.children('.vista').load('Html/trabajador.html', cargar_trabajador);
                 detalles.show();
             } else {
-                ts = null;
+                trabajadores.trabajadorSeleccionado = null;
                 $(this).css('background-color', sinColor);
                 detalles.hide();
             }
@@ -291,8 +342,8 @@ $(document).ready(function() {
     
     function cargo_cancelar_click() {
         var cuerpo = $(this).siblings('table').children('tbody');
-        cs = null;
-        os = null;
+        trabajadores.cargoSeleccionado = null;
+        trabajadores.operarioSeleccionado = null;
         mostrar_tabla_cargos(cuerpo);
         cuerpo.children('.cargo-nuevo').hide();
         $(this).hide();
@@ -303,13 +354,13 @@ $(document).ready(function() {
     function cargo_click() {
         var detalles = $(this).parents('.lista').siblings('.detalles');
         if (!edicion) {
-            os = null;
-            if (cs == null || cs != $(this).index()) {
-                cs = $(this).index();
+            trabajadores.operarioSeleccionado = null;
+            if (trabajadores.cargoSeleccionado == null || trabajadores.cargoSeleccionado != $(this).index()) {
+                trabajadores.cargoSeleccionado = $(this).index();
                 $(this).css('background-color', colorFondo);
                 $(this).siblings('.cargo').css('background-color', sinColor);
             } else {
-                cs = null;
+                trabajadores.cargoSeleccionado = null;
                 $(this).css('background-color', sinColor);
                 detalles.hide();
             }
@@ -335,7 +386,7 @@ $(document).ready(function() {
     function cargo_operario_click() {
         var detalles = $(this).parents('.lista').siblings('.detalles');
         if (!edicion) {
-            if (cs == null || cs != $(this).index()) {
+            if (trabajadores.cargoSeleccionado == null || trabajadores.cargoSeleccionado != $(this).index()) {
                 detalles.children('.vista').load('Html/operario.html', cargar_operario);
                 detalles.show();
             }
@@ -403,11 +454,12 @@ $(document).ready(function() {
             coincidencias = $(this).parent('div').parent('.localidad').parent('div').parent('.row').parent('.container-fluid').find('.coincidencias');
         if ($(this).prop('validity') && cp_valido(cpStr)) {
             $.get('http://localhost:8080/ReForms_Provider/wr/localidad/buscarLocalidadPorCodigoPostal/' + $(this).val(), function(data, status) {
+                validacionDatos.propiedad.cp = true;
                 if (status == 'success') {
-                    validacionDatos.propiedad.cp = true;
-                    nombreLocalidad.val(data.nombre);
+                    validacionDatos.propiedad.localidad = true;
+                    nombreLocalidad.prop('readonly', true).val(data.nombre);
                 } else {
-                    validacionDatos.propiedad.cp = false;
+                    validacionDatos.propiedad.localidad = false;
                     nombreLocalidad.prop('readonly', false).val('');
                 }
                 busquedaPropiedad(coincidencias);
@@ -424,9 +476,9 @@ $(document).ready(function() {
     function propiedad_nombreLocalidad_change() {
         var btn = $(this).parents('.propiedad').siblings('.trabajador').children('.botones').children('.btn-aceptar');
         if ($(this).prop('validity') && $(this).val() != '') {
-            validacionDatos.propiedad.cp = true;
+            validacionDatos.propiedad.localidad = true;
         } else {
-            validacionDatos.propiedad.cp = false;
+            validacionDatos.propiedad.localidad = false;
         }
         comprobacionDatos(btn);
     }
@@ -463,6 +515,33 @@ $(document).ready(function() {
         }
     }
     
+    function coincidencia_mouseenter() {
+        var coincidencia = $(this);
+        $.get('http://localhost:8080/ReForms_Provider/wr/poliza/buscarPolizaPorPropiedad/' + trabajadores.listaCoincidencias[$(this).index()].id, function(data, status) {
+            if (status == 'success') {
+                var i, texto = '[' + data[0].cliente.aseguradora.nombre + '] ' + data[0].numero;
+                for (i = 1; i < data.length; i++) {
+                    texto += ' [' + data[i].cliente.aseguradora.nombre + '] ' + data[i].numero;
+                }
+                coincidencia.children('td').children('p').text(texto);
+            } else {
+                coincidencia.children('td').children('p').text('sin poliza asociada');
+            }
+        }, 'json');
+    }
+    
+    function coincidencia_mouseleave() {
+        var direccion = trabajadores.listaCoincidencias[$(this).index()].direccion + ' ' + trabajadores.listaCoincidencias[$(this).index()].numero;
+        if (trabajadores.listaCoincidencias[$(this).index()].piso && trabajadores.listaCoincidencias[$(this).index()].piso != '') {
+            direccion += ', ' + trabajadores.listaCoincidencias[$(this).index()].piso;
+        }
+        $(this).children('td').children('p').text(direccion);
+    }
+    
+    function coincidencia_click() {
+        alert('coincidencia ' + $(this).index());
+    }
+    
     function nuevo_trabajador_aceptar_click() {
         alert('nuevo_trabajador_aceptar_click()');
     }
@@ -478,15 +557,15 @@ $(document).ready(function() {
     function trabajador_tipo_click() {
         var cuerpo = $(this).parent('.filtro').siblings('.tabla').find('tbody');
         if (!edicion) {
-            ts = null;
-            cs = null;
-            os = null;
+            trabajadores.trabajadorSeleccionado = null;
+            trabajadores.cargoSeleccionado = null;
+            trabajadores.operarioSeleccionado = null;
             cuerpo.children('.trabajador').remove();
             switch ($(this).index()) {
                 case 0: // Trabajadores
                     $.get('http://localhost:8080/ReForms_Provider/wr/trabajador/obtenerTrabajadores', function(data, status) {
                         if (status == 'success') {
-                            lt = data;
+                            trabajadores.listaTrabajadores = data;
                             mostrar_tabla_trabajadores(cuerpo);
                         }
                     }, 'json');
@@ -494,7 +573,7 @@ $(document).ready(function() {
                 case 1: // Operadores
                     $.get('http://localhost:8080/ReForms_Provider/wr/trabajador/obtenerOperadores', function(data, status) {
                         if (status == 'success') {
-                            lt = data;
+                            trabajadores.listaTrabajadores = data;
                             mostrar_tabla_trabajadores(cuerpo);
                         }
                     }, 'json');
@@ -502,7 +581,7 @@ $(document).ready(function() {
                 case 2: // Operarios
                     $.get('http://localhost:8080/ReForms_Provider/wr/trabajador/obtenerOperarios', function(data, status) {
                         if (status == 'success') {
-                            lt = data;
+                            trabajadores.listaTrabajadores = data;
                             mostrar_tabla_trabajadores(cuerpo);
                         }
                     }, 'json');
@@ -516,13 +595,13 @@ $(document).ready(function() {
     
     function vehiculo_click() {
         var detalles = $(this).parents('.tabla').siblings('.detalles');
-        if (vs == null || vs.id != lv[$(this).index()].id) {
-            vs = lv[$(this).index()];
+        if (vehiculos.vehiculoSeleccionado == null || vehiculos.vehiculoSeleccionado.id != vehiculos.listaVehiculos[$(this).index()].id) {
+            vehiculos.vehiculoSeleccionado = vehiculos.listaVehiculos[$(this).index()];
             detalles.children('.vista').load('Html/vehiculo.html', cargar_vehiculo);
             $(this).css('background-color', colorFondo);
             $(this).siblings('.vehiculo').css('background-color', sinColor);
         } else {
-            vs = null;
+            vehiculos.vehiculoSeleccionado = null;
             $(this).css('background-color', sinColor);
             detalles.hide();
         }
@@ -538,34 +617,34 @@ $(document).ready(function() {
             km = form.find('input[name="km"]'),
             observaciones = form.find('textarea[name="observaciones"]');
         if (marca.prop('validity')) {
-            vs.marca = marca.val() !== '' ? marca.val() : null;
+            vehiculos.vehiculoSeleccionado.marca = marca.val() !== '' ? marca.val() : null;
         }
         if (modelo.prop('validity')) {
-            vs.modelo = modelo.val() !== '' ? modelo.val() : null;
+            vehiculos.vehiculoSeleccionado.modelo = modelo.val() !== '' ? modelo.val() : null;
         }
         if (matriculacion.prop('validity')) {
-            vs.matriculacion = matriculacion.val() !== '' ? new Date(matriculacion.val()) : null;
+            vehiculos.vehiculoSeleccionado.matriculacion = matriculacion.val() !== '' ? new Date(matriculacion.val()) : null;
         }
         if (adquisicion.prop('validity')) {
-            vs.adquisicion = adquisicion.val() !== '' ? new Date(adquisicion.val()) : null;
+            vehiculos.vehiculoSeleccionado.adquisicion = adquisicion.val() !== '' ? new Date(adquisicion.val()) : null;
         }
         if (km.prop('validity')) {
-            vs.km = km.val() !== '' ? new Number(km.val()) : null;
+            vehiculos.vehiculoSeleccionado.km = km.val() !== '' ? new Number(km.val()) : null;
         }
         if (observaciones.prop('validity')) {
-            vs.observaciones = observaciones.val() !== '' ? observaciones.val() : null;
+            vehiculos.vehiculoSeleccionado.observaciones = observaciones.val() !== '' ? observaciones.val() : null;
         }
         if (!error) {
             // datos bien, enviar al proveedor
             $.ajax({
-                url: 'http://localhost:8080/ReForms_Provider/wr/vehiculo/actualizarVehiculo/' + vs.id,
+                url: 'http://localhost:8080/ReForms_Provider/wr/vehiculo/actualizarVehiculo/' + vehiculos.vehiculoSeleccionado.id,
                 dataType: 'json',
                 type: 'put',
                 contentType: 'application/json',
-                data: JSON.stringify(vs),
+                data: JSON.stringify(vehiculos.vehiculoSeleccionado),
                 processData: false,
                 success: function(data, textStatus, jQxhr){
-                    vs = null;
+                    vehiculos.vehiculoSeleccionado = null;
                     $('#vehiculos').load('Html/vehiculos.html', cargar_vehiculos);
                 },
                 error: function(jqXhr, textStatus, errorThrown){
@@ -581,14 +660,14 @@ $(document).ready(function() {
     function vehiculo_cancelar_click() {
         var detalles = $(this).parents('.marco').parent('.vista').parent('.detalles'),
             tbody = detalles.siblings('.tabla').find('tbody');
-        vs = null;
+        vehiculos.vehiculoSeleccionado = null;
         detalles.hide();
         tbody.children('.vehiculo').css('background-color', sinColor);
     }
     
     function nuevo_vehiculo_click() {
         var detalles = $(this).parents('.tabla').siblings('.detalles');
-        vs = null;
+        vehiculos.vehiculoSeleccionado = null;
         $(this).parents('.tabla').find('.vehiculo').remove();
         $(this).prop('disabled', true);
         detalles.children('.vista').load('Html/vehiculo.html', cargar_nuevo_vehiculo);
@@ -666,11 +745,11 @@ $(document).ready(function() {
             fecha = detalles.find('input[name="fecha"]'),
             coste = detalles.find('input[name="coste"]'),
             descripcion = detalles.find('textarea[name="descripcion"]');
-        vms = lvm[$(this).index()];
-        tipo.val(vms.tipo);
-        fecha.val(vms.fecha.slice(0, vms.fecha.indexOf('T')));
-        coste.val(vms.coste);
-        descripcion.val(vms.descripcion);
+        vehiculos.mantenimientoSeleccionado = vehiculos.listaMantenimientos[$(this).index()];
+        tipo.val(vehiculos.mantenimientoSeleccionado.tipo);
+        fecha.val(vehiculos.mantenimientoSeleccionado.fecha.slice(0, vehiculos.mantenimientoSeleccionado.fecha.indexOf('T')));
+        coste.val(vehiculos.mantenimientoSeleccionado.coste);
+        descripcion.val(vehiculos.mantenimientoSeleccionado.descripcion);
         mantenimientos.find('.btn-nuevo').prop('disabled', true);
         mantenimientos.children('.detalles').show();
     }
@@ -682,7 +761,7 @@ $(document).ready(function() {
             fecha = detalles.find('input[name="fecha"]'),
             coste = detalles.find('input[name="coste"]'),
             descripcion = detalles.find('textarea[name="descripcion"]');
-        vms = null;
+        vehiculos.mantenimientoSeleccionado = null;
         tipo.val(0);
         fecha.val('');
         coste.val(0.0);
@@ -699,41 +778,41 @@ $(document).ready(function() {
             coste = detalles.find('input[name="coste"]'),
             descripcion = detalles.find('textarea[name="descripcion"]'),
             edicion = false, error = false;
-        if (vms != null && vms.id != null) {
+        if (vehiculos.mantenimientoSeleccionado != null && vehiculos.mantenimientoSeleccionado.id != null) {
             edicion = true;
         } else {
-            vms = new Mantenimiento();
+            vehiculos.mantenimientoSeleccionado = new Mantenimiento();
         }
         if (tipo.prop('validity')) {
-            vms.tipo = tipo.val();
+            vehiculos.mantenimientoSeleccionado.tipo = tipo.val();
         } else {
             error = true;
         }
         if (fecha.prop('validity') && fecha.val() != '') {
-            vms.fecha = new Date(fecha.val());
+            vehiculos.mantenimientoSeleccionado.fecha = new Date(fecha.val());
         } else {
             error = true;
         }
         if (coste.prop('validity')) {
-            vms.coste = coste.val() !== '' ? new Number(coste.val()) : 0.0;
+            vehiculos.mantenimientoSeleccionado.coste = coste.val() !== '' ? new Number(coste.val()) : 0.0;
         }
         if (descripcion.prop('validity')) {
-            vms.descripcion = descripcion.val() !== '' ? descripcion.val() : null;
+            vehiculos.mantenimientoSeleccionado.descripcion = descripcion.val() !== '' ? descripcion.val() : null;
         }
         if (!error) {
             // datos bien, enviar al proveedor
             if (edicion) {
                 // edicion del mantenimiento en el proveedor
                 $.ajax({
-                    url: 'http://localhost:8080/ReForms_Provider/wr/mantenimiento/actualizarMantenimiento/' + vms.id,
+                    url: 'http://localhost:8080/ReForms_Provider/wr/mantenimiento/actualizarMantenimiento/' + vehiculos.mantenimientoSeleccionado.id,
                     dataType: 'json',
                     type: 'put',
                     contentType: 'application/json',
-                    data: JSON.stringify(vms),
+                    data: JSON.stringify(vehiculos.mantenimientoSeleccionado),
                     processData: false,
                     success: function(data, textStatus, jQxhr){
-                        vs = null;
-                        vms = null;
+                        vehiculos.vehiculoSeleccionado = null;
+                        vehiculos.mantenimientoSeleccionado = null;
                         $('#vehiculos').load('Html/vehiculos.html', cargar_vehiculos);
                     },
                     error: function(jqXhr, textStatus, errorThrown){
@@ -742,17 +821,17 @@ $(document).ready(function() {
                 });
             } else {
                 // registro del mantenimiento en el proveedor
-                vms.vehiculo = vs;
+                vehiculos.mantenimientoSeleccionado.vehiculo = vehiculos.vehiculoSeleccionado;
                 $.ajax({
                     url: 'http://localhost:8080/ReForms_Provider/wr/mantenimiento/agregarMantenimiento',
                     dataType: 'json',
                     type: 'post',
                     contentType: 'application/json',
-                    data: JSON.stringify(vms),
+                    data: JSON.stringify(vehiculos.mantenimientoSeleccionado),
                     processData: false,
                     success: function(data, textStatus, jQxhr){
-                        vs = null;
-                        vms = null;
+                        vehiculos.vehiculoSeleccionado = null;
+                        vehiculos.mantenimientoSeleccionado = null;
                         $('#vehiculos').load('Html/vehiculos.html', cargar_vehiculos);
                     },
                     error: function(jQxhr, textStatus, errorThrown){
@@ -784,7 +863,7 @@ $(document).ready(function() {
                 boton = tabla.children('button');
             $.get('http://localhost:8080/ReForms_Provider/wr/trabajador/obtenerTrabajadores', function(data, status) {
                 if (status == 'success') {
-                    lt = data;
+                    trabajadores.listaTrabajadores = data;
                     mostrar_tabla_trabajadores(cuerpo);
                 }
             }, 'json');
@@ -814,20 +893,20 @@ $(document).ready(function() {
             car = carnet.find('input[name="carnet"]'),
             tabla = capacidades.find('.tabla');
         if (statusTxt == 'success') {
-            $.get('http://localhost:8080/ReForms_Provider/wr/operario/buscarOperarioPorTrabajador/' + ts.id, function(data, status) {
+            $.get('http://localhost:8080/ReForms_Provider/wr/operario/buscarOperarioPorTrabajador/' + trabajadores.trabajadorSeleccionado.id, function(data, status) {
                 if (status == 'success') {
-                    os = data;
-                    dis.val(os.dispositivo).prop('readonly', true);
-                    telefono.val(os.telefono).prop('readonly', true);
-                    email.val(os.email).prop('readonly', true);
-                    pass.val(os.pass).prop('readonly', true);
-                    if (os.carnet && os.carnet == 1) {
+                    trabajadores.operarioSeleccionado = data;
+                    dis.val(trabajadores.operarioSeleccionado.dispositivo).prop('readonly', true);
+                    telefono.val(trabajadores.operarioSeleccionado.telefono).prop('readonly', true);
+                    email.val(trabajadores.operarioSeleccionado.email).prop('readonly', true);
+                    pass.val(trabajadores.operarioSeleccionado.pass).prop('readonly', true);
+                    if (trabajadores.operarioSeleccionado.carnet && trabajadores.operarioSeleccionado.carnet == 1) {
                         car.prop('checked', true);
                     }
                     car.prop('disabled', true)
-                    $.get('http://localhost:8080/ReForms_Provider/wr/capacidad/buscarCapacidadPorOperario/' + os.id, function(data, status) {
+                    $.get('http://localhost:8080/ReForms_Provider/wr/capacidad/buscarCapacidadPorOperario/' + trabajadores.operarioSeleccionado.id, function(data, status) {
                         if (status == 'success') {
-                            loc = data;
+                            trabajadores.listaCapacidades = data;
                             mostrar_tabla_capacidades(tabla.find('tbody'));
                         }
                     }, 'json');
@@ -852,9 +931,9 @@ $(document).ready(function() {
     function cargar_nominas(responseTxt, statusTxt) {
         if (statusTxt == 'success') {
             var cuerpo = $(this).find('tbody');
-            $.get('http://localhost:8080/ReForms_Provider/wr/nomina/buscarNominaPorTrabajador/' + ts.id, function(data, status) {
+            $.get('http://localhost:8080/ReForms_Provider/wr/nomina/buscarNominaPorTrabajador/' + trabajadores.trabajadorSeleccionado.id, function(data, status) {
                 if (status == 'success') {
-                    ln = data;
+                    trabajadores.listaNominas = data;
                     mostrar_tabla_nominas(cuerpo);
                 }
             }, 'json');
@@ -884,13 +963,13 @@ $(document).ready(function() {
                 cuerpoCargos = cargos.find('tbody'),
                 detalles = $(this).find('.detalles'),
                 nominas = $(this).find('.nominas');
-            dni.val(ts.dni).prop('readonly', true);
-            nombre.val(ts.nombre).prop('readonly', true);
-            apellido1.val(ts.apellido1).prop('readonly', true);
-            apellido2.val(ts.apellido2).prop('readonly', true);
-            telefono1.val(ts.telefono1).prop('readonly', true);
-            telefono2.val(ts.telefono2).prop('readonly', true);
-            propiedad.val(ts.propiedad.direccion + ' ' + ts.propiedad.numero + ', ' + ts.propiedad.localidad.nombre).prop('readonly', true);
+            dni.val(trabajadores.trabajadorSeleccionado.dni).prop('readonly', true);
+            nombre.val(trabajadores.trabajadorSeleccionado.nombre).prop('readonly', true);
+            apellido1.val(trabajadores.trabajadorSeleccionado.apellido1).prop('readonly', true);
+            apellido2.val(trabajadores.trabajadorSeleccionado.apellido2).prop('readonly', true);
+            telefono1.val(trabajadores.trabajadorSeleccionado.telefono1).prop('readonly', true);
+            telefono2.val(trabajadores.trabajadorSeleccionado.telefono2).prop('readonly', true);
+            propiedad.val(trabajadores.trabajadorSeleccionado.propiedad.direccion + ' ' + trabajadores.trabajadorSeleccionado.propiedad.numero + ', ' + trabajadores.trabajadorSeleccionado.propiedad.localidad.nombre).prop('readonly', true);
             email.parent().remove();
             password.parent().remove();
             trabajador.find('.btn-editar').css({'border-color':colorBorde, 'background-color':sinColor}).click(trabajador_editar_click);
@@ -920,6 +999,7 @@ $(document).ready(function() {
             $(this).find('input[name="piso"]').change(propiedad_piso_change);
             $(this).find('.titulo').append('Residencia');
             $(this).find('.coincidencias').css('border-color', colorBorde).hide();
+            $(this).find('.coincidencias').find('thead').css('background-color', colorBorde);
             $(this).find('.mapa').hide();
         } else {
             alert('Error: no se pudo cargar propiedad.html');
@@ -937,7 +1017,8 @@ $(document).ready(function() {
                 'propiedad': {
                     'cp': false,
                     'direccion': false,
-                    'numero': false
+                    'numero': false,
+                    'localidad' : false,
                 }
             };
             trabajador.find('.btn-aceptar').click(nuevo_trabajador_aceptar_click).prop('disabled', true);
@@ -966,13 +1047,13 @@ $(document).ready(function() {
             vehiculo.find('.btn-cancelar').click(vehiculo_cancelar_click);
             vehiculo.find('input[name="matricula"]').prop('readonly', true);
             cuerpo.children('.mantenimiento').remove();
-            $.get('http://localhost:8080/ReForms_Provider/wr/mantenimiento/buscarMantenimientoPorVehiculo/' + vs.id, function(data, status) {
+            $.get('http://localhost:8080/ReForms_Provider/wr/mantenimiento/buscarMantenimientoPorVehiculo/' + vehiculos.vehiculoSeleccionado.id, function(data, status) {
                 if (status == "success") {
-                    lvm = data;
-                    for (i = 0; i < lvm.length; i++) {
-                        var fechaStr = lvm[i].fecha, tipoStr;
+                    vehiculos.listaMantenimientos = data;
+                    for (i = 0; i < vehiculos.listaMantenimientos.length; i++) {
+                        var fechaStr = vehiculos.listaMantenimientos[i].fecha, tipoStr;
                         fechaStr = fechaStr.slice(0, fechaStr.indexOf('T'));
-                        switch (lvm[i].tipo) {
+                        switch (vehiculos.listaMantenimientos[i].tipo) {
                             case 0: tipoStr = 'repostaje'; break;
                             case 1: tipoStr = 'itv'; break;
                             case 2: tipoStr = 'seguro'; break;
@@ -981,7 +1062,7 @@ $(document).ready(function() {
                             case 5: tipoStr = 'taller'; break;
                             default: tipoStr = '';
                         }
-                        cuerpo.append('<tr class="mantenimiento"><td>' + fechaStr + '</td><td>' + tipoStr + '</td><td>' + lvm[i].coste + ' €</td></tr>');
+                        cuerpo.append('<tr class="mantenimiento"><td>' + fechaStr + '</td><td>' + tipoStr + '</td><td>' + vehiculos.listaMantenimientos[i].coste + ' €</td></tr>');
                     }
                     cuerpo.children('.mantenimiento').click(mantenimiento_click);
                 }
@@ -1021,7 +1102,7 @@ $(document).ready(function() {
                 boton = tabla.children('button');
             $.get('http://localhost:8080/ReForms_Provider/wr/vehiculo/obtenerVehiculos', function(data, status) {
                 if (status == 'success') {
-                    lv = data;
+                    vehiculos.listaVehiculos = data;
                     mostrar_tabla_vehiculos(cuerpo);
                 }
             }, 'json');
