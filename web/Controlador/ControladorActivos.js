@@ -127,7 +127,7 @@ $(document).ready(function() {
     }
     
     function buscarDireccionGoogle(direccion, coincidencias, cuerpo, mapa) {
-        $.get('https://maps.googleapis.com/maps/api/geocode/json?address=' + direccion + '&key=AIzaSyBlZgbIxGsYtfpc6uJFFXsnrRdxDA08paI', function(data) {
+        $.get('https://maps.googleapis.com/maps/api/geocode/json?address=' + direccion + '&key=' + googleKey, function(data) {
             if (data.results.length > 0) {
                 var i;
                 for (i = 0; i < data.results.length; i++) {

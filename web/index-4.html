@@ -16,9 +16,10 @@ and open the template in the editor.
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
         <script src="Controlador/ControladorPrincipal.js"></script>
         <script>
+            var googleKey = '';
             $(document).ready(function() {
                 $('#entrada').change(function () {
-                    $.get('https://maps.googleapis.com/maps/api/geocode/json?address=' + $('#entrada').val() + '&key=AIzaSyBlZgbIxGsYtfpc6uJFFXsnrRdxDA08paI', function(data) {
+                    $.get('https://maps.googleapis.com/maps/api/geocode/json?address=' + $('#entrada').val() + '&key=' + googleKey, function(data) {
                         $('#salida').val(JSON.stringify(data));
                     });
                 });
