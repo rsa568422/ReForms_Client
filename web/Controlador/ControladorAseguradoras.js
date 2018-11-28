@@ -130,7 +130,7 @@ $(document).ready(function() {
                                 url: 'http://localhost:8080/ReForms_Provider/wr/gremio/registrarGremio',
                                 dataType: 'json',
                                 type: 'post',
-                                contentType: 'application/json',
+                                contentType: 'application/json;charset=UTF-8',
                                 data: JSON.stringify(g),
                                 processData: false,
                                 success: function(data, textStatus, jQxhr){
@@ -229,7 +229,7 @@ $(document).ready(function() {
                 url: 'http://localhost:8080/ReForms_Provider/wr/aseguradora/registrarAseguradora',
                 dataType: 'json',
                 type: 'post',
-                contentType: 'application/json',
+                contentType: 'application/json;charset=UTF-8',
                 data: JSON.stringify(a),
                 processData: false,
                 success: function(data, textStatus, jQxhr){
@@ -405,7 +405,7 @@ $(document).ready(function() {
                 url: 'http://localhost:8080/ReForms_Provider/wr/perito/agregarPerito',
                 dataType: 'json',
                 type: 'post',
-                contentType: 'application/json',
+                contentType: 'application/json;charset=UTF-8',
                 data: JSON.stringify(p),
                 processData: false,
                 success: function(data, textStatus, jQxhr){
@@ -491,7 +491,7 @@ $(document).ready(function() {
                             url: 'http://localhost:8080/ReForms_Provider/wr/trabajo/agregarTrabajo',
                             dataType: 'json',
                             type: 'post',
-                            contentType: 'application/json',
+                            contentType: 'application/json;charset=UTF-8',
                             data: JSON.stringify(t),
                             processData: false,
                             success: function(data, textStatus, jQxhr){

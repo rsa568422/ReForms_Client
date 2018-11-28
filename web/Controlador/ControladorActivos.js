@@ -2,7 +2,8 @@ $(document).ready(function() {
     
     // Variables
     // ====================================================================== //
-    var colorBorde = $('#btn-activos').css('background-color'),
+    var googleKey= '',
+        colorBorde = $('#btn-activos').css('background-color'),
         colorFondo = colorBorde.substring(0, colorBorde.length - 1) + ', 0.1)',
         sinColor = 'rgb(0, 0, 0, 0)',
         trabajadores = {
@@ -15,7 +16,8 @@ $(document).ready(function() {
             'listaNominas': [],
             'nominaSeleccionada': null,
             'propiedad' : null,
-            'listaCoincidencias': []
+            'listaCoincidencias': [],
+            'coincidenciaSeleccionada' : null
         }
         vehiculos = {
             'listaVehiculos': [],
@@ -36,7 +38,6 @@ $(document).ready(function() {
         for (i = 0; i < trabajadores.listaTrabajadores.length; i++) {
             var apellidos = trabajadores.listaTrabajadores[i].apellido1;
             if (trabajadores.listaTrabajadores[i].apellido2 && trabajadores.listaTrabajadores[i].apellido2 !== '') {
-                alert(trabajadores.listaTrabajadores[i].apellido2);
                 apellidos += ' ' + trabajadores.listaTrabajadores[i].apellido2;
             }
             cuerpo.append('<tr class="trabajador"><td>' + trabajadores.listaTrabajadores[i].nombre + '</td><td>' + apellidos + '</td></tr>');
@@ -126,33 +127,54 @@ $(document).ready(function() {
         cuerpo.children('.capacidad').click(capacidad_click);
     }
     
-    function buscarDireccionGoogle(direccion, coincidencias, cuerpo, mapa) {
+    function buscarDireccionGoogle(direccion, coincidencias, cuerpo) {
         $.get('https://maps.googleapis.com/maps/api/geocode/json?address=' + direccion + '&key=' + googleKey, function(data) {
             if (data.results.length > 0) {
-                var i;
+                var i, j, k, p, dir;
+                trabajadores.listaCoincidencias = [];
                 for (i = 0; i < data.results.length; i++) {
-                    alert(data.results[i].formatted_address);
-                    var d = data.results[i].formatted_address;
-                    cuerpo.append('<tr class="coincidencia"><td><p>' + d + '</p></td></tr>');
+                    p = new Propiedad();
+                    p.id = -i - 1;
+                    p.localidad = new Localidad();
+                    for (j = 0; j < data.results[i].address_components.length; j++) {
+                        for (k = 0; k < data.results[i].address_components[j].types.length; k++) {
+                            switch (data.results[i].address_components[j].types[k]) {
+                                case 'route': p.direccion = data.results[i].address_components[j].short_name; break;
+                                case 'street_number': p.numero = data.results[i].address_components[j].short_name; break;
+                                case 'locality': p.localidad.nombre = data.results[i].address_components[j].short_name; break;
+                                case 'postal_code': p.localidad.cp = data.results[i].address_components[j].short_name; break;
+                            }
+                        }
+                    }
+                    p.geolat = data.results[i].geometry.location.lat;
+                    p.geolong = data.results[i].geometry.location.lng;
+                    if (p.direccion != null && p.direccion != '' && p.numero != null && p.numero != '' && p.localidad.nombre != null && p.localidad.nombre != '' && p.localidad.cp != null && p.localidad.cp != '') {
+                        trabajadores.listaCoincidencias.push(p); 
+                        dir = p.direccion + ' ' + p.numero + ', ' + p.localidad.nombre + ' ' + p.localidad.cp;
+                        cuerpo.append('<tr class="coincidencia"><td><p>' + dir + '</p></td></tr>');
+                    }
                 }
-                cuerpo.children('.coincidencia').click(coincidencia_click);
-                coincidencias.show();
-                alert('falta cargar posicion en el mapa');
-                mapa.show();
+                if (trabajadores.listaCoincidencias.length > 0) {
+                    cuerpo.children('.coincidencia').click(coincidencia_click);
+                    coincidencias.show();
+                } else {
+                    coincidencias.hide();
+                }
             } else {
                 coincidencias.hide();
-                mapa.hide();
             }
+            coincidencias.parent('.col-12').parent('.row').parent('.container-fluid').find('.mapa').hide();
         });
     }
     
     function mostrar_tabla_coincidencias(cuerpo) {
         var i;
         for (i = 0; i < trabajadores.listaCoincidencias.length; i++) {
-            var direccion = trabajadores.listaCoincidencias[i].direccion + ' ' + trabajadores.listaCoincidencias[i].numero;
+            var direccion = trabajadores.listaCoincidencias[i].direccion + ' ' + trabajadores.listaCoincidencias[i].numero + ', ';
             if (trabajadores.listaCoincidencias[i].piso && trabajadores.listaCoincidencias[i].piso != '') {
-                direccion += ', ' + trabajadores.listaCoincidencias[i].piso;
+                direccion += trabajadores.listaCoincidencias[i].piso + ', ';
             }
+            direccion += trabajadores.listaCoincidencias[i].localidad.nombre + ' ' + trabajadores.listaCoincidencias[i].localidad.cp;
             cuerpo.append('<tr class="coincidencia"><td><p>' + direccion + '</p></td></tr>');
         }
         cuerpo.children('.coincidencia').mouseenter(coincidencia_mouseenter);
@@ -255,20 +277,18 @@ $(document).ready(function() {
             numero = contenedor.find('input[name="numero"]'),
             piso = contenedor.find('input[name="piso"]'),
             direccionCompleta = cp.val() + '/' + direccion.val() + '/' + numero.val() + '/' + piso.val(),
-            cuerpo = coincidencias.find('tbody'),
-            mapa = contenedor.find('.mapa');
+            cuerpo = coincidencias.find('tbody');
         if (testValidacion(validacionDatos.propiedad)) {
             cuerpo.children('.coincidencia').remove();
+            coincidencias.find('.btn-utilizar').prop('disabled', true);
             $.get('http://localhost:8080/ReForms_Provider/wr/propiedad/buscarPropiedadPorDireccionCompleta/' + direccionCompleta, function(data, status) {
                 if (status == 'success') {
                     trabajadores.listaCoincidencias = data;
                     mostrar_tabla_coincidencias(cuerpo);
                     coincidencias.show();
-                    alert('falta cargar posicion en el mapa');
-                    mapa.show();
                 } else {
                     var direccionStr = direccion.val() + ' ' + numero.val() + ', ' + nombreLocalidad.val();
-                    buscarDireccionGoogle(direccionStr, coincidencias, cuerpo, mapa);
+                    buscarDireccionGoogle(direccionStr, coincidencias, cuerpo);
                 }
             }, 'json');
         } else {
@@ -448,16 +468,17 @@ $(document).ready(function() {
     }
     
     function propiedad_cp_change() {
-        var cpStr = $(this).val(),
-            btn = $(this).parents('.propiedad').siblings('.trabajador').children('.botones').children('.btn-aceptar'),
+        var btn = $(this).parents('.propiedad').siblings('.trabajador').children('.botones').children('.btn-aceptar'),
             nombreLocalidad = $(this).siblings('input[name="nombreLocalidad"]'),
-            coincidencias = $(this).parent('div').parent('.localidad').parent('div').parent('.row').parent('.container-fluid').find('.coincidencias');
-        if ($(this).prop('validity') && cp_valido(cpStr)) {
+            contenedor = $(this).parent('div').parent('.localidad').parent('div').parent('.row').parent('.container-fluid'),
+            coincidencias = contenedor.find('.coincidencias');
+        if ($(this).prop('validity') && cp_valido($(this).val())) {
             $.get('http://localhost:8080/ReForms_Provider/wr/localidad/buscarLocalidadPorCodigoPostal/' + $(this).val(), function(data, status) {
                 validacionDatos.propiedad.cp = true;
                 if (status == 'success') {
                     validacionDatos.propiedad.localidad = true;
                     nombreLocalidad.prop('readonly', true).val(data.nombre);
+                    contenedor.find('input[name="direccion"]').focus();
                 } else {
                     validacionDatos.propiedad.localidad = false;
                     nombreLocalidad.prop('readonly', false).val('');
@@ -510,7 +531,7 @@ $(document).ready(function() {
     function propiedad_piso_change() {
         var btn = $(this).parents('.propiedad').siblings('.trabajador').children('.botones').children('.btn-aceptar'),
             coincidencias = $(this).parent('div').parent('.col-12').parent('.row').parent('.container-fluid').find('.coincidencias');
-        if ($(this).prop('validity') && $(this).val() != '') {
+        if (!validacionDatos.propiedadConfirmada && $(this).prop('validity') && $(this).val() != '') {
             busquedaPropiedad(coincidencias);
         }
     }
@@ -531,19 +552,138 @@ $(document).ready(function() {
     }
     
     function coincidencia_mouseleave() {
-        var direccion = trabajadores.listaCoincidencias[$(this).index()].direccion + ' ' + trabajadores.listaCoincidencias[$(this).index()].numero;
+        var direccion = trabajadores.listaCoincidencias[$(this).index()].direccion + ' ' + trabajadores.listaCoincidencias[$(this).index()].numero + ', ';
         if (trabajadores.listaCoincidencias[$(this).index()].piso && trabajadores.listaCoincidencias[$(this).index()].piso != '') {
-            direccion += ', ' + trabajadores.listaCoincidencias[$(this).index()].piso;
+            direccion += trabajadores.listaCoincidencias[$(this).index()].piso + ', ';
         }
+        direccion += trabajadores.listaCoincidencias[$(this).index()].localidad.nombre + ' ' + trabajadores.listaCoincidencias[$(this).index()].localidad.cp;
         $(this).children('td').children('p').text(direccion);
     }
     
     function coincidencia_click() {
-        alert('coincidencia ' + $(this).index());
+        var coincidencias = $(this).parents('.coincidencias'),
+            contenedor = coincidencias.parent('.col-12').parent('.row').parent('.container-fluid'),
+            mapa = contenedor.find('.mapa'),
+            utilizar = coincidencias.find('.btn-utilizar');
+        if (trabajadores.coincidenciaSeleccionada == null || trabajadores.coincidenciaSeleccionada.id != trabajadores.listaCoincidencias[$(this).index()].id) {
+            trabajadores.coincidenciaSeleccionada = trabajadores.listaCoincidencias[$(this).index()];
+            if (trabajadores.coincidenciaSeleccionada.geolat != null && trabajadores.coincidenciaSeleccionada.geolat !== '' &&
+                trabajadores.coincidenciaSeleccionada.geolong != null && trabajadores.coincidenciaSeleccionada.geolong !== '') {
+                var s = '<iframe id="mapa" allowfullscreen frameborder="0" width="100%" height="320px" src="https://www.google.com/maps/embed/v1/view?key=' + googleKey + '&center=' + trabajadores.coincidenciaSeleccionada.geolat + ',' + trabajadores.coincidenciaSeleccionada.geolong + '&zoom=18"></iframe>';
+                mapa.children('#mapa').remove();
+                mapa.append(s);
+                mapa.show();
+            } else {
+                mapa.hide();
+            }
+            utilizar.prop('disabled', false);
+            $(this).css('background-color', colorFondo);
+            $(this).siblings('.coincidencia').css('background-color', sinColor);
+        } else {
+            trabajadores.coincidenciaSeleccionada = null;
+            $(this).css('background-color', sinColor);
+            utilizar.prop('disabled', true);
+            mapa.hide();
+        }
+    }
+    
+    function coincidencia_utilizar_click() {
+        var coincidencias = $(this).parent('div').parent('.coincidencias'),
+            contenedor = coincidencias.parent('.col-12').parent('.row').parent('.container-fluid'),
+            cp = contenedor.find('input[name="cp"]'),
+            nombreLocalidad = contenedor.find('input[name="nombreLocalidad"]'),
+            direccion = contenedor.find('input[name="direccion"]'),
+            numero = contenedor.find('input[name="numero"]'),
+            piso = contenedor.find('input[name="piso"]'),
+            observaciones = contenedor.find('textarea[name="observaciones"]'),
+            mapa = contenedor.find('.mapa'),
+            btn = contenedor.parent('.vista').parent('.propiedad').siblings('.trabajador').children('.botones').children('.btn-aceptar');
+        if (trabajadores.coincidenciaSeleccionada.id < 0) {
+            // coincidencia de google
+            trabajadores.coincidenciaSeleccionada.id = null;
+            piso.val('').prop('readonly', false).focus();
+        } else {
+            // coincidencia de DB
+            if (trabajadores.coincidenciaSeleccionada.piso != null && trabajadores.coincidenciaSeleccionada.piso != '') {
+                piso.val(trabajadores.coincidenciaSeleccionada.piso);
+            } else {
+                piso.val('');
+            }
+            piso.prop('readonly', true);
+        }
+        trabajadores.propiedad = trabajadores.coincidenciaSeleccionada;
+        validacionDatos.propiedadConfirmada = true;
+        comprobacionDatos(btn);
+        cp.prop('readonly', true);
+        nombreLocalidad.prop('readonly', true);
+        direccion.val(trabajadores.propiedad.direccion).prop('readonly', true);
+        numero.prop('readonly', true);
+        if (trabajadores.propiedad.observaciones && trabajadores.propiedad.observaciones != null && trabajadores.propiedad.observaciones != '') {
+            observaciones.val(trabajadores.propiedad.observaciones);
+        } else {
+            observaciones.val('');
+        }
+        $(this).prop('disabled', true);
+        trabajadores.listaCoincidencias = [];
+        trabajadores.coincidenciaSeleccionada = null;
+        coincidencias.hide();
+        mapa.hide();
     }
     
     function nuevo_trabajador_aceptar_click() {
-        alert('nuevo_trabajador_aceptar_click()');
+        var trabajador = $(this).parent('.botones').parent('.trabajador'),
+            dni = trabajador.find('input[name="dni"]'),
+            nombre = trabajador.find('input[name="nombre"]'),
+            apellido1 = trabajador.find('input[name="apellido1"]'),
+            apellido2 = trabajador.find('input[name="apellido2"]'),
+            telefono1 = trabajador.find('input[name="telefono1"]'),
+            telefono2 = trabajador.find('input[name="telefono2"]'),
+            email = trabajador.find('input[name="email"]'),
+            password = trabajador.find('input[name="password"]'),
+            propiedad = trabajador.siblings('.propiedad');
+            piso = propiedad.find('input[name="piso"]'),
+            observaciones = propiedad.find('textarea[name="observaciones"]'),
+            t = new Trabajador();
+        t.dni = dni.val();
+        t.nombre = nombre.val();
+        t.apellido1 = apellido1.val();
+        if (apellido2.prop('validity')) {
+            t.apellido2 = apellido2.val() !== '' ? apellido2.val() : null;
+        }
+        if (telefono1.prop('validity')) {
+            t.telefono1 = telefono1.val() !== '' ? telefono1.val() : null;
+        }
+        if (telefono2.prop('validity')) {
+            t.telefono2 = telefono2.val() !== '' ? telefono2.val() : null;
+        }
+        if (email.prop('validity')) {
+            t.email = email.val() !== '' ? email.val() : null;
+        }
+        if (password.prop('validity')) {
+            t.password = password.val() !== '' ? password.val() : null;
+        }
+        if (piso.prop('validity')) {
+            trabajadores.propiedad.piso = piso.val() !== '' ? piso.val() : null;
+        }
+        if (observaciones.prop('validity')) {
+            trabajadores.propiedad.observaciones = observaciones.val() !== '' ? observaciones.val() : null;
+        }
+        t.propiedad = trabajadores.propiedad;
+        $.ajax({
+            url: 'http://localhost:8080/ReForms_Provider/wr/trabajador/registrarTrabajador',
+            dataType: 'json',
+            type: 'post',
+            contentType: 'application/json;charset=UTF-8',
+            data: JSON.stringify(t),
+            processData: false,
+            success: function(data, textStatus, jQxhr){
+                $('#trabajadores').load('Html/trabajadores.html', cargar_trabajadores);
+                edicion = false;
+            },
+            error: function(jQxhr, textStatus, errorThrown){
+                alert('no ha sido posible registrar el trabajador');
+            }
+        });
     }
     
     function nuevo_trabajador_cancelar_click() {
@@ -640,7 +780,7 @@ $(document).ready(function() {
                 url: 'http://localhost:8080/ReForms_Provider/wr/vehiculo/actualizarVehiculo/' + vehiculos.vehiculoSeleccionado.id,
                 dataType: 'json',
                 type: 'put',
-                contentType: 'application/json',
+                contentType: 'application/json;charset=UTF-8',
                 data: JSON.stringify(vehiculos.vehiculoSeleccionado),
                 processData: false,
                 success: function(data, textStatus, jQxhr){
@@ -713,7 +853,7 @@ $(document).ready(function() {
                 url: 'http://localhost:8080/ReForms_Provider/wr/vehiculo/registrarVehiculo',
                 dataType: 'json',
                 type: 'post',
-                contentType: 'application/json',
+                contentType: 'application/json;charset=UTF-8',
                 data: JSON.stringify(nv),
                 processData: false,
                 success: function(data, textStatus, jQxhr){
@@ -807,7 +947,7 @@ $(document).ready(function() {
                     url: 'http://localhost:8080/ReForms_Provider/wr/mantenimiento/actualizarMantenimiento/' + vehiculos.mantenimientoSeleccionado.id,
                     dataType: 'json',
                     type: 'put',
-                    contentType: 'application/json',
+                    contentType: 'application/json;charset=UTF-8',
                     data: JSON.stringify(vehiculos.mantenimientoSeleccionado),
                     processData: false,
                     success: function(data, textStatus, jQxhr){
@@ -826,7 +966,7 @@ $(document).ready(function() {
                     url: 'http://localhost:8080/ReForms_Provider/wr/mantenimiento/agregarMantenimiento',
                     dataType: 'json',
                     type: 'post',
-                    contentType: 'application/json',
+                    contentType: 'application/json;charset=UTF-8',
                     data: JSON.stringify(vehiculos.mantenimientoSeleccionado),
                     processData: false,
                     success: function(data, textStatus, jQxhr){
@@ -991,6 +1131,7 @@ $(document).ready(function() {
     }
     
     function cargar_propiedad(responseTxt, statusTxt) {
+        var coincidencias = $(this).find('.coincidencias');
         if (statusTxt == 'success') {
             $(this).find('input[name="cp"]').change(propiedad_cp_change);
             $(this).find('input[name="nombreLocalidad"]').prop('readonly', true).change(propiedad_nombreLocalidad_change);
@@ -998,8 +1139,9 @@ $(document).ready(function() {
             $(this).find('input[name="numero"]').change(propiedad_numero_change);
             $(this).find('input[name="piso"]').change(propiedad_piso_change);
             $(this).find('.titulo').append('Residencia');
-            $(this).find('.coincidencias').css('border-color', colorBorde).hide();
-            $(this).find('.coincidencias').find('thead').css('background-color', colorBorde);
+            coincidencias.css('border-color', colorBorde).hide();
+            coincidencias.find('thead').css('background-color', colorBorde);
+            coincidencias.find('.btn-utilizar').css({'border-color':colorBorde, 'background-color':sinColor}).prop('disabled', true).click(coincidencia_utilizar_click);
             $(this).find('.mapa').hide();
         } else {
             alert('Error: no se pudo cargar propiedad.html');
@@ -1014,11 +1156,12 @@ $(document).ready(function() {
                 'dni': false,
                 'nombre': false,
                 'apellido1': false,
+                'propiedadConfirmada': false,
                 'propiedad': {
                     'cp': false,
                     'direccion': false,
                     'numero': false,
-                    'localidad' : false,
+                    'localidad': false
                 }
             };
             trabajador.find('.btn-aceptar').click(nuevo_trabajador_aceptar_click).prop('disabled', true);
