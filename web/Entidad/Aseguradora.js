@@ -7,5 +7,3 @@ function Aseguradora() {
     this.email = null;
     this.logo = null;
 }
-
-

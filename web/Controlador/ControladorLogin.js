@@ -1,10 +1,11 @@
 $(document).ready(function() {
     
-    var operadores;
+    var operadores, googleKey = '';
     
     function acceder() {
         $('#barra').load('Html/barra.html', function(responseTxt, statusTxt) {
             if(statusTxt === 'success') {
+                sessionStorage.setItem('googleKey', googleKey);
                 $('#contenido').load('Html/siniestros.html', function(responseTxt, statusTxt) {
                     if(statusTxt !== 'success') {
                         alert('Error: no se pudo cargar siniestros.html');

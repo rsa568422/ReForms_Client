@@ -4,6 +4,12 @@ $(document).ready(function() {
         la, aseguradora = null, gremio = null, logoGif = null,
         color = $("#btn-aseguradoras").css("background-color");
     
+    function alerta(titulo, mensaje) {
+        $('#alerta').find('.modal-title').html(titulo);
+        $('#alerta').find('.modal-body').html(mensaje);
+        $('#activador-alerta').click();
+    }
+    
     function generarLogo(aseguradora) {
         return i = "<img class='logo' src='data:image/gif;base64," + aseguradora.logo + "' width='480' height='360' alt='" + aseguradora.nombre + "'/>";
     }
@@ -137,12 +143,12 @@ $(document).ready(function() {
                                     $("#btn-aseguradoras").click();
                                 },
                                 error: function(jQxhr, textStatus, errorThrown){
-                                    alert("Error: no se ha creado el gremio");
+                                    alerta('Error en proveedor', 'no ha sido posible crear el gremio');
                                     $("#btnNuevoGremioCancelar").click();
                                 }
                             });
                         } else {
-                            alert("Error: revise el nombre del gremio");
+                            alerta('Error en los datos', 'revise el nombre del gremio');
                             $("#nombreGremio").focus();
                         }
                     });
@@ -236,12 +242,11 @@ $(document).ready(function() {
                     $("#btn-aseguradoras").click();
                 },
                 error: function(jQxhr, textStatus, errorThrown){
-                    alert("Error: no se ha creado la aseguradora");
+                    alerta('Error en proveedor', 'no ha sido posible crear la aseguradora');
                 }
             });
         } else {
-            alert("Error: revise los datos de la aseguradora");
-            alert(JSON.stringify(a));
+            alerta('Error en los datos', 'revise los datos de la aseguradora');
             nombre.focus();
         }
     }
@@ -330,7 +335,7 @@ $(document).ready(function() {
                         $(this).find(".btn-cancelar").click(nuevaAseguradora_cancelar_click);
                         $(this).find("input[name='logo']").change(input_logo_change);
                     } else {
-                        alert("Error: no se pudo cargar aseguradora.html");
+                        alerta('Error 404', 'no se pudo cargar aseguradora.html');
                     }
                 });
                 $("#nuevaAseguradora").show();
@@ -413,11 +418,11 @@ $(document).ready(function() {
                     cargarPeritosTrabajos();
                 },
                 error: function(jQxhr, textStatus, errorThrown){
-                    alert("Error: no se ha creado el perito");
+                    alerta('Error en proveedor', 'no ha sido posible crear el perito');
                 }
             });
         } else {
-            alert("Error: revise los datos del perito");
+            alerta('Error en los datos', 'revise los datos del perito');
             nombre.focus();
         }
     });
@@ -499,11 +504,11 @@ $(document).ready(function() {
                                 cargarPeritosTrabajos();
                             },
                             error: function(jQxhr, textStatus, errorThrown){
-                                alert("Error: no se ha creado el trabajo");
+                                alerta('Error en proveedor', 'no ha sido posible crear el trabajo');
                             }
                         });
                     } else {
-                        alert("Error: revise los datos del trabajo");
+                        alerta('Error en los datos', 'revise los datos del trabajo');
                         codigo.focus();
                     }
                 });
@@ -515,7 +520,7 @@ $(document).ready(function() {
                     $("#btnNuevoTrabajo").show();
                 });
             } else {
-                alert("Error: no se pudo cargar nuevoTrabajo.html");
+                alerta('Error 404', 'no se pudo cargar nuevoTrabajo.html');
             }
         });
         $(this).hide();

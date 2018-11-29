@@ -19,5 +19,22 @@ and open the template in the editor.
     <body>
         <div id="barra"></div>
         <div id="contenido"></div>
+        <div class="container">
+            <button id="activador-alerta" type="button" data-toggle="modal" data-target="#alerta"></button>
+            <div class="modal" id="alerta">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h4 class="modal-title"></h4>
+                            <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        </div>
+                        <div class="modal-body"></div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-danger" data-dismiss="modal">cerrar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </body>
 </html>
