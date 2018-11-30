@@ -1,6 +1,6 @@
 $(document).ready(function() {
     
-    var operadores, googleKey = 'AIzaSyCGDBVMfMKCQcSbgMHxHH6zpOevYQzkYko';
+    var operadores, googleKey = '';
     
     function acceder() {
         $('#barra').load('Html/barra.html', function(responseTxt, statusTxt) {
