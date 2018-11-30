@@ -64,6 +64,7 @@ $(document).ready(function() {
             }
             cuerpo.append('<tr class="nomina"><td>' + fecha + '</td><td>' + estado + '</td><td>' + trabajadores.listaNominas[i].importe + '</td></tr>');
         }
+        cuerpo.children('.nomina').dblclick(nomina_dblclick);
     }
     
     function mostrar_tabla_cargos(cuerpo) {
@@ -130,7 +131,7 @@ $(document).ready(function() {
             }
             cuerpo.append('<tr title="haga doble click para editar" class="capacidad"><td>' + trabajadores.listaCapacidades[i].gremio.nombre + '</td><td>' + dificultad + '</td></tr>');
         }
-        cuerpo.children('.capacidad').dblclick(capacidad_click);
+        cuerpo.children('.capacidad').dblclick(capacidad_dblclick);
     }
     
     function buscarDireccionGoogle(direccion, coincidencias, cuerpo) {
@@ -447,28 +448,28 @@ $(document).ready(function() {
                     error = false,
                     o = new Operario();
                 if (dispositivo.val() != '') {
-                    if (dispositivo.prop('validity')) {
+                    if (dispositivo.prop('validity').valid) {
                         o.dispositivo = dispositivo.val();
                     } else {
                         error = true;
                     }
                 }
                 if (telefono.val() != '') {
-                    if (telefono.prop('validity') && telefono_valido(telefono.val())) {
+                    if (telefono.prop('validity').valid && telefono_valido(telefono.val())) {
                         o.telefono = telefono.val();
                     } else {
                         error = true;
                     }
                 }
                 if (email.val() != '') {
-                    if (email.prop('validity')) {
+                    if (email.prop('validity').valid) {
                         o.email = email.val();
                     } else {
                         error = true;
                     }
                 }
                 if (pass.val() != '') {
-                    if (pass.prop('validity')) {
+                    if (pass.prop('validity').valid) {
                         o.pass = pass.val();
                     } else {
                         error = true;
@@ -567,8 +568,47 @@ $(document).ready(function() {
         }
     }
     
-    function capacidad_click() {
-        alert('capacidad_click()');
+    function capacidad_dblclick() {
+        if (!edicion) {
+            var dificultad = trabajadores.listaCapacidades[$(this).index() - 1].dificultad,
+                o0 = '<option value=0' + (dificultad == 0 ? ' selected' : '') + '>no cualificado</option>',
+                o1 = '<option value=1' + (dificultad == 1 ? ' selected' : '') + '>ayudante</option>',
+                o2 = '<option value=2' + (dificultad == 2 ? ' selected' : '') + '>profesional</option>',
+                o3 = '<option value=3' + (dificultad == 3 ? ' selected' : '') + '>experto</option>',
+                td = '<td><select name="cambioCapacidad" class="form-control custom-select">' + o0 + o1 + o2 + o3 + '</select></td>';
+            edicion = true;
+            $(this).children('td:last').remove();
+            $(this).append(td);
+            $(this).children('td:last').children('select[name="cambioCapacidad"]').change(cambio_capacidad_change);
+        }
+    }
+    
+    function cambio_capacidad_change() {
+        var tr = $(this).parent('td').parent('tr'), dificultad, d = $(this).val();
+        switch (d) {
+            case '0': dificultad = 'no cualificado'; break;
+            case '1': dificultad = 'ayudante'; break;
+            case '2': dificultad = 'profesional'; break;
+            case '3': dificultad = 'experto'; break;
+        }
+        trabajadores.listaCapacidades[tr.index() - 1].dificultad = d;
+        $.ajax({
+            url: 'http://localhost:8080/ReForms_Provider/wr/capacidad/actualizarCapacidad/' + trabajadores.listaCapacidades[tr.index() - 1].id,
+            dataType: 'json',
+            type: 'put',
+            contentType: 'application/json;charset=UTF-8',
+            data: JSON.stringify(trabajadores.listaCapacidades[tr.index() - 1]),
+            processData: false,
+            success: function(data, textStatus, jQxhr){
+                vehiculos.vehiculoSeleccionado = null;
+                tr.children('td:last').remove();
+                tr.append('<td>' + dificultad + '</td>');
+            },
+            error: function(jqXhr, textStatus, errorThrown){
+                alerta('Error en proveedor', 'no ha sido posible actualizar la capacidad del operario');
+            }
+        });
+        edicion = false;
     }
     
     function capacidad_nueva_click() {
@@ -601,6 +641,7 @@ $(document).ready(function() {
                         boton.siblings('button').show();
                     } else {
                         alerta('Aviso', 'este operario ya tiene registrada su capacidad en todos los gremios actuales, registre nuevos gremios o actualice su habilidad sobre los existentes');
+                        boton.siblings('.btn-cancelar').click();
                     }
                 } else {
                     alerta('Error en proveedor', 'no ha sido posible obtener los gremios');
@@ -649,15 +690,71 @@ $(document).ready(function() {
     }
     
     function operario_editar_click() {
-        alert('operario_editar_click()');
+        var botones = $(this).parent('.col-12').parent('.botones'),
+            dispositivo = botones.siblings('.dispositivo');
+        if (!edicion) {
+            edicion = true;
+            botones.siblings('.carnet').find('#carnet').prop('disabled', false);
+            dispositivo.find('input[name="dispositivo"]').prop('readonly', false).focus();
+            dispositivo.find('input[name="telefono"]').prop('readonly', false);
+            dispositivo.find('input[name="email"]').prop('readonly', false);
+            dispositivo.find('input[name="pass"]').prop('readonly', false);
+            $(this).siblings('.btn').show();
+            $(this).hide();
+        }
     }
     
     function operario_aceptar_click() {
-        alert('operario_aceptar_click()');
+        var botones = $(this).parent('.col-12').parent('.botones'),
+            d = botones.siblings('.dispositivo'),
+            carnet = botones.siblings('.carnet').find('#carnet'),
+            dispositivo = d.find('input[name="dispositivo"]'),
+            telefono = d.find('input[name="telefono"]'),
+            email = d.find('input[name="email"]'),
+            pass = d.find('input[name="pass"]'),
+            calcelar = $(this).siblings('.btn-cancelar'),
+            error = !(dispositivo.prop('validity').valid && telefono.prop('validity').valid && email.prop('validity').valid && pass.prop('validity').valid);
+        if (!error && telefono.val() != '') {
+            error = !telefono_valido(telefono.val());
+        }
+        if (!error) {
+            trabajadores.operarioSeleccionado.dispositivo = dispositivo.val() != '' ? dispositivo.val() : null;
+            trabajadores.operarioSeleccionado.telefono = telefono.val() != '' ? telefono.val() : null;
+            trabajadores.operarioSeleccionado.email = email.val() != '' ? email.val() : null;
+            trabajadores.operarioSeleccionado.pass = pass.val() != '' ? pass.val() : null;
+            trabajadores.operarioSeleccionado.carnet = carnet.prop('checked') ? 1 : 0;
+            $.ajax({
+                url: 'http://localhost:8080/ReForms_Provider/wr/operario/actualizarOperario/' + trabajadores.operarioSeleccionado.id,
+                dataType: 'json',
+                type: 'put',
+                contentType: 'application/json;charset=UTF-8',
+                data: JSON.stringify(trabajadores.operarioSeleccionado),
+                processData: false,
+                success: function(data, textStatus, jQxhr){
+                    calcelar.click();
+                },
+                error: function(jqXhr, textStatus, errorThrown){
+                    alerta('Error en proveedor', 'no ha sido posible actualizar el operario');
+                }
+            });
+        } else {
+            alerta('Error en los datos', 'revise los datos del operario');
+        }
     }
     
     function operario_cancelar_click() {
-        alert('operario_cancelar_click()');
+        var botones = $(this).parent('.col-12').parent('.botones'),
+            carnet = botones.siblings('.carnet').find('#carnet'),
+            dispositivo = botones.siblings('.dispositivo');
+        edicion = false;
+        dispositivo.find('input[name="dispositivo"]').val(trabajadores.operarioSeleccionado.dispositivo).prop('readonly', true);
+        dispositivo.find('input[name="telefono"]').val(trabajadores.operarioSeleccionado.telefono).prop('readonly', true);
+        dispositivo.find('input[name="email"]').val(trabajadores.operarioSeleccionado.email).prop('readonly', true);
+        dispositivo.find('input[name="pass"]').val(trabajadores.operarioSeleccionado.pass).prop('readonly', true);
+        carnet.prop('checked', trabajadores.operarioSeleccionado.carnet && trabajadores.operarioSeleccionado.carnet == 1).prop('disabled', true);
+        $(this).hide();
+        $(this).siblings('.btn-aceptar').hide();
+        $(this).siblings('.btn-editar').show();
     }
     
     function nuevo_trabajador_click() {
@@ -674,7 +771,7 @@ $(document).ready(function() {
     function trabajador_dni_change() {
         var dniStr = $(this).val(),
             btn = $(this).parent('div').siblings('.botones').children('.btn-aceptar');
-        if ($(this).prop('validity') && dni_valido(dniStr)) {
+        if ($(this).prop('validity').valid && dni_valido(dniStr)) {
             $(this).val($(this).val().toUpperCase());
             $.get('http://localhost:8080/ReForms_Provider/wr/trabajador/comprobarDni/' + dniStr, function(data, status) {
                 if (status == 'success') {
@@ -694,7 +791,7 @@ $(document).ready(function() {
     
     function trabajador_nombre_change() {
         var btn = $(this).parent('div').siblings('.botones').children('.btn-aceptar');
-        if ($(this).prop('validity') && $(this).val() != '') {
+        if ($(this).prop('validity').valid && $(this).val() != '') {
             validacionDatos.nombre = true;
         } else {
             validacionDatos.nombre = false;
@@ -704,7 +801,7 @@ $(document).ready(function() {
     
     function trabajador_apellido1_change() {
         var btn = $(this).parent('div').parent('div').siblings('.botones').children('.btn-aceptar');
-        if ($(this).prop('validity') && $(this).val() != '') {
+        if ($(this).prop('validity').valid && $(this).val() != '') {
             validacionDatos.apellido1 = true;
         } else {
             validacionDatos.apellido1 = false;
@@ -717,7 +814,7 @@ $(document).ready(function() {
             nombreLocalidad = $(this).siblings('input[name="nombreLocalidad"]'),
             contenedor = $(this).parent('div').parent('.localidad').parent('div').parent('.row').parent('.container-fluid'),
             coincidencias = contenedor.find('.coincidencias');
-        if ($(this).prop('validity') && cp_valido($(this).val())) {
+        if ($(this).prop('validity').valid && cp_valido($(this).val())) {
             $.get('http://localhost:8080/ReForms_Provider/wr/localidad/buscarLocalidadPorCodigoPostal/' + $(this).val(), function(data, status) {
                 validacionDatos.propiedad.cp = true;
                 if (status == 'success') {
@@ -741,7 +838,7 @@ $(document).ready(function() {
     
     function propiedad_nombreLocalidad_change() {
         var btn = $(this).parents('.propiedad').siblings('.trabajador').children('.botones').children('.btn-aceptar');
-        if ($(this).prop('validity') && $(this).val() != '') {
+        if ($(this).prop('validity').valid && $(this).val() != '') {
             validacionDatos.propiedad.localidad = true;
         } else {
             validacionDatos.propiedad.localidad = false;
@@ -752,7 +849,7 @@ $(document).ready(function() {
     function propiedad_direccion_change() {
         var btn = $(this).parents('.propiedad').siblings('.trabajador').children('.botones').children('.btn-aceptar'),
             coincidencias = $(this).parent('div').parent('.col-12').parent('.row').parent('.container-fluid').find('.coincidencias');
-        if ($(this).prop('validity') && $(this).val() != '') {
+        if ($(this).prop('validity').valid && $(this).val() != '') {
             validacionDatos.propiedad.direccion = true;
         } else {
             validacionDatos.propiedad.direccion = false;
@@ -764,7 +861,7 @@ $(document).ready(function() {
     function propiedad_numero_change() {
         var btn = $(this).parents('.propiedad').siblings('.trabajador').children('.botones').children('.btn-aceptar'),
             coincidencias = $(this).parent('div').parent('.col-12').parent('.row').parent('.container-fluid').find('.coincidencias');
-        if ($(this).prop('validity') && $(this).val() != '') {
+        if ($(this).prop('validity').valid && $(this).val() != '') {
             validacionDatos.propiedad.numero = true;
         } else {
             validacionDatos.propiedad.numero = false;
@@ -776,7 +873,7 @@ $(document).ready(function() {
     function propiedad_piso_change() {
         var btn = $(this).parents('.propiedad').siblings('.trabajador').children('.botones').children('.btn-aceptar'),
             coincidencias = $(this).parent('div').parent('.col-12').parent('.row').parent('.container-fluid').find('.coincidencias');
-        if (!validacionDatos.propiedadConfirmada && $(this).prop('validity') && $(this).val() != '') {
+        if (!validacionDatos.propiedadConfirmada && $(this).prop('validity').valid && $(this).val() != '') {
             busquedaPropiedad(coincidencias);
         }
     }
@@ -890,32 +987,32 @@ $(document).ready(function() {
             observaciones = propiedad.find('textarea[name="observaciones"]'),
             error = false,
             t = new Trabajador();
-        if (dni.prop('validity') && dni.val() != '' && dni_valido(dni.val())) {
+        if (dni.prop('validity').valid && dni.val() != '' && dni_valido(dni.val())) {
             t.dni = dni.val();
         } else {
             error = true;
         }
-        if (nombre.prop('validity') && nombre.val() != '') {
+        if (nombre.prop('validity').valid && nombre.val() != '') {
             t.nombre = nombre.val();
         } else {
             error = true;
         }
-        if (apellido1.prop('validity') && apellido1.val() != '') {
+        if (apellido1.prop('validity').valid && apellido1.val() != '') {
             t.apellido1 = apellido1.val();
         } else {
             error = true;
         }
-        if (apellido2.prop('validity')) {
+        if (apellido2.prop('validity').valid) {
             t.apellido2 = apellido2.val() !== '' ? apellido2.val() : null;
         }
-        if (telefono1.prop('validity') && telefono1.val() !== '') {
+        if (telefono1.prop('validity').valid && telefono1.val() !== '') {
             if (telefono_valido(telefono1.val())) {
                 t.telefono1 = telefono1.val();
             } else {
                 error = true;
             }
         }
-        if (telefono2.prop('validity') && telefono2.val() !== '') {
+        if (telefono2.prop('validity').valid && telefono2.val() !== '') {
             if (telefono_valido(telefono2.val())) {
                 t.telefono2 = telefono2.val();
             } else {
@@ -923,19 +1020,19 @@ $(document).ready(function() {
             }
         }
         if (email.val() !== '') {
-            if (email.prop('validity')) {
+            if (email.prop('validity').valid) {
                 t.email = email.val();
             } else {
                 error = true;
             }
         }
-        if (password.prop('validity')) {
+        if (password.prop('validity').valid) {
             t.password = password.val() !== '' ? password.val() : null;
         }
-        if (piso.prop('validity')) {
+        if (piso.prop('validity').valid) {
             trabajadores.propiedad.piso = piso.val() !== '' ? piso.val() : null;
         }
-        if (observaciones.prop('validity')) {
+        if (observaciones.prop('validity').valid) {
             trabajadores.propiedad.observaciones = observaciones.val() !== '' ? observaciones.val() : null;
         }
         if (!error) {
@@ -1007,6 +1104,64 @@ $(document).ready(function() {
         }
     }
     
+    function nomina_nueva_click() {
+        if (!edicion) {
+            edicion = true;
+            $(this).hide();
+            $(this).siblings('.btn').show();
+            $(this).parent('div').siblings('table').children('tbody').children('.nomina-nueva').show();
+        }
+    }
+    
+    function nomina_aceptar_click() {
+        var nueva = $(this).parent('div').siblings('table').children('tbody').children('.nomina-nueva'),
+            fecha = nueva.find('input[name="fecha"]'),
+            importe = nueva.find('input[name="importe"]'),
+            error = !(fecha.prop('validity').valid && importe.prop('validity').valid);
+        if (!error) {
+            var n =  new Nomina();
+            n.fecha = new Date(fecha.val());
+            n.importe = importe.val();
+            n.estado = nueva.find('select[name="estado"]').val();
+            n.trabajador = trabajadores.trabajadorSeleccionado;
+            $.ajax({
+                url: 'http://localhost:8080/ReForms_Provider/wr/nomina/agregarNomina',
+                dataType: 'json',
+                type: 'post',
+                contentType: 'application/json;charset=UTF-8',
+                data: JSON.stringify(n),
+                processData: false,
+                success: function(data, textStatus, jQxhr){
+                    $('#trabajadores').load('Html/trabajadores.html', cargar_trabajadores);
+                    alert('cargar tabla de nominas actualizada');
+                    edicion = false;
+                },
+                error: function(jQxhr, textStatus, errorThrown){
+                    alerta('Error en proveedor', 'no ha sido posible registrar la nomina');
+                }
+            });
+        } else {
+            alerta('Error en los datos', 'revise los datos de la nomina');
+        }
+        alert('nomina_aceptar_click');
+    }
+    
+    function nomina_cancelar_click() {
+        var nueva = $(this).parent('div').siblings('table').children('tbody').children('.nomina-nueva');
+        edicion = false;
+        $(this).hide();
+        $(this).siblings('.btn-aceptar').hide();
+        $(this).siblings('.btn-nuevo').show();
+        nueva.find('input[name="fecha"]').val('');
+        nueva.find('select[name="estado"]').val(0);
+        nueva.find('input[name="importe"]').val(0);
+        nueva.hide();
+    }
+    
+    function nomina_dblclick() {
+        alert('nomina_dblclick');
+    }
+    
     function vehiculo_click() {
         var detalles = $(this).parents('.tabla').siblings('.detalles');
         if (vehiculos.vehiculoSeleccionado == null || vehiculos.vehiculoSeleccionado.id != vehiculos.listaVehiculos[$(this).index()].id) {
@@ -1030,22 +1185,22 @@ $(document).ready(function() {
             adquisicion = form.find('input[name="adquisicion"]'),
             km = form.find('input[name="km"]'),
             observaciones = form.find('textarea[name="observaciones"]');
-        if (marca.prop('validity')) {
+        if (marca.prop('validity').valid) {
             vehiculos.vehiculoSeleccionado.marca = marca.val() !== '' ? marca.val() : null;
         }
-        if (modelo.prop('validity')) {
+        if (modelo.prop('validity').valid) {
             vehiculos.vehiculoSeleccionado.modelo = modelo.val() !== '' ? modelo.val() : null;
         }
-        if (matriculacion.prop('validity')) {
+        if (matriculacion.prop('validity').valid) {
             vehiculos.vehiculoSeleccionado.matriculacion = matriculacion.val() !== '' ? new Date(matriculacion.val()) : null;
         }
-        if (adquisicion.prop('validity')) {
+        if (adquisicion.prop('validity').valid) {
             vehiculos.vehiculoSeleccionado.adquisicion = adquisicion.val() !== '' ? new Date(adquisicion.val()) : null;
         }
-        if (km.prop('validity')) {
+        if (km.prop('validity').valid) {
             vehiculos.vehiculoSeleccionado.km = km.val() !== '' ? new Number(km.val()) : null;
         }
-        if (observaciones.prop('validity')) {
+        if (observaciones.prop('validity').valid) {
             vehiculos.vehiculoSeleccionado.observaciones = observaciones.val() !== '' ? observaciones.val() : null;
         }
         if (!error) {
@@ -1098,27 +1253,27 @@ $(document).ready(function() {
             adquisicion = form.find('input[name="adquisicion"]'),
             km = form.find('input[name="km"]'),
             observaciones = form.find('textarea[name="observaciones"]');
-        if (matricula.prop('validity') && matricula.val() !== '' && matricula_valida(matricula.val())) {
+        if (matricula.prop('validity').valid && matricula.val() !== '' && matricula_valida(matricula.val())) {
             nv.matricula = matricula.val().toUpperCase();
         } else {
             error = true;
         }
-        if (marca.prop('validity')) {
+        if (marca.prop('validity').valid) {
             nv.marca = marca.val() !== '' ? marca.val() : null;
         }
-        if (modelo.prop('validity')) {
+        if (modelo.prop('validity').valid) {
             nv.modelo = modelo.val() !== '' ? modelo.val() : null;
         }
-        if (matriculacion.prop('validity')) {
+        if (matriculacion.prop('validity').valid) {
             nv.matriculacion = matriculacion.val() !== '' ? new Date(matriculacion.val()) : null;
         }
-        if (adquisicion.prop('validity')) {
+        if (adquisicion.prop('validity').valid) {
             nv.adquisicion = adquisicion.val() !== '' ? new Date(adquisicion.val()) : null;
         }
-        if (km.prop('validity')) {
+        if (km.prop('validity').valid) {
             nv.km = km.val() !== '' ? new Number(km.val()) : null;
         }
-        if (observaciones.prop('validity')) {
+        if (observaciones.prop('validity').valid) {
             nv.observaciones = observaciones.val() !== '' ? observaciones.val() : null;
         }
         if (!error) {
@@ -1197,20 +1352,20 @@ $(document).ready(function() {
         } else {
             vehiculos.mantenimientoSeleccionado = new Mantenimiento();
         }
-        if (tipo.prop('validity')) {
+        if (tipo.prop('validity').valid) {
             vehiculos.mantenimientoSeleccionado.tipo = tipo.val();
         } else {
             error = true;
         }
-        if (fecha.prop('validity') && fecha.val() != '') {
+        if (fecha.prop('validity').valid && fecha.val() != '') {
             vehiculos.mantenimientoSeleccionado.fecha = new Date(fecha.val());
         } else {
             error = true;
         }
-        if (coste.prop('validity')) {
+        if (coste.prop('validity').valid) {
             vehiculos.mantenimientoSeleccionado.coste = coste.val() !== '' ? new Number(coste.val()) : 0.0;
         }
-        if (descripcion.prop('validity')) {
+        if (descripcion.prop('validity').valid) {
             vehiculos.mantenimientoSeleccionado.descripcion = descripcion.val() !== '' ? descripcion.val() : null;
         }
         if (!error) {
@@ -1365,9 +1520,9 @@ $(document).ready(function() {
             }, 'json');
             cuerpo.children('.nomina-nueva').hide();
             $(this).find('thead').css('background-color', colorBorde);
-            $(this).find('.btn-nuevo').css({'border-color':colorBorde, 'background-color':sinColor});
-            $(this).find('.btn-aceptar').hide();
-            $(this).find('.btn-cancelar').hide();
+            $(this).find('.btn-nuevo').css({'border-color':colorBorde, 'background-color':sinColor}).click(nomina_nueva_click);
+            $(this).find('.btn-aceptar').hide().click(nomina_aceptar_click);
+            $(this).find('.btn-cancelar').hide().click(nomina_cancelar_click);
         } else {
             alerta('Error 404', 'no se pudo cargar nominas.html');
         }
