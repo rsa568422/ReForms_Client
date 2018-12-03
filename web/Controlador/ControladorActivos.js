@@ -336,9 +336,14 @@ $(document).ready(function() {
     }
     
     function trabajador_editar_click() {
+        var trabajador = $(this).parent('.botones').parent('.trabajador');
         if (!edicion) {
             edicion = true;
-            alert('trabajador_editar_click');
+            trabajador.find('input[name="nombre"]').prop('readonly', false);
+            trabajador.find('input[name="apellido1"]').prop('readonly', false);
+            trabajador.find('input[name="apellido2"]').prop('readonly', false);
+            trabajador.find('input[name="telefono1"]').prop('readonly', false);
+            trabajador.find('input[name="telefono2"]').prop('readonly', false);
             $(this).siblings('.btn-aceptar').show();
             $(this).siblings('.btn-cancelar').show();
             $(this).hide();
@@ -346,13 +351,72 @@ $(document).ready(function() {
     }
     
     function trabajador_aceptar_click() {
-        alert('trabajador_aceptar_click');
+        var trabajador = $(this).parent('.botones').parent('.trabajador'),
+            vista = trabajador.parent('.row').parent('.marco').parent('.vista'),
+            cuerpo = vista.parent('.detalles').siblings('.principal').find('tbody'),
+            nombre = trabajador.find('input[name="nombre"]'),
+            apellido1 = trabajador.find('input[name="apellido1"]'),
+            apellido2 = trabajador.find('input[name="apellido2"]'),
+            telefono1 = trabajador.find('input[name="telefono1"]'),
+            telefono2 = trabajador.find('input[name="telefono2"]'),
+            error = !(nombre.prop('validity').valid && apellido1.prop('validity').valid && apellido2.prop('validity').valid && telefono1.prop('validity').valid && telefono2.prop('validity').valid);
+        if (!error && telefono1.val() != '') {
+            error = !telefono_valido(telefono1.val());
+        }
+        if (!error && telefono2.val() != '') {
+            error = !telefono_valido(telefono2.val());
+        }
+        if (!error) {
+            trabajadores.trabajadorSeleccionado.nombre = nombre.val() != '' ? nombre.val() : null;
+            trabajadores.trabajadorSeleccionado.apellido1 = apellido1.val() != '' ? apellido1.val() : null;
+            trabajadores.trabajadorSeleccionado.apellido2 = apellido2.val() != '' ? apellido2.val() : null;
+            trabajadores.trabajadorSeleccionado.telefono1 = telefono1.val() != '' ? telefono1.val() : null;
+            trabajadores.trabajadorSeleccionado.telefono2 = telefono2.val() != '' ? telefono2.val() : null;
+            $.ajax({
+                url: 'http://localhost:8080/ReForms_Provider/wr/trabajador/actualizarTrabajador/' + trabajadores.trabajadorSeleccionado.id,
+                dataType: 'json',
+                type: 'put',
+                contentType: 'application/json;charset=UTF-8',
+                data: JSON.stringify(trabajadores.trabajadorSeleccionado),
+                processData: false,
+                success: function(data, textStatus, jQxhr){
+                    var i, tr, apellidos;
+                    trabajadores.capacidadSeleccionada = null;
+                    trabajadores.cargoSeleccionado = null;
+                    trabajadores.coincidenciaSeleccionada = null;
+                    trabajadores.nominaSeleccionada = null;
+                    trabajadores.operarioSeleccionado = null;
+                    for (i = 0; i < trabajadores.listaTrabajadores.length; i++) {
+                        if (trabajadores.trabajadorSeleccionado.id == trabajadores.listaTrabajadores[i].id) {
+                            tr = cuerpo.children('tr').eq(i);
+                        }
+                    }
+                    tr.children('td').remove();
+                    apellidos = trabajadores.trabajadorSeleccionado.apellido1;
+                    if (trabajadores.trabajadorSeleccionado.apellido2 && trabajadores.trabajadorSeleccionado.apellido2 !== '') {
+                        apellidos += ' ' + trabajadores.trabajadorSeleccionado.apellido2;
+                    }
+                    tr.append('<td>' + trabajadores.trabajadorSeleccionado.nombre + '</td><td>' + apellidos + '</td>');
+                    vista.load('Html/trabajador.html', cargar_trabajador);
+                },
+                error: function(jqXhr, textStatus, errorThrown){
+                    alerta('Error en proveedor', 'no ha sido posible actualizar el trabajador');
+                }
+            });
+        } else {
+            alerta('Error en los datos', 'revise los datos del trabajador');
+        }
         $(this).siblings('.btn-cancelar').click();
     }
     
     function trabajador_cancelar_click() {
+        var trabajador = $(this).parent('.botones').parent('.trabajador');
         edicion = false;
-        alert('trabajador_cancelar_click');
+        trabajador.find('input[name="nombre"]').prop('readonly', true).val(trabajadores.trabajadorSeleccionado.nombre);
+        trabajador.find('input[name="apellido1"]').prop('readonly', true).val(trabajadores.trabajadorSeleccionado.apellido1);
+        trabajador.find('input[name="apellido2"]').prop('readonly', true).val(trabajadores.trabajadorSeleccionado.apellido2);
+        trabajador.find('input[name="telefono1"]').prop('readonly', true).val(trabajadores.trabajadorSeleccionado.telefono1);
+        trabajador.find('input[name="telefono2"]').prop('readonly', true).val(trabajadores.trabajadorSeleccionado.telefono2);
         $(this).siblings('.btn-editar').show();
         $(this).siblings('.btn-aceptar').hide();
         $(this).hide();
@@ -600,7 +664,7 @@ $(document).ready(function() {
             data: JSON.stringify(trabajadores.listaCapacidades[tr.index() - 1]),
             processData: false,
             success: function(data, textStatus, jQxhr){
-                vehiculos.vehiculoSeleccionado = null;
+                trabajadores.capacidadSeleccionada = null;
                 tr.children('td:last').remove();
                 tr.append('<td>' + dificultad + '</td>');
             },
@@ -1159,7 +1223,44 @@ $(document).ready(function() {
     }
     
     function nomina_dblclick() {
-        alert('nomina_dblclick');
+        if (!edicion) {
+            var estado = trabajadores.listaNominas[$(this).index() - 1].estado,
+                o0 = '<option value=0' + (estado == 0 ? ' selected' : '') + '>pendiente</option>',
+                o1 = '<option value=1' + (estado == 1 ? ' selected' : '') + '>pagada</option>',
+                o2 = '<option value=2' + (estado == 2 ? ' selected' : '') + '>adelanto</option>',
+                td = '<td><select name="cambioEstado" class="form-control custom-select">' + o0 + o1 + o2 + '</select></td>';
+            edicion = true;
+            $(this).children('td').eq(1).remove();
+            $(this).children('td:last').before(td);
+            $(this).find('select[name="cambioEstado"]').change(cambio_estado_change);
+        }
+    }
+    
+    function cambio_estado_change() {
+        var tr = $(this).parent('td').parent('tr'), estado, e = $(this).val();
+        switch (e) {
+            case '0': estado = 'pendiente'; break;
+            case '1': estado = 'pagada'; break;
+            case '2': estado = 'adelanto'; break;
+        }
+        trabajadores.listaNominas[tr.index() - 1].estado = e;
+        $.ajax({
+            url: 'http://localhost:8080/ReForms_Provider/wr/nomina/actualizarNomina/' + trabajadores.listaNominas[tr.index() - 1].id,
+            dataType: 'json',
+            type: 'put',
+            contentType: 'application/json;charset=UTF-8',
+            data: JSON.stringify(trabajadores.listaNominas[tr.index() - 1]),
+            processData: false,
+            success: function(data, textStatus, jQxhr){
+                trabajadores.nominaSeleccionada = null;
+                tr.children('td').eq(1).remove();
+                tr.children('td:last').before('<td>' + estado + '</td>');
+            },
+            error: function(jqXhr, textStatus, errorThrown){
+                alerta('Error en proveedor', 'no ha sido posible actualizar el estado de la nomina');
+            }
+        });
+        edicion = false;
     }
     
     function vehiculo_click() {
