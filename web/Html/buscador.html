@@ -1,6 +1,85 @@
+<script>
+    if (!sessionStorage.usuario) {
+        window.location.href = "http://localhost:8080/ReForms_Client/";
+    }
+</script>
+
+<style>
+    div.entradas-estado, div.entradas-informacion {
+        margin: 0;
+    }
+    
+    div.buscar {
+        text-align: right;
+    }
+    
+    div.tabla table thead tr th, div.tabla table tbody tr td {
+        text-align: center;
+    }
+</style>
+
 <div class="container-fluid">
-    <div class="buscador row">
-        <div class="col-12"></div>
+    <div class="busqueda row">
+        <div class="col-12 container-fluid">
+            <div class="principal row">
+                <div class="col-5">
+                    <select name="estado" class="form-control custom-select">
+                        <option value=-1 selected>todos los estados</option>
+                        <option value=0>abiertos</option>
+                        <option value=1>cerrados</option>
+                        <option value=2>devuletos</option>
+                        <option value=3>facturados</option>
+                        <option value=4>cobrados</option>
+                    </select>
+                </div>
+                <div class="col-5">
+                    <select name="informacion" class="form-control custom-select">
+                        <option value=-1 selected>sin filtro</option>
+                        <option value=0>por numero de siniestro</option>
+                        <option value=1>por numero de poliza</option>
+                        <option value=2>por nombre</option>
+                        <option value=3>por telefono</option>
+                        <option value=4>por direccion</option>
+                    </select>
+                </div>
+                <div class="buscar col-2">
+                    <a class="btn btn-buscar" href="#"><p class="text-dark"><i class="material-icons">search</i></p></a>
+                </div>
+            </div>
+            <div class="entradas row">
+                <div class="entradas-estado col-5 container-fluid">
+                    <div class="row">
+                        <div class="col-xl-6 col-12">
+                            <div class="custom-control custom-checkbox mb-3">
+                                <input id="check-pendientes" type="checkbox" class="custom-control-input" value=1>
+                                <label class="custom-control-label" for="check-pendientes">pendientes</label>
+                            </div>
+                        </div>
+                        <div class="col-xl-6 col-12">
+                            <div class="custom-control custom-checkbox mb-3">
+                                <input id="check-en-proceso" type="checkbox" class="custom-control-input" value=1>
+                                <label class="custom-control-label" for="check-en-proceso">en proceso</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xl-6 col-12">
+                            <div class="custom-control custom-checkbox mb-3">
+                                <input id="check-finalizados" type="checkbox" class="custom-control-input" value=1>
+                                <label class="custom-control-label" for="check-finalizados">finalizados</label>
+                            </div>
+                        </div>
+                        <div class="col-xl-6 col-12">
+                            <div class="custom-control custom-checkbox mb-3">
+                                <input id="check-parcialmente-finalizados" type="checkbox" class="custom-control-input" value=1>
+                                <label class="custom-control-label" for="check-parcialmente-finalizados">parcialmente finalizados</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="entradas-informacion col-5 container-fluid"></div>
+            </div>
+        </div>
     </div>
     <div class="resultados row">
         <div class="col-12">
@@ -8,14 +87,15 @@
                 <table class="table table-hover">
                     <thead>
                         <tr>
-                            <th>cosas</th>
+                            <th>Aseguradora</th>
+                            <th>Nº de Siniestro</th>
+                            <th>Nº de Poliza</th>
+                            <th>Fecha de registro</th>
+                            <th>Estado</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        <tr>
-                            <td>cosas</td>
-                        </tr>
-                    </tbody>
+                    <tbody></tbody>
+                    <tfoot></tfoot>
                 </table>
             </div>
         </div>

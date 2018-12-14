@@ -9,6 +9,31 @@
         border: 15px solid;
         border-radius: 20px;
     }
+    
+    .logo {
+        margin-right: 1%;
+        padding: 0.5%;
+        border: solid 1px;
+        border-radius: 5px;
+        width: 96px;
+        height: 72px;
+    }
+    
+    .seleccionada {
+        margin-right: 1%;
+        padding: 0.25%;
+        border: solid 3px;
+        border-radius: 5px;
+        width: 96px;
+        height: 72px;
+    }
+    
+    div.aseguradoras, div.buscador {
+        border: 5px solid;
+        border-radius: 10px;
+        margin: 1%;
+        padding: 1%;
+    }
 </style>
 
 <script src="Controlador/ControladorSiniestros.js"></script>
@@ -16,23 +41,8 @@
 <div id="ventana">
     <div class="container-fluid">
         <div class="aseguradoras">
-            Aseguradoras
+            <img class="logo seleccionada" src="" width="480" height="360" alt="Todas"/>
         </div>
-        <div class="abiertos ocultable">
-            <div class="ocultable-titulo">
-                <h2>Abiertos</h2>
-            </div>
-            <div class="ocultable-contenido">
-                <div id="abiertos">tabla siniestros abiertos</div>
-            </div>
-        </div>
-        <div class="cerrados ocultable">
-            <div class="ocultable-titulo">
-                <h2>Cerrados</h2>
-            </div>
-            <div class="ocultable-contenido">
-                <div id="cerrados">tabla siniestros cerrados</div>
-            </div>
-        </div>
+        <div class="buscador"></div>
     </div>
 </div>

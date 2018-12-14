@@ -1197,7 +1197,6 @@ $(document).ready(function() {
                 processData: false,
                 success: function(data, textStatus, jQxhr){
                     $('#trabajadores').load('Html/trabajadores.html', cargar_trabajadores);
-                    alert('cargar tabla de nominas actualizada');
                     edicion = false;
                 },
                 error: function(jQxhr, textStatus, errorThrown){
@@ -1207,7 +1206,6 @@ $(document).ready(function() {
         } else {
             alerta('Error en los datos', 'revise los datos de la nomina');
         }
-        alert('nomina_aceptar_click');
     }
     
     function nomina_cancelar_click() {
