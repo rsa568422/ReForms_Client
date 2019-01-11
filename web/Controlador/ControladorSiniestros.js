@@ -14,7 +14,6 @@ $(document).ready(function() {
         buscador = {
             'listaSiniestros': [],
             'totalSiniestros': 0,
-            'siniestroSeleccionado': null,
             'parametros': {
                 'estadoSeleccionado': '-1',
                 'subestados': '0000',
@@ -33,6 +32,54 @@ $(document).ready(function() {
     
     function generarLogo(aseguradora) {
         return i = '<img class="logo" src="data:image/gif;base64,' + aseguradora.logo + '" width="480" height="360" alt="' + aseguradora.nombre + '"/>';
+    }
+    
+    function generarDetalles(siniestro, listaTareas) {
+        var poliza, cliente, propiedad, tareas,
+            nombre = '<strong>Nombre: </strong>' + siniestro.poliza.cliente.nombre + ' ' + siniestro.poliza.cliente.apellido1,
+            telefono = '<strong>Telefono: </strong>' + siniestro.poliza.cliente.telefono1, tipo,
+            direccion = '<strong>Direccion: </strong>' + siniestro.poliza.propiedad.direccion + ', ' + siniestro.poliza.propiedad.numero, piso = '',
+            localidad = '<strong>Localidad: </strong>' + siniestro.poliza.propiedad.localidad.nombre + ' [' + siniestro.poliza.propiedad.localidad.cp + ']',
+            i, gremio, codigo, descripcion, estado;
+        if (siniestro.poliza.cliente.apellido2 && siniestro.poliza.cliente.apellido2 != null && siniestro.poliza.cliente.apellido2 != '') {
+            nombre += ' ' + siniestro.poliza.cliente.apellido2;
+        }
+        if (siniestro.poliza.cliente.telefono2 && siniestro.poliza.cliente.telefono2 != null && siniestro.poliza.cliente.telefono2 != '') {
+            telefono += ' / ' + siniestro.poliza.cliente.telefono2;
+        }
+        switch (siniestro.poliza.cliente.tipo) {
+            case 0: tipo = '<strong>Tipo de cliente: </strong>normal'; break;
+            case 1: tipo = '<strong>Tipo de cliente: </strong>preferente'; break;
+            case 2: tipo = '<strong>Tipo de cliente: </strong>VIP'; break;
+            default:  tipo = '';
+        }
+        if (siniestro.poliza.propiedad.piso && siniestro.poliza.propiedad.piso != null && siniestro.poliza.propiedad.piso != '') {
+            piso = '<strong>Piso: </strong>' + siniestro.poliza.propiedad.piso;
+        }
+        cliente = '<div class="col-xl-6 col-12"><h4>Datos del asegurado</h4><p>' + nombre + '</p><p>' + telefono + '</p><p>' + tipo + '</p></div>';
+        propiedad = '<div class="col-xl-6 col-12"><h4>Propiedad asegurada</h4><p>' + direccion + '</p><p>' + piso + '</p><p>' + localidad + '</p></div>';
+        poliza = '<div class="row">' + cliente + propiedad + '</div>';
+        tareas = '<div class="row"><div class="col-12"><h4>Tareas del siniestro</h4><div class="container-fuild">';
+        tareas += '<div class="row cabecera"><div class="col-3"><strong>gremio</strong></div><div class="col-3"><strong>codigo</strong></div><div class="col-3"><strong>descripcion</strong></div><div class="col-3"><strong>estado</strong></div></div>';
+        if (listaTareas.length == 0) {
+            tareas += '<div class="row"><div class="col-12">Sin tareas registradas</div></div>';
+        } else {
+            for (i = 0; i < listaTareas.length; i++) {
+                gremio = '<div class="col-3">' + listaTareas[i].trabajo.gremio.nombre + '</div>';
+                codigo = '<div class="col-3">' + listaTareas[i].trabajo.codigo + '</div>';
+                descripcion = '<div class="col-3">' + listaTareas[i].trabajo.descripcion + '</div>';
+                switch (listaTareas[i].estado) {
+                    case 0: estado = '<div class="col-3">pendiente</div>'; break;
+                    case 0: estado = '<div class="col-3">en proceso</div>'; break;
+                    case 0: estado = '<div class="col-3">finalizada</div>'; break;
+                    case 0: estado = '<div class="col-3">anulada</div>'; break;
+                    default: estado = '<div class="col-3"></div>';
+                }
+                tareas += '<div class="row">' + gremio + codigo + descripcion + estado + '</div>';
+            }
+        }
+        tareas += '</div></div></div>';
+        return '<tr class="siniestro-detalles"><td colspan="5"><div class="container-fuild">' + poliza + tareas + '</div></td></tr>';
     }
     
     function telefono_valido(telefonoStr) {
@@ -111,20 +158,11 @@ $(document).ready(function() {
         div.children('.logo').css("border-color", colorBorde).click(logo_click);
     }
     
-    function actualizar_tabla_siniestros(tbody, pagina) {
-        $.get(establecer_ruta(pagina).recurso, function(data, status) {
-            if (status == "success") {
-                buscador.listaSiniestros = data;
-                mostrar_tabla_siniestros(tbody, buscador.listaSiniestros);
-            } else {
-                alert('fallo en proveedor');
-            }
-        }, 'json');
-    }
-    
     function mostrar_tabla_siniestros(tbody, siniestros) {
         var i, aseguradora, siniestro, poliza, registro, estado;
+        aseguradoras.siniestroSeleccionado = null;
         tbody.children('.siniestro').remove();
+        tbody.children('.siniestro-detalles').remove();
         if (siniestros.length > 0) {
             for (i = 0; i < siniestros.length; i++) {
                 aseguradora = '<td>' + siniestros[i].poliza.cliente.aseguradora.nombre + '</td>';
@@ -144,9 +182,21 @@ $(document).ready(function() {
                 }
                 tbody.append('<tr class="siniestro">' + aseguradora + siniestro + poliza + registro + estado + '</tr>');
             }
+            tbody.children('.siniestro').click(siniestro_click);
         } else {
             tbody.append('<tr class="siniestro"><td colspan="5"><h3>Sin resultados</h3></td></tr>');
         }
+    }
+    
+    function actualizar_tabla_siniestros(tbody, pagina) {
+        $.get(establecer_ruta(pagina).recurso, function(data, status) {
+            if (status == "success") {
+                buscador.listaSiniestros = data;
+                mostrar_tabla_siniestros(tbody, buscador.listaSiniestros);
+            } else {
+                alert('fallo en proveedor');
+            }
+        }, 'json');
     }
     
     function mostrar_siniestros(table, siniestros, total) {
@@ -164,7 +214,7 @@ $(document).ready(function() {
             }
             pie += '<li class="page-item"><a class="pagina page-link" href="#"><span>></span></a></li></ul></td></tr>';
             tfoot.append(pie);
-            tfoot.find('a.pagina').css('background-color', sinColor).click(siniestros_pagina_click);
+            tfoot.find('a.pagina').css({'border-color':colorBorde, 'background-color':colorFondo}).click(siniestros_pagina_click);
             tfoot.find('a.pagina').eq(1).css('background-color', colorBorde);
             tfoot.find('span').css('color', 'black');
         }
@@ -248,15 +298,22 @@ $(document).ready(function() {
             } else {
                 alert('fallo en proveedor');
             }
-        }, 'json');
-        alert('btn_buscar_click()\nrecurso:\n' + ruta.recurso + '\ncuenta:\n' + ruta.cuenta);
+        }, 'text');
+    }
+    
+    function btn_siniestro_nuevo_click() {
+        if (aseguradoras.listaAseguradoras.length == 0) {
+            alerta('Sin aseguradoras', 'no es posible registrar un nuevo siniestro sin aseguradora asociada');
+        } else {
+            $('#contenido').load('Html/nuevosiniestro.html', cargar_nuevosiniestro);
+        }
     }
     
     function siniestros_pagina_click() {
         var li = $(this).parent('li'),
             lis = li.parent('ul').children('li'),
             tbody = li.parent('ul').parent('td').parent('tr').parent('tfoot').siblings('tbody');
-        li.siblings('li').children('a').css('background-color', sinColor);
+        li.siblings('li').children('a').css('background-color', colorFondo);
         $(this).css('background-color', colorBorde);
         if (li.index() == 0) {
             lis.eq(1).children('a').click();
@@ -265,6 +322,33 @@ $(document).ready(function() {
         } else {
             actualizar_tabla_siniestros(tbody, li.index() - 1);
         }  
+    }
+    
+    function siniestro_click() {
+        var actual = $(this), tareas = [], detalles;
+        actual.siblings('.siniestro-detalles').remove();
+        if (aseguradoras.siniestroSeleccionado != null && aseguradoras.siniestroSeleccionado.id == buscador.listaSiniestros[actual.index()].id) {
+            aseguradoras.siniestroSeleccionado = null;
+            actual.removeClass('seleccionado').css({'border-color':sinColor, 'background-color':sinColor});
+        } else {
+            aseguradoras.siniestroSeleccionado = buscador.listaSiniestros[actual.index()];
+            $.get('http://localhost:8080/ReForms_Provider/wr/tarea/buscarTareaPorSiniestro/' + aseguradoras.siniestroSeleccionado.id, function(data, status) {
+                if (status == "success") {
+                    tareas = data;
+                }
+                actual.siblings('.siniestro').removeClass('seleccionado').css({'border-color':sinColor, 'background-color':sinColor});
+                actual.addClass('seleccionado').css({'border-color':colorBorde, 'background-color':colorFondo});
+                actual.after(generarDetalles(aseguradoras.siniestroSeleccionado, tareas));
+                detalles = actual.siblings('.siniestro-detalles');
+                detalles.find('div.cabecera').css('background-color', colorFondo);
+                detalles.css('border-color', colorBorde).dblclick(siniestro_detalles_dblclick);
+            }, 'json');
+        }
+    }
+    
+    function siniestro_detalles_dblclick() {
+        sessionStorage.setItem('siniestro', JSON.stringify(aseguradoras.siniestroSeleccionado));
+        $('#contenido').load('Html/siniestro.html', cargar_siniestro);
     }
     
     function buscador_estado_change() {
@@ -319,6 +403,10 @@ $(document).ready(function() {
                 break;
             case '4':
                 entrada =   '<div class="entrada input-group mb-3">' +
+                                '<div class="input-group-prepend"><span class="input-group-text">c.p.</span></div>' +
+                                '<input name="cp" class="form-control" type="text" maxlength="5" placeholder="c.p. *"/>' +
+                            '</div>' +
+                            '<div class="entrada input-group mb-3">' +
                                 '<div class="input-group-prepend"><span class="input-group-text">direccion</span></div>' +
                                 '<input name="direccion" class="form-control" type="text" maxlength="250" required placeholder="direccion *"/>' +
                                 '<input name="numero" class="form-control" type="number" step=1 min=1 required placeholder="numero *"/>' +
@@ -326,10 +414,6 @@ $(document).ready(function() {
                             '<div class="entrada input-group mb-3">' +
                                 '<div class="input-group-prepend"><span class="input-group-text">piso</span></div>' +
                                 '<input name="piso" class="form-control" type="text" maxlength="20" placeholder="piso"/>' +
-                            '</div>' +
-                            '<div class="entrada input-group mb-3">' +
-                                '<div class="input-group-prepend"><span class="input-group-text">c.p.</span></div>' +
-                                '<input name="cp" class="form-control" type="text" maxlength="5" placeholder="c.p. *"/>' +
                             '</div>';
                 entradas_informacion.append(entrada);
                 break;
@@ -362,16 +446,30 @@ $(document).ready(function() {
                 } else {
                     alert('fallo en proveedor');
                 }
-            }, 'json');     
+            }, 'text');
             principal.find('select[name="estado"]').change(buscador_estado_change);
             principal.find('select[name="informacion"]').change(buscador_informacion_change);
             principal.find('.btn-buscar').click(btn_buscar_click);
+            principal.find('button[name="siniestro-nuevo"]').css({'border-color':colorBorde, 'background-color':colorFondo}).click(btn_siniestro_nuevo_click);
             entradas.find('input[type="checkbox"]').prop('checked', true);
             tabla.children('thead').css('background-color', colorBorde);
             entradas.children('.entradas-estado').children('.row').hide();
             entradas.children('.entradas-informacion').hide();
         } else {
             alerta('Error 404', 'no se pudo cargar buscador.html');
+        }
+    }
+    
+    function cargar_nuevosiniestro(responseTxt, statusTxt) {
+        if (statusTxt != 'success') {
+            alerta('Error 404', 'no se pudo cargar nuevosiniestro.html');
+        }
+    }
+    
+    function cargar_siniestro(responseTxt, statusTxt) {
+        if (statusTxt != 'success') {
+            alerta('Error 404', 'no se pudo cargar siniestro.html');
+            sessionStorage.removeItem('siniestro');
         }
     }
     

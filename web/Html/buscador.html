@@ -10,11 +10,35 @@
     }
     
     div.buscar {
+        text-align: left;
+    }
+    
+    div.nuevo {
         text-align: right;
     }
     
-    div.tabla table thead tr th, div.tabla table tbody tr td {
+    div.resultados div.col-12 div.tabla table thead tr th, div.resultados div.col-12 div.tabla table tbody tr td {
         text-align: center;
+    }
+    
+    tr.seleccionado {
+        border-style: solid;
+        border-width: 3px;
+    }
+
+    tr.siniestro-detalles {
+        border-style: solid;
+        border-width: 0 3px 3px 3px;
+    }
+    
+    select[name="estado"], select[name="informacion"] {
+        margin-bottom: 0px;
+    }
+    
+    @media only screen and (max-width: 1200px) {
+        select[name="estado"], select[name="informacion"] {
+            margin-bottom: 1%;
+        }
     }
 </style>
 
@@ -22,7 +46,7 @@
     <div class="busqueda row">
         <div class="col-12 container-fluid">
             <div class="principal row">
-                <div class="col-5">
+                <div class="col-xl-5 col-12">
                     <select name="estado" class="form-control custom-select">
                         <option value=-1 selected>todos los estados</option>
                         <option value=0>abiertos</option>
@@ -32,7 +56,7 @@
                         <option value=7>cobrados</option>
                     </select>
                 </div>
-                <div class="col-5">
+                <div class="col-xl-5 col-12">
                     <select name="informacion" class="form-control custom-select">
                         <option value=-1 selected>sin filtro</option>
                         <option value=0>por numero de siniestro</option>
@@ -42,20 +66,23 @@
                         <option value=4>por direccion</option>
                     </select>
                 </div>
-                <div class="buscar col-2">
+                <div class="buscar col-xl-1 col-6">
                     <a class="btn btn-buscar" href="#"><p class="text-dark"><i class="material-icons">search</i></p></a>
+                </div>
+                <div class="nuevo col-xl-1 col-6">
+                    <button name="siniestro-nuevo" class="btn" type="button">nuevo</button>
                 </div>
             </div>
             <div class="entradas row">
-                <div class="entradas-estado col-5 container-fluid">
+                <div class="entradas-estado col-xl-5 col-12 container-fluid">
                     <div class="row">
-                        <div class="col-xl-6 col-12">
+                        <div class="col-6">
                             <div class="custom-control custom-checkbox mb-3">
                                 <input id="check-pendientes" type="checkbox" class="custom-control-input" value=1>
                                 <label class="custom-control-label" for="check-pendientes">pendientes</label>
                             </div>
                         </div>
-                        <div class="col-xl-6 col-12">
+                        <div class="col-6">
                             <div class="custom-control custom-checkbox mb-3">
                                 <input id="check-en-proceso" type="checkbox" class="custom-control-input" value=1>
                                 <label class="custom-control-label" for="check-en-proceso">en proceso</label>
@@ -63,13 +90,13 @@
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col-xl-6 col-12">
+                        <div class="col-6">
                             <div class="custom-control custom-checkbox mb-3">
                                 <input id="check-finalizados" type="checkbox" class="custom-control-input" value=1>
                                 <label class="custom-control-label" for="check-finalizados">finalizados</label>
                             </div>
                         </div>
-                        <div class="col-xl-6 col-12">
+                        <div class="col-6">
                             <div class="custom-control custom-checkbox mb-3">
                                 <input id="check-parcialmente-finalizados" type="checkbox" class="custom-control-input" value=1>
                                 <label class="custom-control-label" for="check-parcialmente-finalizados">parcialmente finalizados</label>
@@ -77,7 +104,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="entradas-informacion col-5 container-fluid"></div>
+                <div class="entradas-informacion col-xl-5 col-12 container-fluid"></div>
             </div>
         </div>
     </div>

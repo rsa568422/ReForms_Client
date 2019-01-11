@@ -1,1 +1,94 @@
-siniestro.html
+<script>
+    if (!sessionStorage.usuario) {
+        window.location.href = "http://localhost:8080/ReForms_Client/";
+    }
+</script>
+
+<style>
+    #ventana {
+        border: 15px solid;
+        border-radius: 20px;
+    }
+    
+    .volver div.col-12 {
+        text-align: right;
+    }
+    
+    .volver div.col-12 button[name="volver"] {
+        margin-top: 1%;
+        margin-bottom: 1%;
+    }
+    
+    .ocultable {
+        border: 5px solid;
+        border-radius: 10px;
+        margin-bottom: 1%;
+        padding: 1%;
+    }
+</style>
+
+<script src="Controlador/ControladorSiniestro.js"></script>
+
+<div id="ventana">
+    <div class="container-fluid">
+        <div class="volver row">
+            <div class="col-12">
+                <button name="volver" class="btn" type="button">volver</button>
+            </div>
+        </div>
+        <div class="siniestro ocultable">
+            <div class="ocultable-titulo">
+                <h2>Informacion del siniestro</h2>
+            </div>
+            <div class="ocultable-contenido">
+                <div class="row">
+                    <div class="col-12">
+                        Siniestro: <br>
+                        - numero de siniestro / estado del siniestro <br>
+                        - fecha de registro / perito actual (de momento original) <br>
+                        - numero de albaran <br>
+                        - archivo original
+                    </div>
+                </div>
+                <div class="poliza row">
+                    <div class="col-12"></div>
+                </div>
+                <div class="row">
+                    <div class="col-xl-6">Contactos (tabla con informacion de los contactos)</div>
+                    <div class="col-xl-6">Afectado (direccion del afectado)</div>
+                </div>
+            </div>
+        </div>
+        <div class="tareas ocultable">
+            <div class="ocultable-titulo">
+                <h2>Tareas</h2>
+            </div>
+            <div class="ocultable-contenido">
+                <div class="row">
+                    <div class="col-12">Tabla con las tareas</div>
+                </div>
+            </div>
+        </div>
+        <div class="eventos ocultable">
+            <div class="ocultable-titulo">
+                <h2>Eventos</h2>
+            </div>
+            <div class="ocultable-contenido">
+                <div class="row">
+                    <div class="col-12">Tabla con los eventos</div>
+                </div>
+            </div>
+        </div>
+        <div class="adicional ocultable">
+            <div class="ocultable-titulo">
+                <h2>Informacion adicional</h2>
+            </div>
+            <div class="ocultable-contenido">
+                <div class="row">
+                    <div class="col-xl-6">Tabla con los recursos</div>
+                    <div class="col-xl-6">Tabla con los Participantes</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

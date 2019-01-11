@@ -1162,7 +1162,7 @@ $(document).ready(function() {
                     }, 'json');
                     break;
             }
-            $(this).siblings('.btn-tipo').css({'border-color':colorBorde, 'background-color':sinColor});
+            $(this).siblings('.btn-tipo').css({'border-color':colorBorde, 'background-color':colorFondo});
             $(this).css('background-color', colorBorde);
             $(this).parents('.principal').siblings('.detalles').hide();
         }
@@ -1537,8 +1537,8 @@ $(document).ready(function() {
             }, 'json');
             boton.click(nuevo_trabajador_click);
             filtro.find('.btn-tipo').click(trabajador_tipo_click);
-            boton.css({'border-color':colorBorde, 'background-color':sinColor});
-            filtro.find('.btn-tipo').css({'border-color':colorBorde, 'background-color':sinColor});
+            boton.css({'border-color':colorBorde, 'background-color':colorFondo});
+            filtro.find('.btn-tipo').css({'border-color':colorBorde, 'background-color':colorFondo});
             filtro.find('.btn-tipo').eq(0).css('background-color', colorBorde);
             tabla.find('thead').css('background-color', colorBorde);
             detalles.children('.vista').css('border-color', colorBorde);
@@ -1585,10 +1585,10 @@ $(document).ready(function() {
             }, 'json');
             dispositivo.find('.vista').css('border-color', colorBorde);
             tabla.find('thead').css('background-color', colorBorde);
-            tabla.find('.btn-nuevo').css({'border-color':colorBorde, 'background-color':sinColor}).click(capacidad_nueva_click);
+            tabla.find('.btn-nuevo').css({'border-color':colorBorde, 'background-color':colorFondo}).click(capacidad_nueva_click);
             tabla.find('.btn-aceptar').click(capacidades_aceptar_click);
             tabla.find('.btn-cancelar').click(capacidades_cancelar_click);
-            botones.find('.btn-editar').css({'border-color':colorBorde, 'background-color':sinColor}).click(operario_editar_click);
+            botones.find('.btn-editar').css({'border-color':colorBorde, 'background-color':colorFondo}).click(operario_editar_click);
             botones.find('.btn-aceptar').hide().click(operario_aceptar_click);
             botones.find('.btn-cancelar').hide().click(operario_cancelar_click);
             tabla.find('.btn-aceptar').hide();
@@ -1619,7 +1619,7 @@ $(document).ready(function() {
             }, 'json');
             cuerpo.children('.nomina-nueva').hide();
             $(this).find('thead').css('background-color', colorBorde);
-            $(this).find('.btn-nuevo').css({'border-color':colorBorde, 'background-color':sinColor}).click(nomina_nueva_click);
+            $(this).find('.btn-nuevo').css({'border-color':colorBorde, 'background-color':colorFondo}).click(nomina_nueva_click);
             $(this).find('.btn-aceptar').hide().click(nomina_aceptar_click);
             $(this).find('.btn-cancelar').hide().click(nomina_cancelar_click);
         } else {
@@ -1652,12 +1652,12 @@ $(document).ready(function() {
             propiedad.val(trabajadores.trabajadorSeleccionado.propiedad.direccion + ' ' + trabajadores.trabajadorSeleccionado.propiedad.numero + ', ' + trabajadores.trabajadorSeleccionado.propiedad.localidad.nombre).prop('readonly', true);
             email.parent().remove();
             password.parent().remove();
-            trabajador.find('.btn-editar').css({'border-color':colorBorde, 'background-color':sinColor}).click(trabajador_editar_click);
+            trabajador.find('.btn-editar').css({'border-color':colorBorde, 'background-color':colorFondo}).click(trabajador_editar_click);
             trabajador.find('.btn-aceptar').hide().click(trabajador_aceptar_click);
             trabajador.find('.btn-cancelar').hide().click(trabajador_cancelar_click);
             mostrar_tabla_cargos(cuerpoCargos);
             cargos.find('thead').css('background-color', colorBorde);
-            cargos.find('.btn-nuevo').css({'border-color':colorBorde, 'background-color':sinColor}).click(cargo_nuevo_click);
+            cargos.find('.btn-nuevo').css({'border-color':colorBorde, 'background-color':colorFondo}).click(cargo_nuevo_click);
             cargos.find('.btn-aceptar').hide().click(cargo_aceptar_click);
             cargos.find('.btn-cancelar').hide().click(cargo_cancelar_click);
             cuerpoCargos.children('.cargo-nuevo').find('select[name="cargo"]').change(trabajador_cargo_change);
@@ -1682,7 +1682,7 @@ $(document).ready(function() {
             $(this).find('.titulo').append('Residencia');
             coincidencias.css('border-color', colorBorde).hide();
             coincidencias.find('thead').css('background-color', colorBorde);
-            coincidencias.find('.btn-utilizar').css({'border-color':colorBorde, 'background-color':sinColor}).prop('disabled', true).click(coincidencia_utilizar_click);
+            coincidencias.find('.btn-utilizar').css({'border-color':colorBorde, 'background-color':colorFondo}).prop('disabled', true).click(coincidencia_utilizar_click);
             $(this).find('.mapa').hide();
         } else {
             alerta('Error 404', 'no se pudo cargar propiedad.html');
@@ -1754,7 +1754,7 @@ $(document).ready(function() {
             mantenimientos.find('.btn-nuevo').click(nuevo_mantenimiento_click);
             mantenimientos.find('.btn-aceptar').click(mantenimiento_aceptar_click);
             mantenimientos.find('.btn-cancelar').click(mantenimiento_cancelar_click);
-            mantenimientos.find('.btn-nuevo').css({'border-color':colorBorde, 'background-color':sinColor});
+            mantenimientos.find('.btn-nuevo').css({'border-color':colorBorde, 'background-color':colorFondo});
             mantenimientos.find('table').children('thead').css('background-color', colorBorde);
             mantenimientos.find('.vista').css('border-color', colorBorde);
             $(this).css('border-color', colorBorde);
@@ -1791,7 +1791,7 @@ $(document).ready(function() {
                 }
             }, 'json');
             boton.click(nuevo_vehiculo_click);
-            boton.css({'border-color':colorBorde, 'background-color':sinColor});
+            boton.css({'border-color':colorBorde, 'background-color':colorFondo});
             tabla.children('table').children('thead').css('background-color', colorBorde);
             $(this).find('.detalles').hide();
         } else {

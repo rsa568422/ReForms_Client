@@ -7,14 +7,13 @@ $(document).ready(function() {
         colorFondo = colorBorde.substring(0, colorBorde.length - 1) + ', 0.1)',
         sinColor = 'rgb(0, 0, 0, 0)',
         contenedor = $('#ventana').children('div[class="container-fluid"]'),
+        calendario = contenedor.children('div.row').children('div.calendario'),
+        fecha = calendario.children('input[name="fecha"]'),
+        tbody = calendario.children('table').children('tbody'),
         jornadas = {
             'listaJornadas': [],
             'jornadaSeleccionada': null
         },
-        calendario = {
-            'fechaSeleccionada': null
-        },
-        validacion = null,
         edicion = false;
     
     // Funciones auxiliares
@@ -25,29 +24,83 @@ $(document).ready(function() {
         $('#activador-alerta').click();
     }
     
-    function mostrar_calendario(a, m, calendario) {
-        var i, fecha = new Date(a, m);
-    }
-    
-    function testValidacion(v) {
-        var x, test = true;
-        for (x in v) {
-            if (typeof v[x] == 'object') {
-                test &= testValidacion(v[x]);
+    function mostrar_calendario(a, m, tbody) {
+        $.get('http://localhost:8080/ReForms_Provider/wr/jornada/infoMes/' + a + '/' + m, function(data, status) {
+            if (status == "success") {
+                var primero = new Number(data.slice(0, data.indexOf('/'))),
+                    maximo = new Number(data.slice(data.indexOf('/') + 1, data.length)),
+                    semana, actual = 1, posicion = 0;
+                    
+                $.get('http://localhost:8080/ReForms_Provider/wr/jornada/contarJornadaPorMes/' + a + '/' + m, function(data, status) {
+                    if (status == "success") {
+                        $.get('http://localhost:8080/ReForms_Provider/wr/jornada/buscarJornadaPorMes/' + a + '/' + m, function(data, status) {
+                            if (status == "success") {
+                                alert(data.length);
+                            } else {
+                                alert('no llega nada');
+                            }
+                        }, 'json');
+                    } else {
+                        alert('fallo en proveedor');
+                    }
+                }, 'text');
+                
+                tbody.children('tr.semana').remove();
+                semana = '<tr class="semana">';
+                if (primero > 0) {
+                    semana += '<td colspan="' + primero + '"></td>';
+                    posicion = primero;
+                }
+                for (posicion; posicion < 7; posicion++) {
+                    semana += '<td><div class="dia"><h5>' + actual + '</h5></div></td>';
+                    actual++;
+                }
+                semana += '</tr>';
+                if (maximo > 0) {
+                    tbody.append(semana);
+                }
+                while (actual <= maximo) {
+                    semana = '<tr class="semana">';
+                    if ((actual + 6) <= maximo) {
+                        for (posicion = 0; posicion < 7; posicion++) {
+                            semana += '<td><div class="dia"><h5>' + actual + '</h5></div></td>';
+                            actual++;
+                        }
+                        semana += '</tr>';
+                        tbody.append(semana);
+                    } else {
+                        posicion = 0;
+                        for (actual; actual <= maximo; actual++) {
+                            semana += '<td><div class="dia"><h5>' + actual + '</h5></div></td>';
+                            posicion++;
+                        }
+                        semana += '<td colspan="' + (7 - posicion) + '"></td>';
+                        semana += '</tr>';
+                        tbody.append(semana);
+                    }    
+                }
+                tbody.find('.dia').css({'border-color':colorBorde, 'background-color':sinColor}).click(dia_click);
             } else {
-                test &= v[x];
+                alert('fallo en proveedor');
             }
-        }
-        return test;
+        }, 'text');
     }
     
     // Funciones controladoras para componentes
     // ====================================================================== //
-    function ocultable_click() {
-        if (!edicion) {
-            $(this).siblings('.ocultable-contenido').slideToggle();
-            $(this).parent('.ocultable').siblings('.ocultable').children('.ocultable-contenido').slideUp()();
-        }
+    function dia_click() {
+        alert($(this).text());
+        $(this).css('border-width', '3px');
+        $(this).parent('td').parent('tr').parent('tbody').find('.dia').not($(this)).css('border-width', '1px');
+    }
+    
+    function fecha_change() {
+        var fecha = $(this).val(),
+            a = fecha.slice(0, fecha.indexOf('-')),
+            m = fecha.slice(fecha.indexOf('-') + 1, fecha.lastIndexOf('-'));
+        fecha = a + '-' + m + '-01';
+        $(this).val(fecha);
+        mostrar_calendario(a, m, tbody);
     }
     
     // Funciones para cargar paginas y definir su comportamiento
@@ -58,17 +111,13 @@ $(document).ready(function() {
     
     // Cargar paginas y aplicar controles
     // ====================================================================== //
-    contenedor.children('.ocultable').children('.ocultable-titulo').click(ocultable_click);
+    var f = new Date(), y = f.getFullYear(), m = f.getMonth() + 1;
+    fecha.val(y + (m < 10 ? '-0' + m : '-' + m) + '-01');
+    fecha.change(fecha_change);
+    mostrar_calendario(y, m, tbody);
     
     // Inicializacion de aspecto y colores
     // ====================================================================== //
-    $("#ventana").css("border-color", colorBorde);
-    $("#ventana").css("background-color", colorFondo);
-    contenedor.children('.cerrados').children('.ocultable-contenido').hide();
-    calendario.fechaSeleccionada = new Date();
-    calendario.fechaSeleccionada.setHours(0);
-    calendario.fechaSeleccionada.setMinutes(0);
-    calendario.fechaSeleccionada.setSeconds(0);
-    calendario.fechaSeleccionada.setMilliseconds(0);
-    mostrar_calendario(calendario.fechaSeleccionada.getFullYear(), calendario.fechaSeleccionada.getMonth());
+    $("#ventana").css({'border-color':colorBorde, 'background-color':colorFondo});
+    tbody.siblings('thead').children('tr').css("background-color", colorBorde);
 });

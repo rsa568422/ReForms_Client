@@ -1,0 +1,132 @@
+<script>
+    if (!sessionStorage.usuario) {
+        window.location.href = "http://localhost:8080/ReForms_Client/";
+    }
+</script>
+
+<style>    
+    div.marco-poliza {
+        margin-top: 0px;
+        border: 5px solid;
+        border-radius: 10px;
+        padding: 1%;
+    }
+    
+    div.marco-poliza div.row:first-child div.col-3:last-child {
+        text-align: right;
+    }
+    
+    img.logo {
+        margin-right: 1%;
+        padding: 0.25%;
+        border: solid 3px;
+        border-radius: 5px;
+        width: 96px;
+        height: 72px;
+    }
+    
+    div.marco-poliza div.informacion div.cliente div.row:first-child div.col-12, div.informacion div.propiedad div.row:first-child div.col-12 {
+        text-align: center;
+    }
+</style>
+
+<script src="Controlador/ControladorPoliza.js"></script>
+
+<div class="marco marco-poliza container-fluid">
+    <div class="row">
+        <div class="aseguradora col-3 col-md-2 col-xl-1"></div>
+        <div class="col-6 col-md-8 col-xl-10">
+            <div class="form-group">
+                <label for="poliza_numero"><strong>Numero de poliza</strong></label>
+                <input name="poliza_numero" class="form-control" type="text" maxlength="10" readonly/>
+            </div>
+        </div>
+        <div class="col-3 col-md-2 col-xl-1">
+            <button name="historial" class="btn" type="button">historial</button>
+        </div>
+    </div>
+    <div class="informacion row">
+        <div class="cliente col-xl-6 container-fluid">
+            <div class="row">
+                <div class="col-12">
+                    <h4>Datos del asegurado</h4>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12">
+                    <div class="form-group">
+                        <label for="poliza_cliente_tipo">Tipo de cliente</label>
+                        <input name="poliza_cliente_tipo" class="form-control" type="text" maxlength="10" readonly/>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12">
+                    <div class="form-group">
+                        <label for="poliza_cliente_nombre">Nombre</label>
+                        <input name="poliza_cliente_nombre" class="form-control" type="text" maxlength="155" readonly/>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12">
+                    <div class="form-group">
+                        <label for="poliza_cliente_telefono">Telefono</label>
+                        <input name="poliza_cliente_telefono" class="form-control" type="text" maxlength="25" readonly/>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12">
+                    <div class="form-group">
+                        <label for="poliza_cliente_observaciones">Observaciones</label>
+                        <textarea name="poliza_cliente_observaciones" class="form-control" rows="4" maxlength="250" readonly/>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="propiedad col-xl-6 container-fluid">
+            <div class="row">
+                <div class="col-12">
+                    <h4>Propiedad asegurada</h4>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12">
+                    <div class="form-group">
+                        <label for="poliza_propiedad_localidad">Localidad</label>
+                        <input name="poliza_propiedad_localidad" class="form-control" type="text" maxlength="100" readonly/>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12">
+                    <div class="form-group">
+                        <label for="poliza_propiedad_direccion">Direccion</label>
+                        <input name="poliza_propiedad_direccion" class="form-control" type="text" maxlength="255" readonly/>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12">
+                    <div class="form-group">
+                        <label for="poliza_propiedad_piso">Piso</label>
+                        <input name="poliza_propiedad_piso" class="form-control" type="text" maxlength="20" readonly/>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12">
+                    <div class="form-group">
+                        <label for="poliza_propiedad_observaciones">Observaciones</label>
+                        <textarea name="poliza_propiedad_observaciones" class="form-control" rows="4" maxlength="250" readonly/>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="mapa col-12">
+        </div>
+    </div>
+</div>

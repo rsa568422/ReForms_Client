@@ -9,6 +9,30 @@
         border: 15px solid;
         border-radius: 20px;
     }
+    
+    input[name="fecha"] {
+        margin-top: 3%;
+        margin-bottom: 3%;
+    }
+    
+    div.calendario table {
+        width: 100%;
+        margin-bottom: 3%;
+    }
+    
+    div.calendario table thead th h4 {
+        text-align: center;
+    }
+    
+    div.dia {
+        border: solid 1px;
+        border-radius: 5px;
+        margin: 0.5%;
+        padding-top: 10px;
+        width: 100%;
+        height: 50px;
+        text-align: center;
+    }
 </style>
 
 <script src="Controlador/ControladorJornadas.js"></script>
@@ -16,11 +40,25 @@
 <div id="ventana">
     <div class="container-fluid">
         <div class="row">
-            <div class="tabla col-xl-6">
-                tabla
-            </div>
             <div class="calendario col-xl-6">
-                calendario
+                <input name="fecha" type="date" class="form-control"/>
+                <table>
+                    <thead>
+                        <tr>
+                            <th><h4>L</h4></th>
+                            <th><h4>M</h4></th>
+                            <th><h4>X</h4></th>
+                            <th><h4>J</h4></th>
+                            <th><h4>V</h4></th>
+                            <th><h4>S</h4></th>
+                            <th><h4>D</h4></th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <div class="jornada col-xl-6">
+                detalles jornada seleccionada
             </div>
         </div>
     </div>

@@ -1,0 +1,79 @@
+<script>
+    if (!sessionStorage.usuario) {
+        window.location.href = "http://localhost:8080/ReForms_Client/";
+    }
+</script>
+
+<style>
+    #ventana {
+        border: 15px solid;
+        border-radius: 20px;
+    }
+    
+    div.container-fluid div.progreso {
+        padding: 2%;
+        border-bottom: 15px solid;
+    }
+    
+    div.container-fluid div.progreso div.progress {
+        border: 1px solid;
+        border-radius: 3px;
+    }
+    
+    div.container-fluid div.progreso div.progress div.progress-bar {
+        width:0%;
+    }
+    
+    .btn-aceptar, .btn-cancelar {
+        margin-top: 1%;
+        margin-bottom: 1%;
+    }
+    
+    .btn-aceptar {
+        color: rgb(0, 128, 0);
+        border-color: rgb(0, 128, 0);
+        background-color: rgb(0, 128, 0, 0.1);
+        margin-right: 1%;
+    }
+    
+    .btn-cancelar {
+        color: rgb(255, 0, 0);
+        border-color: rgb(255, 0, 0);
+        background-color: rgb(255, 0, 0, 0.1);
+    }
+</style>
+
+<script src="Entidad/Siniestro.js"></script>
+<script src="Controlador/ControladorNuevoSiniestro.js"></script>
+
+<div id="ventana">
+    <div class="container-fluid">
+        <div class="progreso row">
+            <div class="col-12">
+                <h3>Progreso</h3>
+                <div class="progress">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated"></div>
+                </div>
+            </div>
+        </div>
+        <div class="aseguradora row">
+            <div class="col-12">
+                aseguradora (aseguradora y numero de siniestro)
+            </div>
+        </div>
+        <div class="poliza row">
+            <div class="col-12"></div>
+        </div>
+        <div class="registro row">
+            <div class="col-12">
+                registro (fecha, perito, original y observaciones)
+            </div>
+        </div>
+        <div class="botones row">
+            <div class="col-12">
+                <button class="btn btn-aceptar" type="button">aceptar</button>
+                <button class="btn btn-cancelar" type="button">cancelar</button>
+            </div>
+        </div>
+    </div>
+</div>
