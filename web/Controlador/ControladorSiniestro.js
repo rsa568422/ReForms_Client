@@ -34,15 +34,17 @@ $(document).ready(function() {
     // ====================================================================== //
     function cargar_poliza(responseTxt, statusTxt) {
         if (statusTxt != 'success') {
-            alerta('Error 404', 'no se pudo cargar algo.html');
+            alerta('Error 404', 'no se pudo cargar poliza.html');
+            sessionStorage.removeItem('vuelta');
             sessionStorage.removeItem('poliza');
         }
     }
     
     // Cargar paginas y aplicar controles
     // ====================================================================== //
-    sessionStorage.removeItem('siniestro');
+    sessionStorage.setItem('vuelta', sessionStorage.siniestro);
     sessionStorage.setItem('poliza', JSON.stringify(siniestro.poliza));
+    sessionStorage.removeItem('siniestro');
     contenedor.children('.siniestro').children('.ocultable-contenido').children('.poliza').children('.col-12').load('Html/poliza.html', cargar_poliza);
     contenedor.children('.volver').find('button[name="volver"]').css({'border-color':colorBorde, 'background-color':colorFondo}).click(volver_click);
     contenedor.children('.ocultable').children('.ocultable-titulo').click(ocultable_click);

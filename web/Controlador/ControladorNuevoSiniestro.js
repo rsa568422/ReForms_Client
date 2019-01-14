@@ -24,10 +24,8 @@ $(document).ready(function() {
     // Funciones para cargar paginas y definir su comportamiento
     // ====================================================================== //
     function cargar_poliza(responseTxt, statusTxt) {
-        if (statusTxt == 'success') {
-            $(this).find('button[name="historial"]').remove();
-        } else {
-            alerta('Error 404', 'no se pudo cargar algo.html');
+        if (statusTxt != 'success') {
+            alerta('Error 404', 'no se pudo cargar poliza.html');
         }
     }
     

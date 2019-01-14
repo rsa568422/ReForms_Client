@@ -16,7 +16,20 @@
         text-align: right;
     }
     
+    div.marco-poliza div.row:first-child div.col-3:last-child button[name="historial"] {
+        width: 96px;
+    }
+    
+    div.marco-poliza div.row:first-child div.col-3:last-child button[name="edicion"] {
+        width: 96px;
+        margin-top: 5px;
+        border-color: rgb(255,99,71);
+        background-color: rgb(255,99,71, 0.1);
+    }
+    
     img.logo {
+        position: relative;
+        top: 10%;
         margin-right: 1%;
         padding: 0.25%;
         border: solid 3px;
@@ -38,11 +51,12 @@
         <div class="col-6 col-md-8 col-xl-10">
             <div class="form-group">
                 <label for="poliza_numero"><strong>Numero de poliza</strong></label>
-                <input name="poliza_numero" class="form-control" type="text" maxlength="10" readonly/>
+                <input name="poliza_numero" class="form-control form-control-lg" type="text" maxlength="10" readonly/>
             </div>
         </div>
         <div class="col-3 col-md-2 col-xl-1">
             <button name="historial" class="btn" type="button">historial</button>
+            <button name="edicion" class="btn" type="button">edicion</button>
         </div>
     </div>
     <div class="informacion row">

@@ -8,6 +8,7 @@ $(document).ready(function() {
         contenedor = $('#ventana').children('div[class="container-fluid"]'),
         tabla = contenedor.find('.tabla').children('table.table'),
         poliza = JSON.parse(sessionStorage.poliza), strAux,
+        vuelta = sessionStorage.vuelta ? JSON.parse(sessionStorage.vuelta) : null,
         siniestros = {
             'totalSiniestros': 0,
             'listaSiniestros': []
@@ -87,7 +88,12 @@ $(document).ready(function() {
     // Funciones controladoras para componentes
     // ====================================================================== //
     function volver_click() {
-        $('#btn-siniestros').click();
+        if (vuelta != null) {
+            sessionStorage.setItem('siniestro', JSON.stringify(vuelta));
+            $('#contenido').load('Html/siniestro.html', cargar_siniestro);
+        } else {
+            $('#btn-siniestros').click();
+        }
     }
     
     function siniestro_dblclick() {
@@ -135,6 +141,7 @@ $(document).ready(function() {
         }
     }, 'text');
     sessionStorage.removeItem('poliza');
+    sessionStorage.removeItem('vuelta');
     contenedor.find('button[name="volver"]').css({'border-color':colorBorde, 'background-color':colorFondo}).click(volver_click);
     contenedor.find('div.aseguradora').append(generarLogo(poliza.cliente.aseguradora));
     contenedor.find('input[name="poliza_numero"]').val(poliza.numero);

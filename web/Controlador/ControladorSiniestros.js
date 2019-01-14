@@ -2,7 +2,8 @@ $(document).ready(function() {
 
     // Variables
     // ====================================================================== //
-    var colorBorde = $('#btn-siniestros').css('background-color'),
+    var googleKey = sessionStorage.googleKey,
+        colorBorde = $('#btn-siniestros').css('background-color'),
         colorFondo = colorBorde.substring(0, colorBorde.length - 1) + ', 0.1)',
         sinColor = 'rgb(0, 0, 0, 0)',
         contenedor = $('#ventana').children('div[class="container-fluid"]'),
@@ -19,6 +20,11 @@ $(document).ready(function() {
                 'subestados': '0000',
                 'informacionSeleccionada': '-1',
                 'informacion': null
+            },
+            'coincidencias': {
+                'listaCoincidencias': [],
+                'coincidenciaSeleccionada': null,
+                'coincidenciaFijada': null
             }
         };
     
@@ -32,6 +38,13 @@ $(document).ready(function() {
     
     function generarLogo(aseguradora) {
         return i = '<img class="logo" src="data:image/gif;base64,' + aseguradora.logo + '" width="480" height="360" alt="' + aseguradora.nombre + '"/>';
+    }
+    
+    function generarMapa(lat, long) {
+        var funcion = '<script>function cargarMapa() { var propiedades = { center: new google.maps.LatLng(' + lat + ', ' + long + '), zoom: 18 }, mapa = new google.maps.Map(document.getElementById("googleMap"), propiedades), marcador = new google.maps.Marker({position: propiedades.center}); marcador.setMap(mapa); }</script>',
+            script = '<script src="https://maps.googleapis.com/maps/api/js?key=' + googleKey + '&callback=cargarMapa"></script>',
+            mapa  = '<div id="googleMap" style="width:100%;height:400px;"></div>';
+        return '<div class="mapaGoogle">' + funcion + script + mapa + '</div>';
     }
     
     function generarDetalles(siniestro, listaTareas) {
@@ -86,9 +99,67 @@ $(document).ready(function() {
         return /^\d{9}$/.test(telefonoStr);
     }
     
-    function cp_valido(cpStr) {
-        var patron = /^\d{5}$/;
-        return patron.test(cpStr);
+    function mostrar_sugerencias(listaCoincidencias, sugerencias) {
+        var tbody = sugerencias.children('div.tabla').find('tbody'),
+            i, direccion;
+        tbody.children('tr.sugerencia').remove();
+        for (i = 0; i < listaCoincidencias.length; i++) {
+            direccion = listaCoincidencias[i].direccion + ' ' + listaCoincidencias[i].numero + ', ' + listaCoincidencias[i].localidad.nombre + ' [' + listaCoincidencias[i].localidad.cp + ']';
+            tbody.append('<tr class="sugerencia"><td>' + direccion + '</td></tr>');
+        }
+        tbody.children('tr.sugerencia').click(sugerencia_click);
+        sugerencias.children('div.detalles').hide();
+    }
+    
+    function comprobar_direccion() {
+        var entradas = $(this).parent('div.entrada').parent('div.entradas-informacion'),
+            cp = entradas.find('input[name="cp"]'),
+            direccion = entradas.find('input[name="direccion"]'),
+            numero = entradas.find('input[name="numero"]'),
+            sugerencias = entradas.parent('div.entradas').siblings('div.sugerencias');
+        buscador.coincidencias.coincidenciaSeleccionada = null;
+        buscador.coincidencias.coincidenciaFijada = null;
+        if (direccion.val() != '' && numero.val() != '') {
+            var direccion_completa = direccion.val() + ' ' + numero.val();
+            if (cp.val() != '') {
+                direccion_completa += ', ' + cp.val();
+            }
+            $.get('https://maps.googleapis.com/maps/api/geocode/json?address=' + direccion_completa + '&key=' + googleKey, function(data) {
+                if (data.results.length > 0) {
+                    var i, j, k, p;
+                    buscador.coincidencias.listaCoincidencias = [];
+                    for (i = 0; i < data.results.length; i++) {
+                        p = new Propiedad();
+                        p.id = i;
+                        p.localidad = new Localidad();
+                        for (j = 0; j < data.results[i].address_components.length; j++) {
+                            for (k = 0; k < data.results[i].address_components[j].types.length; k++) {
+                                switch (data.results[i].address_components[j].types[k]) {
+                                    case 'route': p.direccion = data.results[i].address_components[j].short_name; break;
+                                    case 'street_number': p.numero = data.results[i].address_components[j].short_name; break;
+                                    case 'locality': p.localidad.nombre = data.results[i].address_components[j].short_name; break;
+                                    case 'postal_code': p.localidad.cp = data.results[i].address_components[j].short_name; break;
+                                }
+                            }
+                        }
+                        p.geolat = data.results[i].geometry.location.lat;
+                        p.geolong = data.results[i].geometry.location.lng;
+                        if (p.direccion != null && p.direccion != '' && p.numero != null && p.numero != '' && p.localidad.nombre != null && p.localidad.nombre != '' && p.localidad.cp != null && p.localidad.cp != '') {
+                            buscador.coincidencias.listaCoincidencias.push(p); 
+                        }
+                    }
+                    if (buscador.coincidencias.listaCoincidencias.length > 0) {
+                        mostrar_sugerencias(buscador.coincidencias.listaCoincidencias, sugerencias);
+                        sugerencias.show();
+                    } else {
+                        sugerencias.hide();
+                    }
+                } else {
+                    alerta('Direccion no encontrada', 'no se encuentra esta direccion en google maps');
+                    sugerencias.hide();
+                }
+            }, 'json');
+        }
     }
     
     function establecer_ruta(pagina) {
@@ -232,9 +303,47 @@ $(document).ready(function() {
         buscador.parametros.subestados = '0000';
         buscador.parametros.informacionSeleccionada = '-1';
         buscador.parametros.informacion = null;
+        buscador.coincidencias.listaCoincidencias = [];
+        buscador.coincidencias.coincidenciaSeleccionada = null;
+        buscador.coincidencias.coincidenciaFijada = null;
         $(this).siblings(".seleccionada").removeClass("seleccionada");
         $(this).addClass("seleccionada");
         contenedor.children('.buscador').load('Html/buscador.html', cargar_buscador);
+    }
+    
+    function sugerencia_click() {
+        var detalles = $(this).parent('tbody').parent('table').parent('div.table-responsive-md').parent('div.tabla').siblings('div.detalles');
+        if (buscador.coincidencias.coincidenciaSeleccionada == null || buscador.coincidencias.coincidenciaSeleccionada.id != buscador.coincidencias.listaCoincidencias[$(this).index()].id) {
+            buscador.coincidencias.coincidenciaSeleccionada = buscador.coincidencias.listaCoincidencias[$(this).index()];
+            $(this).css('background-color', colorFondo);
+            $(this).siblings('tr.sugerencia').css('background-color', sinColor);
+            detalles.find('div.marco').load('Html/sugerencia.html', cargar_sugerencia);
+            detalles.show();
+        } else {
+            buscador.coincidencias.coincidenciaSeleccionada = null;
+            $(this).css('background-color', sinColor);
+            $(this).siblings('tr.sugerencia').css('background-color', sinColor);
+            detalles.hide();
+        }
+    }
+    
+    function fijar_click() {
+        var detalle = $(this).parent('div.col-12').parent('div.row').parent('div.detalle'),
+            sugerencias = detalle.parent('div.marco').parent('div.col-12').parent('div.row').parent('div.detalles').parent('div.sugerencias'),
+            informacion = sugerencias.siblings('div.entradas').children('div.entradas-informacion'),
+            sugerencia_cp = detalle.find('input[name="sugerencia_cp"]'),
+            sugerencia_direccion = detalle.find('input[name="sugerencia_direccion"]'),
+            sugerencia_numero = detalle.find('input[name="sugerencia_numero"]'),
+            cp = informacion.find('input[name="cp"]'),
+            direccion = informacion.find('input[name="direccion"]'),
+            numero = informacion.find('input[name="numero"]');
+        buscador.coincidencias.coincidenciaFijada = buscador.coincidencias.coincidenciaSeleccionada;
+        buscador.coincidencias.coincidenciaSeleccionada = null;
+        cp.val(sugerencia_cp.val());
+        direccion.val(sugerencia_direccion.val());
+        numero.val(sugerencia_numero.val());
+        sugerencias.hide();
+        sugerencias.siblings('div.principal').children('div.buscar').children('a.btn-buscar').click();
     }
     
     function btn_buscar_click() {
@@ -244,7 +353,7 @@ $(document).ready(function() {
             entradas = principal.siblings('.entradas'),
             entradas_informacion = entradas.children('.entradas-informacion'),
             table = principal.parent('div').parent('.busqueda').siblings('.resultados').children('div.col-12').children('.tabla').children('table'),
-            ruta;
+            ruta, telefono = true, direccion = true;
         buscador.parametros.estadoSeleccionado = estado.val();
         if (buscador.parametros.estadoSeleccionado == '0') {
             buscador.parametros.subestados = (entradas.find('#check-pendientes').prop('checked') ? '1' : '0') +
@@ -271,6 +380,7 @@ $(document).ready(function() {
                 break;
             case '3':
                 buscador.parametros.informacion = entradas_informacion.find('input[name="telefono"]').val();
+                telefono = telefono_valido(buscador.parametros.informacion);
                 break;
             case '4':
                 buscador.parametros.informacion = {
@@ -279,26 +389,33 @@ $(document).ready(function() {
                     'piso': entradas_informacion.find('input[name="piso"]').val(),
                     'cp': entradas_informacion.find('input[name="cp"]').val()
                 }
+                direccion = buscador.coincidencias.coincidenciaFijada != null;
                 break;
             default:
                 buscador.parametros.informacion = null;
         }
-        ruta = establecer_ruta(0);
-        $.get(ruta.cuenta, function(data, status) {
-            if (status == "success") {
-                buscador.totalSiniestros = new Number(data);
-                $.get(ruta.recurso, function(data, status) {
-                    if (status == "success") {
-                        buscador.listaSiniestros = data;
-                    } else {
-                        buscador.listaSiniestros = [];
-                    }
-                    mostrar_siniestros(table, buscador.listaSiniestros, buscador.totalSiniestros);
-                }, 'json');
-            } else {
-                alert('fallo en proveedor');
-            }
-        }, 'text');
+        if (telefono && direccion) {
+            ruta = establecer_ruta(0);
+            $.get(ruta.cuenta, function(data, status) {
+                if (status == "success") {
+                    buscador.totalSiniestros = new Number(data);
+                    $.get(ruta.recurso, function(data, status) {
+                        if (status == "success") {
+                            buscador.listaSiniestros = data;
+                        } else {
+                            buscador.listaSiniestros = [];
+                        }
+                        mostrar_siniestros(table, buscador.listaSiniestros, buscador.totalSiniestros);
+                    }, 'json');
+                } else {
+                    alert('fallo en proveedor');
+                }
+            }, 'text');
+        } else if (!telefono) {
+            alerta('Telefono no valido', 'introduzca un numero de telefono valido');
+        } else {
+            alerta('Sugerencia seleccionada', 'seleccione una sugerencia para realizar la busqueda');
+        }
     }
     
     function btn_siniestro_nuevo_click() {
@@ -364,8 +481,10 @@ $(document).ready(function() {
     }
     
     function buscador_informacion_change() {
-        var entrada, entradas_informacion = $(this).parent('div').parent('.principal').siblings('.entradas').children('.entradas-informacion');
-        entradas_informacion.children('.entrada').remove();
+        var entrada, principal = $(this).parent('div').parent('div.principal'),
+            entradas_informacion = principal.siblings('div.entradas').children('div.entradas-informacion'),
+            sugerencias = principal.siblings('div.sugerencias');
+        entradas_informacion.children('div.entrada').remove();
         entradas_informacion.show();
         switch ($(this).val()) {
             case '0':
@@ -403,8 +522,8 @@ $(document).ready(function() {
                 break;
             case '4':
                 entrada =   '<div class="entrada input-group mb-3">' +
-                                '<div class="input-group-prepend"><span class="input-group-text">c.p.</span></div>' +
-                                '<input name="cp" class="form-control" type="text" maxlength="5" placeholder="c.p. *"/>' +
+                                '<div class="input-group-prepend"><span class="input-group-text">localidad</span></div>' +
+                                '<input name="cp" class="form-control" type="text" maxlength="100" placeholder="localidad o c.p. *"/>' +
                             '</div>' +
                             '<div class="entrada input-group mb-3">' +
                                 '<div class="input-group-prepend"><span class="input-group-text">direccion</span></div>' +
@@ -416,9 +535,18 @@ $(document).ready(function() {
                                 '<input name="piso" class="form-control" type="text" maxlength="20" placeholder="piso"/>' +
                             '</div>';
                 entradas_informacion.append(entrada);
+                entradas_informacion.find('input[name="cp"]').change(comprobar_direccion);
+                entradas_informacion.find('input[name="direccion"]').change(comprobar_direccion);
+                entradas_informacion.find('input[name="numero"]').change(comprobar_direccion);
                 break;
             default:
                 entradas_informacion.hide();
+        }
+        if ($(this).val() != '4') {
+            buscador.coincidencias.listaCoincidencias = [];
+            buscador.coincidencias.coincidenciaSeleccionada = null;
+            buscador.coincidencias.coincidenciaFijada = null;
+            sugerencias.hide();
         }
     }
     
@@ -426,11 +554,12 @@ $(document).ready(function() {
     // ====================================================================== //
     function cargar_buscador(responseTxt, statusTxt) {
         if (statusTxt == 'success') {
-            var contenedor = $(this).children('.container-fluid'),
-                busqueda = contenedor.children('.busqueda').children('.col-12'),
-                principal = busqueda.children('.principal'),
-                entradas = busqueda.children('.entradas'),
-                tabla = contenedor.children('.resultados').children('.col-12').children('.tabla').children('table'),
+            var contenedor = $(this).children('div.container-fluid'),
+                busqueda = contenedor.children('div.busqueda').children('div.container-fluid'),
+                principal = busqueda.children('div.principal'),
+                entradas = busqueda.children('div.entradas'),
+                sugerencias = busqueda.children('div.sugerencias'),
+                tabla = contenedor.children('div.resultados').children('div.col-12').children('div.tabla').children('table'),
                 ruta = establecer_ruta(0);
             $.get(ruta.cuenta, function(data, status) {
                 if (status == "success") {
@@ -453,10 +582,29 @@ $(document).ready(function() {
             principal.find('button[name="siniestro-nuevo"]').css({'border-color':colorBorde, 'background-color':colorFondo}).click(btn_siniestro_nuevo_click);
             entradas.find('input[type="checkbox"]').prop('checked', true);
             tabla.children('thead').css('background-color', colorBorde);
+            sugerencias.find('thead').css('background-color', colorBorde);
+            sugerencias.children('div.detalles').find('div.marco').css('border-color', colorBorde);
             entradas.children('.entradas-estado').children('.row').hide();
             entradas.children('.entradas-informacion').hide();
+            sugerencias.hide();
         } else {
             alerta('Error 404', 'no se pudo cargar buscador.html');
+        }
+    }
+    
+    function cargar_sugerencia(responseTxt, statusTxt) {
+        var detalle = $(this).children('div.detalle'),
+            mapa = detalle.find('div.mapa');
+        if (statusTxt == 'success') {
+            detalle.find('input[name="sugerencia_cp"]').val(buscador.coincidencias.coincidenciaSeleccionada.localidad.cp);
+            detalle.find('input[name="sugerencia_direccion"]').val(buscador.coincidencias.coincidenciaSeleccionada.direccion);
+            detalle.find('input[name="sugerencia_numero"]').val(buscador.coincidencias.coincidenciaSeleccionada.numero);
+            detalle.find('button[name="fijar"]').css({'border-color':colorBorde, 'background-color':colorFondo}).click(fijar_click);
+            mapa.children('div.mapaGoogle').remove();
+            mapa.append(generarMapa(buscador.coincidencias.coincidenciaSeleccionada.geolat, buscador.coincidencias.coincidenciaSeleccionada.geolong));
+            mapa.children('div.mapaGoogle').append('<span>(' + buscador.coincidencias.coincidenciaSeleccionada.geolat + ', ' + buscador.coincidencias.coincidenciaSeleccionada.geolong + ')</span>');
+        } else {
+            alerta('Error 404', 'no se pudo cargar sugerencia.html');
         }
     }
     
