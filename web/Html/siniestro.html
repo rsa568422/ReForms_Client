@@ -10,23 +10,88 @@
         border-radius: 20px;
     }
     
-    .volver div.col-12 {
+    div.volver div.col-12 {
         text-align: right;
     }
     
-    .volver div.col-12 button[name="volver"] {
+    div.volver div.col-12 button[name="volver"] {
         margin-top: 1%;
         margin-bottom: 1%;
+        width: 96px;
     }
     
-    .ocultable {
+    div.ocultable {
         border: 5px solid;
         border-radius: 10px;
         margin-bottom: 1%;
         padding: 1%;
     }
+    
+    a[name="siniestro_original_descargar"] {
+        border: 2px solid;
+    }
+    
+    textarea[name="siniestro_afectado_observaciones"] {
+        margin-top: 1%;
+    }
+    
+    div.afectado {
+        margin-bottom: 1%;
+    }
+    
+    #ventana div.container-fluid div.siniestro div.ocultable-contenido div.contactos {
+        margin-top: 1%;
+    }
+    
+    #ventana div.container-fluid div.siniestro div.ocultable-contenido div.contactos div.detalles div.contenedor {
+        border: 5px solid;
+        border-radius: 10px;
+        padding: 1%;
+        margin-top: 0px;
+    }
+    
+    button.btn-nuevo, button.btn-editar {
+        width: 96px;
+    }
+    
+    button.btn-borrar {
+        position: absolute;
+        right: 0px;
+        margin-right: 2%;
+        font-weight: bold;
+        text-transform: uppercase;
+        width: 96px;
+        border-color: rgb(255, 0, 0);
+        background-color: rgb(255, 0, 0, 0.4);
+    }
+    
+    button.btn-aceptar {
+        width: 96px;
+        color: rgb(0, 128, 0);
+        border-color: rgb(0, 128, 0);
+        background-color: rgb(0, 128, 0, 0.1);
+        margin-right: 1%;
+    }
+    
+    button.btn-cancelar {
+        width: 96px;
+        color: rgb(255, 0, 0);
+        border-color: rgb(255, 0, 0);
+        background-color: rgb(255, 0, 0, 0.1);
+    }
+    
+    tr.sin-resultados {
+        text-align: center;
+    }
+    
+    @media only screen and (max-width: 1200px) {  
+        #ventana div.container-fluid div.siniestro div.ocultable-contenido div.contactos div.detalles div.contenedor {
+            margin-top: 1%;
+        }
+    }
 </style>
 
+<script src="Entidad/Contacto.js"></script>
 <script src="Controlador/ControladorSiniestro.js"></script>
 
 <div id="ventana">
@@ -41,21 +106,134 @@
                 <h2>Informacion del siniestro</h2>
             </div>
             <div class="ocultable-contenido">
-                <div class="row">
+                <div class="informacion row">
+                    <div class="col-12 container-fluid">
+                        <div class="row">
+                            <div class="col-xl-6 col-12">
+                                <div class="form-group">
+                                    <h5>Numero de siniestro</h5>
+                                    <input name="siniestro_numero" class="form-control form-control-lg" type="text" maxlength="16" readonly/>
+                                </div>
+                            </div>
+                            <div class="col-xl-2 col-3">
+                                <div class="form-group">
+                                    <h5>Fecha de registro</h5>
+                                    <input name="siniestro_fecha" class="form-control form-control-lg" type="date" readonly/>
+                                </div>
+                            </div>
+                            <div class="col-xl-4 col-9">
+                                <div class="form-group">
+                                    <h5>Estado</h5>
+                                    <input name="siniestro_estado" class="form-control form-control-lg" type="text" maxlength="25" readonly/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-xl-2 col-4">
+                                <div class="form-group">
+                                    <h6>Albaran</h6>
+                                    <input name="siniestro_albaran" class="form-control" type="text" readonly/>
+                                </div>
+                            </div>
+                            <div class="col-xl-4 col-8">
+                                <div class="form-group">
+                                    <h6>Perito actual</h6>
+                                    <input name="siniestro_peritoActual" class="form-control" type="text" maxlength="100" readonly/>
+                                </div>
+                            </div>
+                            <div class="col-xl-2 col-4"></div>
+                            <div class="col-xl-4 col-8">
+                                <div class="form-group">
+                                    <h6>Perito original</h6>
+                                    <input name="siniestro_peritoOriginal" class="form-control" type="text" maxlength="100" readonly/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="form-group">
+                                    <h6>Original</h6>
+                                    <div class="input-group mb-3">
+                                        <input name="siniestro_original" class="form-control form-control-lg" type="text" maxlength="250" readonly/>
+                                        <div class="input-group-append">
+                                            <a name="siniestro_original_descargar" class="btn" href="#"><i class="material-icons">vertical_align_bottom</i></a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="afectado row">
                     <div class="col-12">
-                        Siniestro: <br>
-                        - numero de siniestro / estado del siniestro <br>
-                        - fecha de registro / perito actual (de momento original) <br>
-                        - numero de albaran <br>
-                        - archivo original
+                        <h5>Afectado</h5>
+                        <input name="siniestro_afectado" class="form-control" type="text" maxlength="300" readonly/>
+                        <textarea name="siniestro_afectado_observaciones" class="form-control" rows="4" maxlength="250" readonly/>
                     </div>
                 </div>
                 <div class="poliza row">
                     <div class="col-12"></div>
                 </div>
-                <div class="row">
-                    <div class="col-xl-6">Contactos (tabla con informacion de los contactos)</div>
-                    <div class="col-xl-6">Afectado (direccion del afectado)</div>
+                <div class="contactos row">
+                    <div class="tabla col-xl-6">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr><th>Contactos</th></tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                        <button name="siniestro_contacto_nuevo" class="btn btn-nuevo" type="button">nuevo</button>
+                    </div>
+                    <div class="detalles col-xl-6">
+                        <div class="contenedor container-fluid">
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="form-group">
+                                        <h6>Nombre</h6>
+                                        <input name="siniestro_contacto_nombre" class="form-control" type="text" maxlength="50" readonly/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="form-group">
+                                        <h6>Apellidos</h6>
+                                        <div class="input-group mb-3">
+                                            <input name="siniestro_contacto_apellido1" class="form-control" type="text" maxlength="50" readonly/>
+                                            <input name="siniestro_contacto_apellido2" class="form-control" type="text" maxlength="50" readonly/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="form-group">
+                                        <h6>Telefonos *</h6>
+                                        <div class="input-group mb-3">
+                                            <input name="siniestro_contacto_telefono1" class="form-control" type="text" maxlength="9" readonly/>
+                                            <input name="siniestro_contacto_telefono2" class="form-control" type="text" maxlength="9" readonly/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="form-group">
+                                        <h6>Observaciones</h6>
+                                        <textarea name="siniestro_contacto_observaciones" class="form-control" rows="4" maxlength="250" readonly/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-12">
+                                    <button name="siniestro_contacto_editar" class="btn btn-editar" type="button">editar</button>
+                                    <button name="siniestro_contacto_aceptar" class="btn btn-aceptar" type="button">aceptar</button>
+                                    <button name="siniestro_contacto_cancelar" class="btn btn-cancelar" type="button">cancelar</button>
+                                    <button name="siniestro_contacto_borrar" class="btn btn-borrar" type="button">borrar</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -87,6 +265,11 @@
                 <div class="row">
                     <div class="col-xl-6">Tabla con los recursos</div>
                     <div class="col-xl-6">Tabla con los Participantes</div>
+                </div>
+                <div class="row">
+                    <div class="col-12">
+                        Observaciones siniestro
+                    </div>
                 </div>
             </div>
         </div>

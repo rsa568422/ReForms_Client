@@ -152,6 +152,7 @@ $(document).ready(function() {
                         mostrar_sugerencias(buscador.coincidencias.listaCoincidencias, sugerencias);
                         sugerencias.show();
                     } else {
+                        alerta('Direccion no encontrada', 'no se encuentra esta direccion en google maps');
                         sugerencias.hide();
                     }
                 } else {
@@ -602,7 +603,6 @@ $(document).ready(function() {
             detalle.find('button[name="fijar"]').css({'border-color':colorBorde, 'background-color':colorFondo}).click(fijar_click);
             mapa.children('div.mapaGoogle').remove();
             mapa.append(generarMapa(buscador.coincidencias.coincidenciaSeleccionada.geolat, buscador.coincidencias.coincidenciaSeleccionada.geolong));
-            mapa.children('div.mapaGoogle').append('<span>(' + buscador.coincidencias.coincidenciaSeleccionada.geolat + ', ' + buscador.coincidencias.coincidenciaSeleccionada.geolong + ')</span>');
         } else {
             alerta('Error 404', 'no se pudo cargar sugerencia.html');
         }
