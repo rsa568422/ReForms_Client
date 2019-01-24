@@ -240,7 +240,7 @@ $(document).ready(function() {
     }
     
     function telefono_valido(telefonoStr) {
-        return /^\d{9}$/.test(telefonoStr);
+        return /^[69]\d{8}$/.test(telefonoStr);
     }
     
     function dni_valido(dniStr) {

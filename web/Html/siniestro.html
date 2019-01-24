@@ -5,53 +5,100 @@
 </script>
 
 <style>
+    div[name="recurso_tipo_icono"] {
+        text-align: center;
+        padding-top: 12px;
+        width: 48px;
+        height: 48px;
+    }
+    
+    textarea {
+        resize: none;
+    }
+    
+    table thead tr th {
+        text-align: center;
+    }
+    
+    div.ocultable-contenido,
+    #ventana div.container-fluid div.siniestro div.ocultable-contenido div.observaciones {
+        margin-top: 2%;
+    }
+    
     #ventana {
         border: 15px solid;
         border-radius: 20px;
     }
     
-    div.volver div.col-12 {
+    #ventana div.container-fluid div.botonera {
+        margin-top: 1%;
+        margin-bottom: 1%;
+    }
+    
+    div.afectado,
+    #ventana div.container-fluid div.acciones {
+        margin-bottom: 1%;
+    }
+    
+    #ventana div.container-fluid div.botonera div.acciones button[name="replanificar"],
+    #ventana div.container-fluid div.botonera div.acciones button[name="reasignar"] {
+        margin-right: 1%;
+        border-color: rgb(106, 90, 205);
+        background-color: rgb(106, 90, 205, 0.1);
+    }
+    
+    #ventana div.container-fluid div.botonera div.volver {
         text-align: right;
     }
     
-    div.volver div.col-12 button[name="volver"] {
-        margin-top: 1%;
-        margin-bottom: 1%;
-        width: 96px;
+    #ventana div.container-fluid div.botonera div button.btn-botonera {
+        min-width: 96px;
     }
     
-    div.ocultable {
+    #ventana div.container-fluid div.ocultable {
         border: 5px solid;
         border-radius: 10px;
         margin-bottom: 1%;
         padding: 1%;
     }
+
+    #ventana div.container-fluid div.siniestro div.ocultable-titulo div.form-inline div.estado {
+        position: absolute;
+        right: 0px;
+        margin-top: 1%;
+        margin-right: 3%;
+    }
+    
+    #ventana div.container-fluid div.siniestro div.ocultable-titulo div.form-inline div.estado input[name="estado"] {
+        text-align: center;
+    }
     
     a[name="siniestro_original_descargar"] {
         border: 2px solid;
     }
-    
-    textarea[name="siniestro_afectado_observaciones"] {
+    #ventana div.container-fluid div.siniestro div.ocultable-contenido div.contactos, 
+    textarea[name="siniestro_afectado_observaciones"],
+    div.container-fluid div.adicional div.ocultable-contenido div.recursos div.recurso div.contenedor div.botones {
         margin-top: 1%;
     }
     
-    div.afectado {
-        margin-bottom: 1%;
-    }
-    
-    #ventana div.container-fluid div.siniestro div.ocultable-contenido div.contactos {
-        margin-top: 1%;
-    }
-    
-    #ventana div.container-fluid div.siniestro div.ocultable-contenido div.contactos div.detalles div.contenedor {
+    #ventana div.container-fluid div.siniestro div.ocultable-contenido div.contactos div.detalles div.contenedor,
+    #ventana div.container-fluid div.adicional div.ocultable-contenido div.recursos div.recurso div.contenedor {
         border: 5px solid;
         border-radius: 10px;
         padding: 1%;
         margin-top: 0px;
     }
     
+    #ventana div.container-fluid div.adicional div.ocultable-contenido div.participantes div.participante div.contenedor {
+        border: 5px solid;
+        border-radius: 10px;
+        padding: 1%;
+        margin-bottom: 1%;
+    }
+    
     button.btn-nuevo, button.btn-editar {
-        width: 96px;
+        min-width: 96px;
     }
     
     button.btn-borrar {
@@ -60,13 +107,15 @@
         margin-right: 2%;
         font-weight: bold;
         text-transform: uppercase;
-        width: 96px;
+        min-width: 96px;
+        color: rgb(139, 0, 0);
         border-color: rgb(255, 0, 0);
         background-color: rgb(255, 0, 0, 0.4);
+        box-shadow: 0px 0px 5px 5px rgb(255, 0, 0, 0.4);
     }
     
     button.btn-aceptar {
-        width: 96px;
+        min-width: 96px;
         color: rgb(0, 128, 0);
         border-color: rgb(0, 128, 0);
         background-color: rgb(0, 128, 0, 0.1);
@@ -74,36 +123,108 @@
     }
     
     button.btn-cancelar {
-        width: 96px;
+        min-width: 96px;
         color: rgb(255, 0, 0);
         border-color: rgb(255, 0, 0);
         background-color: rgb(255, 0, 0, 0.1);
+    }
+    
+    button.btn-aceptar-sm {
+        font-weight: bold;
+        color: rgb(0, 128, 0);
+        border-color: rgb(0, 128, 0);
+        background-color: rgb(0, 128, 0, 0.1);
+    }
+    
+    button.btn-cancelar-sm {
+        font-weight: bold;
+        color: rgb(255, 0, 0);
+        border-color: rgb(255, 0, 0);
+        background-color: rgb(255, 0, 0, 0.1);
+    }
+    
+    button.btn-borrar-sm {
+        position: absolute;
+        right: 0px;
+        margin-top: -1%;
+        margin-right: 4%;
+        font-weight: bold;
+        color: rgb(139, 0, 0);
+        border-color: rgb(255, 0, 0);
+        background-color: rgb(255, 0, 0, 0.4);
+        box-shadow: 0px 0px 5px 5px rgb(255, 0, 0, 0.4);
+    }
+    
+    #ventana div.container-fluid div.adicional div.ocultable-contenido div.row div.participantes table tbody tr td,
+    #ventana div.container-fluid div.adicional div.ocultable-contenido div.row div.replanificaciones table tbody tr td,
+    #ventana div.container-fluid div.adicional div.ocultable-contenido div.row div.reasignaciones table tbody tr td,
+    #ventana div.container-fluid div.adicional div.ocultable-contenido div.recursos table tbody tr td {
+        text-align: center;
+    }
+    
+    #ventana div.container-fluid div.adicional div.ocultable-contenido div.row div.participantes button[name="participante_nuevo"] {
+        margin-bottom: 2%;
+    }
+    
+    #ventana div.container-fluid div.adicional div.ocultable-contenido div.recursos div.tabla button[name="recurso_nuevo"] {
+        margin-bottom: 0px;
     }
     
     tr.sin-resultados {
         text-align: center;
     }
     
-    @media only screen and (max-width: 1200px) {  
+    @media only screen and (max-width: 1200px) {
+        button.btn-borrar-sm {
+            margin-top: -0.5%;
+            margin-right: 2%;
+        }
+
+        #ventana div.container-fluid div.siniestro div.ocultable-titulo div.form-inline div.estado {
+            margin-top: 2%;
+            margin-right: 5%;
+        }
+        
         #ventana div.container-fluid div.siniestro div.ocultable-contenido div.contactos div.detalles div.contenedor {
             margin-top: 1%;
+        }
+    
+        #ventana div.container-fluid div.adicional div.ocultable-contenido div.recursos div.tabla button[name="recurso_nuevo"] {
+            margin-bottom: 2%;
         }
     }
 </style>
 
 <script src="Entidad/Contacto.js"></script>
+<script src="Entidad/Participante.js"></script>
+<script src="Entidad/Multiservicios.js"></script>
 <script src="Controlador/ControladorSiniestro.js"></script>
 
 <div id="ventana">
     <div class="container-fluid">
-        <div class="volver row">
-            <div class="col-12">
-                <button name="volver" class="btn" type="button">volver</button>
+        <div class="botonera row">
+            <div class="acciones col-10">
+                <button name="replanificar" class="btn btn-botonera" type="button">replanificar</button>
+                <button name="reasignar" class="btn btn-botonera" type="button">reasignar</button>
             </div>
+            <div class="volver col-2">
+                <button name="volver" class="btn btn-botonera" type="button">volver</button>
+            </div>
+        </div>
+        <div class="acciones row">
+            <div class="contenedor col-12">acciones</div>
         </div>
         <div class="siniestro ocultable">
             <div class="ocultable-titulo">
-                <h2>Informacion del siniestro</h2>
+                <div class="form-inline">
+                    <h2>Informacion del siniestro</h2>
+                    <div class="estado input-group mb-3">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">Estado</span>
+                        </div>
+                        <input name="estado" class="form-control form-control-lg" type="text" maxlength="25" disabled/>
+                    </div>
+                </div>
             </div>
             <div class="ocultable-contenido">
                 <div class="informacion row">
@@ -115,13 +236,13 @@
                                     <input name="siniestro_numero" class="form-control form-control-lg" type="text" maxlength="16" readonly/>
                                 </div>
                             </div>
-                            <div class="col-xl-2 col-3">
+                            <div class="col-xl-2 col-4">
                                 <div class="form-group">
                                     <h5>Fecha de registro</h5>
                                     <input name="siniestro_fecha" class="form-control form-control-lg" type="date" readonly/>
                                 </div>
                             </div>
-                            <div class="col-xl-4 col-9">
+                            <div class="col-xl-4 col-8">
                                 <div class="form-group">
                                     <h5>Estado</h5>
                                     <input name="siniestro_estado" class="form-control form-control-lg" type="text" maxlength="25" readonly/>
@@ -141,7 +262,12 @@
                                     <input name="siniestro_peritoActual" class="form-control" type="text" maxlength="100" readonly/>
                                 </div>
                             </div>
-                            <div class="col-xl-2 col-4"></div>
+                            <div class="col-xl-2 col-4">
+                                <div class="form-group">
+                                    <h6>Ultima reasignacion</h6>
+                                    <input name="siniestro_fechaReasignacion" class="form-control" type="date" readonly/>
+                                </div>
+                            </div>
                             <div class="col-xl-4 col-8">
                                 <div class="form-group">
                                     <h6>Perito original</h6>
@@ -175,7 +301,7 @@
                     <div class="col-12"></div>
                 </div>
                 <div class="contactos row">
-                    <div class="tabla col-xl-6">
+                    <div class="tabla col-xl-6 col-12">
                         <table class="table table-hover">
                             <thead>
                                 <tr><th>Contactos</th></tr>
@@ -184,7 +310,7 @@
                         </table>
                         <button name="siniestro_contacto_nuevo" class="btn btn-nuevo" type="button">nuevo</button>
                     </div>
-                    <div class="detalles col-xl-6">
+                    <div class="detalles col-xl-6 col-12">
                         <div class="contenedor container-fluid">
                             <div class="row">
                                 <div class="col-12">
@@ -235,6 +361,12 @@
                         </div>
                     </div>
                 </div>
+                <div class="observaciones row">
+                    <div class="col-xl-6 col-12">
+                        <h5>Observaciones sobre el siniestro</h5>
+                        <textarea name="siniestro_observaciones" class="form-control" rows="4" maxlength="250" readonly/>
+                    </div>
+                </div>
             </div>
         </div>
         <div class="tareas ocultable">
@@ -263,12 +395,148 @@
             </div>
             <div class="ocultable-contenido">
                 <div class="row">
-                    <div class="col-xl-6">Tabla con los recursos</div>
-                    <div class="col-xl-6">Tabla con los Participantes</div>
+                    <div class="participantes col-xl-4 col-12">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr><th>Participantes</th></tr>
+                            </thead>
+                            <tbody></tbody>
+                            <tfoot></tfoot>
+                        </table>
+                        <button name="participante_nuevo" class="btn btn-nuevo" type="button">agregar</button>
+                        <div class="participante">
+                            <div class="contenedor container-fluid">
+                                <div class="row">
+                                    <div class="col-12">
+                                        <div class="form-group">
+                                            <h6>Nombre</h6>
+                                            <input name="adicional_participante_nombre" class="form-control" type="text" maxlength="100"/>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-12">
+                                        <div class="form-group">
+                                            <h6>Telefonos</h6>
+                                            <div class="input-group mb-3">
+                                                <input name="adicional_participante_telefono1" class="form-control" type="text" maxlength="9"/>
+                                                <input name="adicional_participante_telefono2" class="form-control" type="text" maxlength="9"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-12">
+                                        <div class="form-group">
+                                            <h6>Fax</h6>
+                                            <input name="adicional_participante_fax" class="form-control" type="text" maxlength="9"/>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-12">
+                                        <div class="form-group">
+                                            <h6>Email</h6>
+                                            <input name="adicional_participante_email" class="form-control" type="email" maxlength="100"/>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-12">
+                                        <button name="adicional_participante_aceptar" class="btn btn-aceptar" type="button">aceptar</button>
+                                        <button name="adicional_participante_cancelar" class="btn btn-cancelar" type="button">cancelar</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="replanificaciones col-xl-4 col-12">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr><th>Historial de replanificaciones</th></tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                    <div class="reasignaciones col-xl-4 col-12">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr><th colspan="2">Historial de reasignaciones</th></tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
                 </div>
-                <div class="row">
-                    <div class="col-12">
-                        Observaciones siniestro
+                <div class="recursos row">
+                    <div class="tabla col-xl-4 col-12">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr><th colspan="2">Recursos</th></tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                        <button name="recurso_nuevo" class="btn btn-nuevo" type="button">adjuntar</button>
+                    </div>
+                    <div class="recurso col-xl-8 col-12">
+                        <div class="contenedor container-fluid">
+                            <div class="archivo row">
+                                <div class="tipo col-4">
+                                    <div class="form-group">
+                                        <h5>Tipo</h5>
+                                        <div class="salida input-group mb-3">
+                                            <input name="recurso_tipo_texto" class="form-control form-control-lg" type="text" readonly/>
+                                            <div class="input-group-append">
+                                                <div name="recurso_tipo_icono"><i class="material-icons">camera_alt</i></div>
+                                            </div>
+                                        </div>
+                                        <div class="entrada">
+                                            <select name="recurso_tipo" class="form-control custom-select">
+                                                <option value=0 selected>pdf</option>
+                                                <option value=1>imagen</option>
+                                                <option value=2>archivo</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="fichero col-8">
+                                    <div class="form-group">
+                                        <h5>Archivo</h5>
+                                        <div class="salida input-group mb-3">
+                                            <input name="recurso_nombre" class="form-control form-control-lg" type="text" maxlength="250" readonly/>
+                                            <div class="input-group-append">
+                                                <a name="recurso_fichero_descargar" class="btn" href="#"><i class="material-icons">vertical_align_bottom</i></a>
+                                            </div>
+                                        </div>
+                                        <div class="entrada custom-file">
+                                            <input name="recurso_fichero" class="custom-file-input" type="file"/>
+                                            <label class="custom-file-label" for="recurso_fichero">Examinar . . .</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="descripcion row">
+                                <div class="texto col-4">
+                                    textarea descripcion col-4 previualizacion.show() / col-12 previualizacion.hide()
+                                    <textarea name="recurso_descripcion" class="form-control" rows="12" maxlength="250" readonly/>
+                                </div>
+                                <div class="previualizacion col-8">
+                                    <div class="contenedor">
+                                        imagen previualizacion.show() tipo == 2 / previualizacion.hide() tipo != 2
+                                        <i class="material-icons">insert_drive_file</i>
+                                        <i class="material-icons">camera_alt</i>
+                                        <i class="material-icons">attach_file</i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="botones row">
+                                <div class="col-12">
+                                    <button name="recurso_editar" class="btn btn-editar" type="button">editar</button>
+                                    <button name="recurso_aceptar" class="btn btn-aceptar" type="button">aceptar</button>
+                                    <button name="recurso_cancelar" class="btn btn-cancelar" type="button">cancelar</button>
+                                    <button name="recurso_borrar" class="btn btn-borrar" type="button">borrar</button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

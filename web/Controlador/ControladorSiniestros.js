@@ -96,7 +96,7 @@ $(document).ready(function() {
     }
     
     function telefono_valido(telefonoStr) {
-        return /^\d{9}$/.test(telefonoStr);
+        return /^[69]\d{8}$/.test(telefonoStr);
     }
     
     function mostrar_sugerencias(listaCoincidencias, sugerencias) {
@@ -255,6 +255,7 @@ $(document).ready(function() {
                 tbody.append('<tr class="siniestro">' + aseguradora + siniestro + poliza + registro + estado + '</tr>');
             }
             tbody.children('.siniestro').click(siniestro_click);
+            tbody.children('.siniestro').dblclick(siniestro_dblclick);
         } else {
             tbody.append('<tr class="siniestro"><td colspan="5"><h3>Sin resultados</h3></td></tr>');
         }
@@ -462,6 +463,12 @@ $(document).ready(function() {
                 detalles.css('border-color', colorBorde).dblclick(siniestro_detalles_dblclick);
             }, 'json');
         }
+    }
+    
+    function siniestro_dblclick() {
+        aseguradoras.siniestroSeleccionado = buscador.listaSiniestros[$(this).index()];
+        sessionStorage.setItem('siniestro', JSON.stringify(aseguradoras.siniestroSeleccionado));
+        $('#contenido').load('Html/siniestro.html', cargar_siniestro);
     }
     
     function siniestro_detalles_dblclick() {
