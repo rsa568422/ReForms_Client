@@ -7,9 +7,27 @@
 <style>
     div[name="recurso_tipo_icono"] {
         text-align: center;
+        border: solid 1px;
+        border-radius: 0 5px 5px 0;
         padding-top: 12px;
         width: 48px;
         height: 48px;
+    }
+    
+    div.vista-previa {
+        min-height: 295px;
+    }
+    
+    div.vista-previa img {
+        max-width: 100%;
+        height: auto;
+    }
+    
+    div.vista-previa iframe {
+        display: block;
+        width: 100%;
+        min-height: 295px;
+        border: none;
     }
     
     textarea {
@@ -198,6 +216,7 @@
 <script src="Entidad/Contacto.js"></script>
 <script src="Entidad/Participante.js"></script>
 <script src="Entidad/Multiservicios.js"></script>
+<script src="Entidad/Recurso.js"></script>
 <script src="Controlador/ControladorSiniestro.js"></script>
 
 <div id="ventana">
@@ -486,7 +505,7 @@
                                         <div class="salida input-group mb-3">
                                             <input name="recurso_tipo_texto" class="form-control form-control-lg" type="text" readonly/>
                                             <div class="input-group-append">
-                                                <div name="recurso_tipo_icono"><i class="material-icons">camera_alt</i></div>
+                                                <div name="recurso_tipo_icono"></div>
                                             </div>
                                         </div>
                                         <div class="entrada">
@@ -509,23 +528,17 @@
                                         </div>
                                         <div class="entrada custom-file">
                                             <input name="recurso_fichero" class="custom-file-input" type="file"/>
-                                            <label class="custom-file-label" for="recurso_fichero">Examinar . . .</label>
+                                            <label class="recurso_fichero_texto custom-file-label" for="recurso_fichero">Examinar . . .</label>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                             <div class="descripcion row">
                                 <div class="texto col-4">
-                                    textarea descripcion col-4 previualizacion.show() / col-12 previualizacion.hide()
                                     <textarea name="recurso_descripcion" class="form-control" rows="12" maxlength="250" readonly/>
                                 </div>
-                                <div class="previualizacion col-8">
-                                    <div class="contenedor">
-                                        imagen previualizacion.show() tipo == 2 / previualizacion.hide() tipo != 2
-                                        <i class="material-icons">insert_drive_file</i>
-                                        <i class="material-icons">camera_alt</i>
-                                        <i class="material-icons">attach_file</i>
-                                    </div>
+                                <div class="previsualizacion col-8">
+                                    <div class="contenedor"></div>
                                 </div>
                             </div>
                             <div class="botones row">

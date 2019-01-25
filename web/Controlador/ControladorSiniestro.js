@@ -5,6 +5,9 @@ $(document).ready(function() {
     var colorBorde = $('#btn-siniestros').css('background-color'),
         colorFondo = colorBorde.substring(0, colorBorde.length - 1) + ', 0.1)',
         sinColor = 'rgb(0, 0, 0, 0)',
+        colorFondoNeutro = 'rgb(169, 169, 169)',
+        colorBordeNeutro = 'rgb(206, 212, 218)',
+        colorTextoNeutro = 'rgb(33, 37, 41)',
         contenedor = $('#ventana').children('div[class="container-fluid"]'),
         informacion = contenedor.children('div.siniestro').children('div.ocultable-contenido').children('div.informacion'),
         poliza = contenedor.children('div.siniestro').children('div.ocultable-contenido').children('div.poliza'),
@@ -38,7 +41,9 @@ $(document).ready(function() {
             },
             'recursos': {
                 'listaRecursos': [],
-                'recursoSeleccionado': null
+                'recursoSeleccionado': null,
+                'posicionSeleccionado': -1,
+                'temp': null
             }
         },
         strAux, edicion = false;
@@ -234,6 +239,79 @@ $(document).ready(function() {
         contenedor.find('input').val('');
     }
     
+    function actualizar_detalles_recurso() {
+        var recurso = contenedor_adicional.children('div.recursos').children('div.recurso'),
+            tipo = recurso.children('div.contenedor').children('div.archivo').children('div.tipo').children('div.form-group'),
+            icono = tipo.children('div.salida').children('div.input-group-append').children('div[name="recurso_tipo_icono"]'),
+            fichero = recurso.children('div.contenedor').children('div.archivo').children('div.fichero').children('div.form-group'),
+            descarga = fichero.children('div.salida').children('div.input-group-append').children('a[name="recurso_fichero_descargar"]'),
+            texto = recurso.children('div.contenedor').children('div.descripcion').children('div.texto'),
+            previsualizacion = recurso.children('div.contenedor').children('div.descripcion').children('div.previsualizacion'),
+            aceptar = recurso.children('div.contenedor').children('div.botones').children('div.col-12').children('button[name="recurso_editar"]');
+        if (adicional.recursos.recursoSeleccionado != null) {
+            if (adicional.recursos.recursoSeleccionado.id == null) {
+                adicional.recursos.recursoSeleccionado.tipo = 1;
+            }
+            tipo.children('div.entrada').children('select[name="recurso_tipo"]').val(adicional.recursos.recursoSeleccionado.tipo).change();
+            if (adicional.recursos.recursoSeleccionado.tipo == 2) {
+                tipo.children('div.salida').children('input[name="recurso_tipo_texto"]').val('Archivo');
+                icono.children('i.material-icons').remove();
+                icono.append('<i class="material-icons">attach_file</i>');
+            } else {
+                if (adicional.recursos.recursoSeleccionado.tipo == 0) {
+                    tipo.children('div.salida').children('input[name="recurso_tipo_texto"]').val('PDF');
+                    icono.children('i.material-icons').remove();
+                    icono.append('<i class="material-icons">insert_drive_file</i>');
+                    previsualizacion.children('div.contenedor').children('div.vista-previa').remove();
+                    if (adicional.recursos.recursoSeleccionado.fichero && adicional.recursos.recursoSeleccionado.fichero != null && adicional.recursos.recursoSeleccionado.fichero != '') {
+                        var pdf = '<iframe src="data:application/pdf;base64,' + adicional.recursos.recursoSeleccionado.fichero + '"></iframe>'; 
+                        previsualizacion.children('div.contenedor').append('<div class="vista-previa">' + pdf + '</div>');
+                        previsualizacion.show();
+                    } else {
+                        previsualizacion.hide();
+                    }
+                } else {
+                    tipo.children('div.salida').children('input[name="recurso_tipo_texto"]').val('Imagen');
+                    icono.children('i.material-icons').remove();
+                    icono.append('<i class="material-icons">camera_alt</i>');
+                    previsualizacion.children('div.contenedor').children('div.vista-previa').remove();
+                    if (adicional.recursos.recursoSeleccionado.fichero && adicional.recursos.recursoSeleccionado.fichero != null && adicional.recursos.recursoSeleccionado.fichero != '') {
+                        var img = '<img src="data:image/jpeg;base64,' + adicional.recursos.recursoSeleccionado.fichero + '" alt="' + adicional.recursos.recursoSeleccionado.nombre + '"/>';
+                        previsualizacion.children('div.contenedor').append('<div class="vista-previa">' + img + '</div>');
+                        previsualizacion.show();
+                    } else {
+                        previsualizacion.hide();
+                    }
+                }
+            }
+            if (adicional.recursos.recursoSeleccionado.nombre && adicional.recursos.recursoSeleccionado.nombre != null && adicional.recursos.recursoSeleccionado.nombre != '') {
+                fichero.children('div.salida').children('input[name="recurso_nombre"]').val(adicional.recursos.recursoSeleccionado.nombre);
+            } else{
+                fichero.children('div.salida').children('input[name="recurso_nombre"]').val('');
+            }
+            if (adicional.recursos.recursoSeleccionado.fichero && adicional.recursos.recursoSeleccionado.fichero != null && adicional.recursos.recursoSeleccionado.fichero != '') {
+                descarga.prop('download', adicional.recursos.recursoSeleccionado.nombre);
+                descarga.prop('href', 'data:text/plain;base64,' + adicional.recursos.recursoSeleccionado.fichero);
+                fichero.children('div.entrada').children('input[name="recurso_fichero"]').val('');
+                fichero.children('div.entrada').children('label.recurso_fichero_texto').text(adicional.recursos.recursoSeleccionado.nombre);
+            } else {
+                descarga.prop('download', '');
+                descarga.prop('href', '');
+                fichero.children('div.entrada').children('input[name="recurso_fichero"]').val('');
+                fichero.children('div.entrada').children('label.recurso_fichero_texto').text('Examinar . . .');
+                
+            }
+            if (adicional.recursos.recursoSeleccionado.descripcion && adicional.recursos.recursoSeleccionado.descripcion != null && adicional.recursos.recursoSeleccionado.descripcion != '') {
+                texto.children('textarea[name="recurso_descripcion"]').val(adicional.recursos.recursoSeleccionado.descripcion);
+            } else {
+                adicional.recursos.recursoSeleccionado.descripcion = '';
+            }
+            recurso.show();
+        } else {
+            recurso.hide();
+        }
+    }
+    
     // Funciones controladoras para componentes
     // ====================================================================== //
     function replanificar_click() {
@@ -264,11 +342,6 @@ $(document).ready(function() {
             $(this).siblings('.ocultable-contenido').slideToggle();
             $(this).parent('.ocultable').siblings('.ocultable').children('.ocultable-contenido').slideUp();
         }
-    }
-    
-    function descargar_click() {
-        $(this).prop("download", siniestro.original.nombre);
-        $(this).prop("href", "data:text/plain;base64," + siniestro.original.fichero);
     }
     
     function contacto_click() {
@@ -619,38 +692,78 @@ $(document).ready(function() {
     }
     
     function recurso_click() {
-        alert('recurso_click()');
+        if (!edicion) {
+            if (adicional.recursos.recursoSeleccionado == null || adicional.recursos.recursoSeleccionado.id != adicional.recursos.listaRecursos[$(this).index()].id) {
+                adicional.recursos.posicionSeleccionado = $(this).index();
+                adicional.recursos.recursoSeleccionado = adicional.recursos.listaRecursos[adicional.recursos.posicionSeleccionado];
+                $(this).css('background-color', colorFondo);
+                $(this).siblings('tr.recurso').css('background-color', sinColor);
+            } else {
+                adicional.recursos.posicionSeleccionado = -1;
+                adicional.recursos.recursoSeleccionado = null;
+                $(this).css('background-color', sinColor);
+            }
+            actualizar_detalles_recurso();
+        }
     }
     
     function recurso_adjuntar_click() {
-        alert('recurso_adjuntar_click()');
-        /*var recurso = contenedor_adicional.children('div.recursos').children('div.recurso'),
-            archivo = recurso.children('div.contenedor').children('div.archivo'),
-            descripcion = recurso.children('div.contenedor').children('div.descripcion'),
-            botones = recurso.children('div.contenedor').children('div.botones'),
-            boton_vecino = contenedor_adicional.children('div.row').children('div.participantes').children('button[name="participante_nuevo"]');
+        var recurso = contenedor_adicional.children('div.recursos').children('div.recurso');
+        if (!edicion) {
+            adicional.recursos.posicionSeleccionado = -1;
+            adicional.recursos.recursoSeleccionado = new Recurso();
+            actualizar_detalles_recurso();
+            recurso.find('div.salida').hide();
+            recurso.find('div.entrada').show();
+            recurso.find('button[name="recurso_editar"]').click();
+        }
+    }
+    
+    function recurso_editar_click() {
+        var textarea = contenedor_adicional.children('div.recursos').children('div.recurso').find('textarea[name="recurso_descripcion"]');
         if (!edicion) {
             edicion = true;
-            $(this).prop('disabled', true);
-            boton_vecino.prop('disabled', true);
-            archivo.children('div.tipo').children('div.form-group').children('div.salida').hide();
-            archivo.children('div.tipo').children('div.form-group').children('div.entrada').show();
-            archivo.children('div.tipo').children('div.form-group').children('div.entrada').children('select[name="recurso_tipo"]').val(1);
-            archivo.children('div.fichero').children('div.form-group').children('div.salida').hide();
-            archivo.children('div.fichero').children('div.form-group').children('div.entrada').show();
-            descripcion.children('div.texto').children('textarea[name="recurso_descripcion"]').val('').prop('rows', '4').prop('readonly', false);
-            descripcion.children('div.texto').removeClass('col-12').addClass('col-4');
-            descripcion.children('div.previualizacion').show();
-            botones.children('div.col-12').children('button[name="recurso_editar"]').hide();
-            botones.children('div.col-12').children('button[name="recurso_aceptar"]').show();
-            botones.children('div.col-12').children('button[name="recurso_cancelar"]').show();
-            botones.children('div.col-12').children('button[name="recurso_borrar"]').hide();
-            recurso.show();
-        }*/
-        
-        // para la version buena
-        //adicional.recursos.recursoSeleccionado = null;
-        //actualizar_detalles_recurso();
+            textarea.prop('readonly', false);
+            contenedor_adicional.children('div.row').children('div.participantes').children('button[name="participante_nuevo"]').prop('disabled', true);
+            contenedor_adicional.children('div.recursos').children('div.tabla').children('button[name="recurso_nuevo"]').prop('disabled', true);
+            if (adicional.recursos.recursoSeleccionado != null && adicional.recursos.recursoSeleccionado.id != null) {
+                textarea.focus();
+            } else {
+                contenedor_adicional.children('div.recursos').children('div.recurso').find('select[name="recurso_tipo"]').focus();
+            }
+            $(this).hide();
+            $(this).siblings('button.btn-aceptar').show();
+            $(this).siblings('button.btn-cancelar').show();
+            $(this).siblings('button.btn-borrar').hide();
+        }
+    }
+    
+    function recurso_aceptar_click() {
+        alert('recurso_aceptar_click()');
+    }
+    
+    function recurso_cancelar_click() {
+        var recurso = contenedor_adicional.children('div.recursos').children('div.recurso');
+        edicion = false;
+        adicional.recursos.temp = null;
+        recurso.find('textarea[name="recurso_descripcion"]').prop('readonly', true);
+        contenedor_adicional.children('div.row').children('div.participantes').children('button[name="participante_nuevo"]').prop('disabled', false);
+        contenedor_adicional.children('div.recursos').children('div.tabla').children('button[name="recurso_nuevo"]').prop('disabled', false);
+        $(this).hide();
+        $(this).siblings('button.btn-aceptar').prop('disabled', false).hide();
+        $(this).siblings('button.btn-editar').show();
+        $(this).siblings('button.btn-borrar').show();
+        recurso.find('div.entrada').hide();
+        recurso.find('div.salida').show();
+        if (adicional.recursos.recursoSeleccionado.id == null) {
+            recurso.hide();
+        } else {
+            actualizar_detalles_recurso();
+        }
+    }
+    
+    function recurso_borrar_click() {
+        alert('recurso_borrar_click()');
     }
     
     function siniestro_contacto_telefono1_keyup() {
@@ -663,7 +776,50 @@ $(document).ready(function() {
     }
     
     function recurso_tipo_change() {
-        
+        var contenedor = contenedor_adicional.children('div.recursos').children('div.recurso').children('div.contenedor'),
+            descripcion = contenedor.children('div.descripcion'),
+            fichero = contenedor.children('div.archivo').children('div.fichero').children('div.form-group').children('div.entrada').children('input[name="recurso_fichero"]');
+        descripcion.children('div.previsualizacion').children('div.contenedor').children('div.vista-previa').remove();
+        descripcion.children('div.previsualizacion').hide();
+        if ($(this).val() == 2) {
+            descripcion.children('div.texto').removeClass('col-4').addClass('col-12').prop('rows', 4);
+            fichero.prop('accept', '');
+        } else {
+            descripcion.children('div.texto').removeClass('col-12').addClass('col-4').prop('rows', 12);
+            if ($(this).val() == 0) {
+                fichero.prop('accept', 'application/pdf');
+            } else {
+               fichero.prop('accept', 'image/jpeg');
+            }
+        }
+        fichero.val('');
+        fichero.siblings('label.recurso_fichero_texto').text('Examinar . . .');
+    }
+    
+    function recurso_fichero_change() {
+        var contenedor = contenedor_adicional.children('div.recursos').children('div.recurso').children('div.contenedor'),
+            previsualizacion = contenedor.children('div.descripcion').children('div.previsualizacion'),
+            tipo = contenedor.children('div.archivo').children('div.tipo').children('div.form-group').children('div.entrada').children('select[name="recurso_tipo"]'),
+            entradas = this.files, lector = new FileReader(), nombre = $(this).val();
+        while (nombre.indexOf("\\") != -1) {
+            nombre = nombre.slice(nombre.indexOf("\\") + 1, nombre.length);
+        }
+        $(this).siblings('label.recurso_fichero_texto').text(nombre);
+        alert('recurso_fichero_change()');
+        lector.onloadend = function (e) {
+            adicional.recursos.temp = e.target.result.split("base64,")[1];
+            previsualizacion.children('div.contenedor').children('div.vista-previa').remove();
+            if (tipo.val() == 0) {
+                var pdf = '<iframe src="data:application/pdf;base64,' + adicional.recursos.temp + '"></iframe>'; 
+                previsualizacion.children('div.contenedor').append('<div class="vista-previa">' + pdf + '</div>');
+                previsualizacion.show();
+            } else if (tipo.val() == 1) {
+                var img = '<img src="data:image/jpeg;base64,' + adicional.recursos.temp + '" alt="error al cargar imagen"/>';
+                previsualizacion.children('div.contenedor').append('<div class="vista-previa">' + img + '</div>');
+                previsualizacion.show();
+            }
+        }
+        lector.readAsDataURL(entradas[0]);
     }
     
     // Funciones para cargar paginas y definir su comportamiento
@@ -774,7 +930,11 @@ $(document).ready(function() {
     contenedor.children('div.botonera').find('button[name="reasignar"]').click(reasignar_click);
     contenedor.children('div.botonera').find('button[name="volver"]').css({'border-color':colorBorde, 'background-color':colorFondo}).click(volver_click);
     contenedor.children('div.ocultable').children('div.ocultable-titulo').click(ocultable_click);
-    informacion.find('a[name="siniestro_original_descargar"]').css({'border-color':colorBorde, 'background-color':colorFondo, 'color':colorBorde}).click(descargar_click);
+    if (siniestro.original && siniestro.original != null) {
+        informacion.find('a[name="siniestro_original_descargar"]').prop('download', siniestro.original.nombre).prop('href', 'data:text/plain;base64,' + siniestro.original.fichero);
+    } else {
+        informacion.find('a[name="siniestro_original_descargar"]').prop('download', '').prop('href', '');
+    }
     informacion.find('input[name="siniestro_numero"]').val(siniestro.numero);
     informacion.find('input[name="siniestro_fecha"]').val(siniestro.fechaRegistro.slice(0, siniestro.fechaRegistro.indexOf('T')));
     actualizar_estado_siniestro();
@@ -797,7 +957,12 @@ $(document).ready(function() {
     contenedor_adicional.find('button[name="recurso_nuevo"]').click(recurso_adjuntar_click);
     contenedor_adicional.find('button[name="adicional_participante_aceptar"]').click(adicional_participante_aceptar_click);
     contenedor_adicional.find('button[name="adicional_participante_cancelar"]').click(adicional_participante_cancelar_click);
-    contenedor_adicional.children('div.recursos').find('select[name="recurso_tipo"]').change(recurso_tipo_change);
+    contenedor_adicional.children('div.recursos').children('div.recurso').find('button[name="recurso_editar"]').click(recurso_editar_click);
+    contenedor_adicional.children('div.recursos').children('div.recurso').find('button[name="recurso_aceptar"]').click(recurso_aceptar_click).hide();;
+    contenedor_adicional.children('div.recursos').children('div.recurso').find('button[name="recurso_cancelar"]').click(recurso_cancelar_click).hide();;
+    contenedor_adicional.children('div.recursos').children('div.recurso').find('button[name="recurso_borrar"]').click(recurso_borrar_click);
+    contenedor_adicional.children('div.recursos').children('div.recurso').find('input[name="recurso_fichero"]').change(recurso_fichero_change);
+    contenedor_adicional.children('div.recursos').children('div.recurso').find('select[name="recurso_tipo"]').change(recurso_tipo_change);
     $.get('http://localhost:8080/ReForms_Provider/wr/contacto/obtenerContactos/' + siniestro.id, respuesta_obtenerContactos, 'json');
     $.get('http://localhost:8080/ReForms_Provider/wr/participante/obtenerParticipantes/' + siniestro.id, respuesta_obtenerParticipantes, 'json');
     $.get('http://localhost:8080/ReForms_Provider/wr/replanificacion/obtenerReplanificaciones/' + siniestro.id, respuesta_obtenerReplanificaciones, 'json');
@@ -816,14 +981,19 @@ $(document).ready(function() {
     contenedor.children('div.siniestro').children('div.ocultable-titulo').find('div.estado').hide();
     contenedor.children('div.siniestro').children('div.ocultable-titulo').find('input[name="estado"]').css({'border-color':colorBorde, 'background-color':sinColor});
     contenedor.children('div.siniestro').children('div.ocultable-titulo').find('span.input-group-text').css({'border-color':colorBorde, 'background-color':colorFondo, 'font-size':'1.25em'});
+    informacion.find('a[name="siniestro_original_descargar"]').css({'border-color':colorBordeNeutro, 'background-color':colorFondoNeutro, 'color':colorTextoNeutro});
     contenedor.children('div.adicional').find('table').children('thead').children('tr').css('background-color', colorBorde);
     contenedor_contactos.children('div.tabla').children('table').children('thead').children('tr').css('background-color', colorBorde);
     contenedor_contactos.children('div.detalles').children('div.contenedor').css('border-color', colorBorde);
     contenedor_adicional.children('div.recursos').children('div.recurso').children('div.contenedor').css('border-color', colorBorde);
     contenedor_adicional.children('div.row').children('div.participantes').children('div.participante').children('div.contenedor').css('border-color', colorBorde);
-    contenedor_adicional.children('div.recursos').children('div.recurso').children('div.contenedor').children('div.descripcion').children('div.previualizacion').children('div.contenedor').css('border-color', colorBorde);
+    contenedor_adicional.children('div.recursos').children('div.recurso').children('div.contenedor').children('div.descripcion').children('div.previsualizacion').children('div.contenedor').css('border-color', colorBorde);
+    contenedor_adicional.children('div.recursos').children('div.recurso').find('div[name="recurso_tipo_icono"]').css({'border-color':colorBordeNeutro, 'background-color':colorFondoNeutro});
+    contenedor_adicional.children('div.recursos').children('div.recurso').find('a[name="recurso_fichero_descargar"]').css({'border-color':colorBordeNeutro, 'background-color':colorFondoNeutro, 'color':colorTextoNeutro});
     contenedor.children('div.acciones').hide();
     contenedor_contactos.children('div.detalles').hide();
     contenedor_adicional.children('div.row').children('div.participantes').children('div.participante').hide();
+    contenedor_adicional.children('div.recursos').children('div.recurso').children('div.contenedor').find('div.entrada').hide();
     contenedor_adicional.children('div.recursos').children('div.recurso').hide();
+    contenedor_adicional.children('div.recursos').children('div.recurso').children('div.contenedor').children('div.descripcion').children('div.previsualizacion').hide();
 });
