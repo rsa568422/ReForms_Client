@@ -246,8 +246,7 @@ $(document).ready(function() {
             fichero = recurso.children('div.contenedor').children('div.archivo').children('div.fichero').children('div.form-group'),
             descarga = fichero.children('div.salida').children('div.input-group-append').children('a[name="recurso_fichero_descargar"]'),
             texto = recurso.children('div.contenedor').children('div.descripcion').children('div.texto'),
-            previsualizacion = recurso.children('div.contenedor').children('div.descripcion').children('div.previsualizacion'),
-            aceptar = recurso.children('div.contenedor').children('div.botones').children('div.col-12').children('button[name="recurso_editar"]');
+            previsualizacion = recurso.children('div.contenedor').children('div.descripcion').children('div.previsualizacion');
         if (adicional.recursos.recursoSeleccionado != null) {
             if (adicional.recursos.recursoSeleccionado.id == null) {
                 adicional.recursos.recursoSeleccionado.tipo = 1;
@@ -304,7 +303,7 @@ $(document).ready(function() {
             if (adicional.recursos.recursoSeleccionado.descripcion && adicional.recursos.recursoSeleccionado.descripcion != null && adicional.recursos.recursoSeleccionado.descripcion != '') {
                 texto.children('textarea[name="recurso_descripcion"]').val(adicional.recursos.recursoSeleccionado.descripcion);
             } else {
-                adicional.recursos.recursoSeleccionado.descripcion = '';
+                texto.children('textarea[name="recurso_descripcion"]').val('');
             }
             recurso.show();
         } else {
@@ -739,7 +738,64 @@ $(document).ready(function() {
     }
     
     function recurso_aceptar_click() {
-        alert('recurso_aceptar_click()');
+        var temporal = new Recurso(),
+            tbody = contenedor_adicional.children('div.recursos').children('div.tabla').children('table').children('tbody'),
+            contenedor = contenedor_adicional.children('div.recursos').children('div.recurso').children('div.contenedor'),
+            tipo = contenedor.children('div.archivo').children('div.tipo').find('select[name="recurso_tipo"]'),
+            nombre = contenedor.children('div.archivo').children('div.fichero').children('div.form-group').children('div.entrada').children('label.recurso_fichero_texto'),
+            descripcion = contenedor.children('div.descripcion').children('div.texto').children('textarea[name="recurso_descripcion"]');
+            cancelar = $(this).siblings('button.btn-cancelar');
+        if (adicional.recursos.recursoSeleccionado.id != null) {
+            temporal.id = adicional.recursos.recursoSeleccionado.id;
+            temporal.nombre = adicional.recursos.recursoSeleccionado.nombre;
+            temporal.tipo = adicional.recursos.recursoSeleccionado.tipo;
+            temporal.descripcion = descripcion.val();
+            temporal.fichero = adicional.recursos.recursoSeleccionado.fichero;
+            $.ajax({
+                url: 'http://localhost:8080/ReForms_Provider/wr/recurso/actualizarRecurso/' + temporal.id,
+                dataType: 'json',
+                type: 'put',
+                contentType: 'application/json;charset=UTF-8',
+                data: JSON.stringify(temporal),
+                processData: false,
+                success: function(data, textStatus, jQxhr){
+                    adicional.recursos.listaRecursos[adicional.recursos.posicionSeleccionado] = temporal;
+                    adicional.recursos.recursoSeleccionado = temporal;
+                    actualizar_detalles_recurso();
+                    mostrar_recursos(adicional.recursos.listaRecursos, tbody);
+                    mostrar_contactos(contactos.listaContactos, contenedor_contactos.children('div.tabla').children('table').children('tbody'));
+                    tbody.children('tr.recurso').eq(adicional.recursos.posicionSeleccionado).css('background-color', colorFondo);
+                    cancelar.click();
+                },
+                error: function(jQxhr, textStatus, errorThrown){
+                    actualizar_detalles_recurso();
+                    alerta('Error en proveedor', 'no ha sido posible actualizar el recurso');
+                }
+            });
+        } else {
+            var a = new Adjunto();
+            temporal.nombre = nombre.text();
+            temporal.tipo = tipo.val();
+            temporal.descripcion = descripcion.val();
+            temporal.fichero = adicional.recursos.temp;
+            a.siniestro = siniestro;
+            a.recurso = temporal;
+            $.ajax({
+                url: 'http://localhost:8080/ReForms_Provider/wr/adjunto/agregarAdjunto',
+                dataType: 'json',
+                type: 'post',
+                contentType: 'application/json;charset=UTF-8',
+                data: JSON.stringify(a),
+                processData: false,
+                success: function(data, textStatus, jQxhr){
+                    $.get('http://localhost:8080/ReForms_Provider/wr/recurso/obtenerRecursos/' + siniestro.id, respuesta_obtenerRecursos, 'json');
+                    cancelar.click();
+                },
+                error: function(jQxhr, textStatus, errorThrown){
+                    alerta('Error en proveedor', 'no ha sido posible agregar el recurso');
+                }
+            });
+        }
     }
     
     function recurso_cancelar_click() {
@@ -763,7 +819,24 @@ $(document).ready(function() {
     }
     
     function recurso_borrar_click() {
-        alert('recurso_borrar_click()');
+        if (!edicion) {
+            if (confirm('el recurso se eliminara permanentemente')) {
+                $.ajax({
+                    url: 'http://localhost:8080/ReForms_Provider/wr/adjunto/borrarAdjunto/' + adicional.recursos.recursoSeleccionado.id,
+                    type: 'delete',
+                    contentType: 'application/json;charset=UTF-8',
+                    success: function(data, textStatus, jQxhr){
+                        adicional.recursos.posicionSeleccionado = -1;
+                        adicional.recursos.recursoSeleccionado = null;
+                        actualizar_detalles_recurso();
+                        $.get('http://localhost:8080/ReForms_Provider/wr/recurso/obtenerRecursos/' + siniestro.id, respuesta_obtenerRecursos, 'json');
+                    },
+                    error: function(jqXhr, textStatus, errorThrown){
+                        alerta('Error en proveedor', 'no ha sido posible borrar el recurso');
+                    }
+                });
+            }
+        }
     }
     
     function siniestro_contacto_telefono1_keyup() {
@@ -792,6 +865,7 @@ $(document).ready(function() {
                fichero.prop('accept', 'image/jpeg');
             }
         }
+        adicional.recursos.temp = null;
         fichero.val('');
         fichero.siblings('label.recurso_fichero_texto').text('Examinar . . .');
     }
@@ -800,23 +874,44 @@ $(document).ready(function() {
         var contenedor = contenedor_adicional.children('div.recursos').children('div.recurso').children('div.contenedor'),
             previsualizacion = contenedor.children('div.descripcion').children('div.previsualizacion'),
             tipo = contenedor.children('div.archivo').children('div.tipo').children('div.form-group').children('div.entrada').children('select[name="recurso_tipo"]'),
-            entradas = this.files, lector = new FileReader(), nombre = $(this).val();
-        while (nombre.indexOf("\\") != -1) {
-            nombre = nombre.slice(nombre.indexOf("\\") + 1, nombre.length);
+            label = $(this).siblings('label.recurso_fichero_texto'),
+            entradas = this.files,
+            lector = new FileReader(),
+            nombre = $(this).val(), extension;
+        while (nombre.indexOf('\\') != -1) {
+            nombre = nombre.slice(nombre.indexOf('\\') + 1, nombre.length);
         }
-        $(this).siblings('label.recurso_fichero_texto').text(nombre);
-        alert('recurso_fichero_change()');
+        extension = nombre.slice(nombre.indexOf('.') + 1, nombre.length);
         lector.onloadend = function (e) {
-            adicional.recursos.temp = e.target.result.split("base64,")[1];
+            adicional.recursos.temp = e.target.result.split('base64,')[1];
             previsualizacion.children('div.contenedor').children('div.vista-previa').remove();
             if (tipo.val() == 0) {
-                var pdf = '<iframe src="data:application/pdf;base64,' + adicional.recursos.temp + '"></iframe>'; 
-                previsualizacion.children('div.contenedor').append('<div class="vista-previa">' + pdf + '</div>');
-                previsualizacion.show();
+                if (extension.toLowerCase() == 'pdf') {
+                    var pdf = '<iframe src="data:application/pdf;base64,' + adicional.recursos.temp + '"></iframe>'; 
+                    previsualizacion.children('div.contenedor').append('<div class="vista-previa">' + pdf + '</div>');
+                    label.text(nombre);
+                    previsualizacion.show();
+                } else {
+                    adicional.recursos.temp = null;
+                    label.text('Examinar . . .');
+                    previsualizacion.hide();
+                    alerta('Tipo de fichero invalido', 'debe seleccionar un fichero .pdf');
+                }
             } else if (tipo.val() == 1) {
-                var img = '<img src="data:image/jpeg;base64,' + adicional.recursos.temp + '" alt="error al cargar imagen"/>';
-                previsualizacion.children('div.contenedor').append('<div class="vista-previa">' + img + '</div>');
-                previsualizacion.show();
+                if (extension.toLowerCase() == 'jpg' || extension.toLowerCase() == 'jpeg') {
+                    var img = '<img src="data:image/jpeg;base64,' + adicional.recursos.temp + '" alt="error al cargar imagen"/>';
+                    previsualizacion.children('div.contenedor').append('<div class="vista-previa">' + img + '</div>');
+                    label.text(nombre);
+                    previsualizacion.show();
+                } else {
+                    adicional.recursos.temp = null;
+                    label.text('Examinar . . .');
+                    previsualizacion.hide();
+                    alerta('Tipo de fichero invalido', 'debe seleccionar un fichero .pdf');
+                }
+            } else {
+                label.text(nombre);
+                previsualizacion.hide();
             }
         }
         lector.readAsDataURL(entradas[0]);
