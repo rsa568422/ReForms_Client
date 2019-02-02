@@ -8,11 +8,6 @@ $(document).ready(function() {
         colorFondoNeutro = 'rgb(169, 169, 169)',
         colorBordeNeutro = 'rgb(206, 212, 218)',
         colorTextoNeutro = 'rgb(33, 37, 41)',
-        contenedor = $('#ventana').children('div[class="container-fluid"]'),
-        informacion = contenedor.children('div.siniestro').children('div.ocultable-contenido').children('div.informacion'),
-        poliza = contenedor.children('div.siniestro').children('div.ocultable-contenido').children('div.poliza'),
-        contenedor_contactos = contenedor.children('div.siniestro').children('div.ocultable-contenido').children('div.contactos'),
-        contenedor_adicional = contenedor.children('div.adicional').children('div.ocultable-contenido'),
         siniestro = JSON.parse(sessionStorage.siniestro),
         contactos = {
             'listaContactos': [],
@@ -21,11 +16,13 @@ $(document).ready(function() {
         },
         tareas = {
             'listaTareas': [],
-            'tareaSeleccionada': null
+            'tareaSeleccionada': null,
+            'posicionSeleccionada': -1
         },
         eventos = {
             'listaEventos': [],
-            'eventoSeleccionado': null
+            'eventoSeleccionado': null,
+            'posicionSeleccionado': -1
         },
         adicional = {
             'participantes': {
@@ -46,13 +43,56 @@ $(document).ready(function() {
                 'temp': null
             }
         },
+        componentes = {
+            'siniestro': {
+            	'contenido': $('#ventana').children('div.container-fluid').children('div.siniestro').children('div.ocultable-contenido'),
+                'informacion': null,
+                'observaciones': null,
+                'estado': $('#ventana').children('div.container-fluid').children('div.siniestro').children('div.ocultable-titulo').children('div.form-inline').children('div.estado')
+            },
+            'contactos': {
+                'detalles': null,
+                'botones': null,
+                'entradas': null,
+                'tabla': null
+            },
+            'tareas': {
+                
+            },
+            'eventos': {
+                
+            },
+            'adicional': {
+                'participantes': {
+                    'elemento': $('#ventana').children('div.container-fluid').children('div.adicional').children('div.ocultable-contenido').children('div.row').children('div.participantes'),
+                    'nuevo': null,
+                    'participante': null,
+                    'botones': null
+                },
+                'replanificaciones': {
+                    'elemento': $('#ventana').children('div.container-fluid').children('div.adicional').children('div.ocultable-contenido').children('div.row').children('div.replanificaciones')
+                },
+                'reasignaciones': {
+                    'elemento': $('#ventana').children('div.container-fluid').children('div.adicional').children('div.ocultable-contenido').children('div.row').children('div.reasignaciones')
+                },
+                'recursos': {
+                    'recurso': $('#ventana').children('div.container-fluid').children('div.adicional').children('div.ocultable-contenido').children('div.recursos').children('div.recurso'),
+                    'entrada_fichero': null,
+                    'descarga_fichero': null,
+                    'entrada_tipo': null,
+                    'botones': null,
+                    'previsualizacion': null,
+                    'tabla': $('#ventana').children('div.container-fluid').children('div.adicional').children('div.ocultable-contenido').children('div.recursos').children('div.tabla')
+                }
+            }
+        },
         strAux, edicion = false;
     
     // Funciones auxiliares
     // ====================================================================== //
     function alerta(titulo, mensaje) {
-        $('#alerta').find('.modal-title').html(titulo);
-        $('#alerta').find('.modal-body').html(mensaje);
+        $('#alerta').children('div.modal-dialog').children('div.modal-content').children('div.modal-header').children('.modal-title').html(titulo);
+        $('#alerta').children('div.modal-dialog').children('div.modal-content').children('div.modal-body').html(mensaje);
         $('#activador-alerta').click();
     }
     
@@ -182,19 +222,18 @@ $(document).ready(function() {
             case 7: strAux = 'cobrado'; break;
             default: strAux = 'desconocido'; break;
         }
-        informacion.find('input[name="siniestro_estado"]').val(strAux);
-        contenedor.children('div.siniestro').children('div.ocultable-titulo').find('input[name="estado"]').val(strAux);
+        componentes.siniestro.informacion.children('div.siniestro_estado').children('div.form-group').children('input[name="siniestro_estado"]').val(strAux);
+        componentes.siniestro.estado.children('input[name="estado"]').val(strAux);
     }
     
     function actualizar_detalles_contacto() {
-        var detalles = contenedor_contactos.children('div.detalles'),
-            nombre = detalles.find('input[name="siniestro_contacto_nombre"]'),
-            apellido1 = detalles.find('input[name="siniestro_contacto_apellido1"]'),
-            apellido2 = detalles.find('input[name="siniestro_contacto_apellido2"]'),
-            telefono1 = detalles.find('input[name="siniestro_contacto_telefono1"]'),
-            telefono2 = detalles.find('input[name="siniestro_contacto_telefono2"]'),
-            observaciones = detalles.find('textarea[name="siniestro_contacto_observaciones"]'),
-            aceptar = detalles.find('button.btn-aceptar');
+        var nombre = componentes.contactos.entradas.children('input[name="siniestro_contacto_nombre"]'),
+            apellido1 = componentes.contactos.entradas.children('div.input-group').children('input[name="siniestro_contacto_apellido1"]'),
+            apellido2 = componentes.contactos.entradas.children('div.input-group').children('input[name="siniestro_contacto_apellido2"]'),
+            telefono1 = componentes.contactos.entradas.children('div.input-group').children('input[name="siniestro_contacto_telefono1"]'),
+            telefono2 = componentes.contactos.entradas.children('div.input-group').children('input[name="siniestro_contacto_telefono2"]'),
+            observaciones = componentes.contactos.entradas.children('textarea[name="siniestro_contacto_observaciones"]'),
+            aceptar = componentes.contactos.botones.children('button[name="siniestro_contacto_aceptar"]');
         if (contactos.contactoSeleccionado != null) {
             if (contactos.contactoSeleccionado.nombre && contactos.contactoSeleccionado.nombre != null && contactos.contactoSeleccionado.nombre != '') {
                 nombre.val(contactos.contactoSeleccionado.nombre);
@@ -228,86 +267,80 @@ $(document).ready(function() {
             } else {
                 observaciones.val('');
             }
-            detalles.show();
+            componentes.contactos.detalles.show();
         } else {
-            detalles.hide();
+            componentes.contactos.detalles.hide();
         }
     }
     
     function actualizar_detalles_participante() {
-        var contenedor = contenedor_adicional.children('div.row').children('div.participantes').children('div.participante').children('div.contenedor');
+        var contenedor = componentes.adicional.participantes.participante.children('div.contenedor');
         contenedor.find('input').val('');
     }
     
     function actualizar_detalles_recurso() {
-        var recurso = contenedor_adicional.children('div.recursos').children('div.recurso'),
-            tipo = recurso.children('div.contenedor').children('div.archivo').children('div.tipo').children('div.form-group'),
-            icono = tipo.children('div.salida').children('div.input-group-append').children('div[name="recurso_tipo_icono"]'),
-            fichero = recurso.children('div.contenedor').children('div.archivo').children('div.fichero').children('div.form-group'),
-            descarga = fichero.children('div.salida').children('div.input-group-append').children('a[name="recurso_fichero_descargar"]'),
-            texto = recurso.children('div.contenedor').children('div.descripcion').children('div.texto'),
-            previsualizacion = recurso.children('div.contenedor').children('div.descripcion').children('div.previsualizacion');
+        var salidas = componentes.adicional.recursos.recurso.children('div.contenedor').children('div.archivo').children('div.tipo').children('div.form-group').children('div.salida'),
+            icono = salidas.children('div.input-group-append').children('div[name="recurso_tipo_icono"]');
         if (adicional.recursos.recursoSeleccionado != null) {
             if (adicional.recursos.recursoSeleccionado.id == null) {
                 adicional.recursos.recursoSeleccionado.tipo = 1;
             }
-            tipo.children('div.entrada').children('select[name="recurso_tipo"]').val(adicional.recursos.recursoSeleccionado.tipo).change();
+            componentes.adicional.recursos.entrada_tipo.children('select[name="recurso_tipo"]').val(adicional.recursos.recursoSeleccionado.tipo).change();
             if (adicional.recursos.recursoSeleccionado.tipo == 2) {
-                tipo.children('div.salida').children('input[name="recurso_tipo_texto"]').val('Archivo');
+                salidas.children('input[name="recurso_tipo_texto"]').val('Archivo');
                 icono.children('i.material-icons').remove();
                 icono.append('<i class="material-icons">attach_file</i>');
             } else {
                 if (adicional.recursos.recursoSeleccionado.tipo == 0) {
-                    tipo.children('div.salida').children('input[name="recurso_tipo_texto"]').val('PDF');
+                    salidas.children('input[name="recurso_tipo_texto"]').val('PDF');
                     icono.children('i.material-icons').remove();
                     icono.append('<i class="material-icons">insert_drive_file</i>');
-                    previsualizacion.children('div.contenedor').children('div.vista-previa').remove();
+                    componentes.adicional.recursos.previsualizacion.children('div.contenedor').children('div.vista-previa').remove();
                     if (adicional.recursos.recursoSeleccionado.fichero && adicional.recursos.recursoSeleccionado.fichero != null && adicional.recursos.recursoSeleccionado.fichero != '') {
                         var pdf = '<iframe src="data:application/pdf;base64,' + adicional.recursos.recursoSeleccionado.fichero + '"></iframe>'; 
-                        previsualizacion.children('div.contenedor').append('<div class="vista-previa">' + pdf + '</div>');
-                        previsualizacion.show();
+                        componentes.adicional.recursos.previsualizacion.children('div.contenedor').append('<div class="vista-previa">' + pdf + '</div>');
+                        componentes.adicional.recursos.previsualizacion.show();
                     } else {
-                        previsualizacion.hide();
+                        componentes.adicional.recursos.previsualizacion.hide();
                     }
                 } else {
-                    tipo.children('div.salida').children('input[name="recurso_tipo_texto"]').val('Imagen');
+                    salidas.children('input[name="recurso_tipo_texto"]').val('Imagen');
                     icono.children('i.material-icons').remove();
                     icono.append('<i class="material-icons">camera_alt</i>');
-                    previsualizacion.children('div.contenedor').children('div.vista-previa').remove();
+                    componentes.adicional.recursos.previsualizacion.children('div.contenedor').children('div.vista-previa').remove();
                     if (adicional.recursos.recursoSeleccionado.fichero && adicional.recursos.recursoSeleccionado.fichero != null && adicional.recursos.recursoSeleccionado.fichero != '') {
                         var img = '<img src="data:image/jpeg;base64,' + adicional.recursos.recursoSeleccionado.fichero + '" alt="' + adicional.recursos.recursoSeleccionado.nombre + '"/>';
-                        previsualizacion.children('div.contenedor').append('<div class="vista-previa">' + img + '</div>');
-                        previsualizacion.show();
+                        componentes.adicional.recursos.previsualizacion.children('div.contenedor').append('<div class="vista-previa">' + img + '</div>');
+                        componentes.adicional.recursos.previsualizacion.show();
                     } else {
-                        previsualizacion.hide();
+                        componentes.adicional.recursos.previsualizacion.hide();
                     }
                 }
             }
             if (adicional.recursos.recursoSeleccionado.nombre && adicional.recursos.recursoSeleccionado.nombre != null && adicional.recursos.recursoSeleccionado.nombre != '') {
-                fichero.children('div.salida').children('input[name="recurso_nombre"]').val(adicional.recursos.recursoSeleccionado.nombre);
+                componentes.adicional.recursos.recurso.children('div.contenedor').children('div.archivo').children('div.fichero').children('div.form-group').children('div.salida').children('input[name="recurso_nombre"]').val(adicional.recursos.recursoSeleccionado.nombre);
             } else{
-                fichero.children('div.salida').children('input[name="recurso_nombre"]').val('');
+                componentes.adicional.recursos.recurso.children('div.contenedor').children('div.archivo').children('div.fichero').children('div.form-group').children('div.salida').children('input[name="recurso_nombre"]').val('');
             }
             if (adicional.recursos.recursoSeleccionado.fichero && adicional.recursos.recursoSeleccionado.fichero != null && adicional.recursos.recursoSeleccionado.fichero != '') {
-                descarga.prop('download', adicional.recursos.recursoSeleccionado.nombre);
-                descarga.prop('href', 'data:text/plain;base64,' + adicional.recursos.recursoSeleccionado.fichero);
-                fichero.children('div.entrada').children('input[name="recurso_fichero"]').val('');
-                fichero.children('div.entrada').children('label.recurso_fichero_texto').text(adicional.recursos.recursoSeleccionado.nombre);
+                componentes.adicional.recursos.descarga_fichero.prop('download', adicional.recursos.recursoSeleccionado.nombre);
+                componentes.adicional.recursos.descarga_fichero.prop('href', 'data:text/plain;base64,' + adicional.recursos.recursoSeleccionado.fichero);
+                componentes.adicional.recursos.entrada_fichero.children('input[name="recurso_fichero"]').val('');
+                componentes.adicional.recursos.entrada_fichero.children('label.recurso_fichero_texto').text(adicional.recursos.recursoSeleccionado.nombre);
             } else {
-                descarga.prop('download', '');
-                descarga.prop('href', '');
-                fichero.children('div.entrada').children('input[name="recurso_fichero"]').val('');
-                fichero.children('div.entrada').children('label.recurso_fichero_texto').text('Examinar . . .');
-                
+                componentes.adicional.recursos.descarga_fichero.prop('download', '');
+                componentes.adicional.recursos.descarga_fichero.prop('href', '');
+                componentes.adicional.recursos.entrada_fichero.children('input[name="recurso_fichero"]').val('');
+                componentes.adicional.recursos.entrada_fichero.children('label.recurso_fichero_texto').text('Examinar . . .');
             }
             if (adicional.recursos.recursoSeleccionado.descripcion && adicional.recursos.recursoSeleccionado.descripcion != null && adicional.recursos.recursoSeleccionado.descripcion != '') {
-                texto.children('textarea[name="recurso_descripcion"]').val(adicional.recursos.recursoSeleccionado.descripcion);
+                componentes.adicional.recursos.recurso.children('div.contenedor').children('div.descripcion').children('div.texto').children('textarea[name="recurso_descripcion"]').val(adicional.recursos.recursoSeleccionado.descripcion);
             } else {
-                texto.children('textarea[name="recurso_descripcion"]').val('');
+                componentes.adicional.recursos.recurso.children('div.contenedor').children('div.descripcion').children('div.texto').children('textarea[name="recurso_descripcion"]').val('');
             }
-            recurso.show();
+            componentes.adicional.recursos.recurso.show();
         } else {
-            recurso.hide();
+            componentes.adicional.recursos.recurso.hide();
         }
     }
     
@@ -315,12 +348,12 @@ $(document).ready(function() {
     // ====================================================================== //
     function replanificar_click() {
         alert('replanificar_click()');
-        contenedor.children('div.acciones').hide();
+        $('#ventana').children('div.container-fluid').children('div.acciones').hide();
     }
     
     function reasignar_click() {
         alert('reasignar_click()');
-        contenedor.children('div.acciones').show();
+        $('#ventana').children('div.container-fluid').children('div.acciones').show();
     }
     
     function volver_click() {
@@ -331,12 +364,12 @@ $(document).ready(function() {
         if (!edicion) {
             if ($(this).parent('div.ocultable').filter('.siniestro').length == 1) {
                 if ($(this).siblings('div.ocultable-contenido').is(':visible')) {
-                    $(this).find('div.estado').fadeIn();
+                    componentes.siniestro.estado.fadeIn();
                 } else {
-                    $(this).find('div.estado').fadeOut();
+                    componentes.siniestro.estado.fadeOut();
                 }
             } else {
-                contenedor.children('div.siniestro').children('div.ocultable-titulo').find('div.estado').fadeIn();
+                componentes.siniestro.estado.fadeIn();
             }
             $(this).siblings('.ocultable-contenido').slideToggle();
             $(this).parent('.ocultable').siblings('.ocultable').children('.ocultable-contenido').slideUp();
@@ -364,22 +397,22 @@ $(document).ready(function() {
             contactos.posicionSeleccionado = -1;
             contactos.contactoSeleccionado = new Contacto();
             actualizar_detalles_contacto();
-            contenedor_contactos.children('div.detalles').find('button[name="siniestro_contacto_editar"]').click();
+            componentes.contactos.botones.children('button[name="siniestro_contacto_editar"]').click();
         }
     }
     
     function contacto_editar_click() {
-        var nombre = contenedor_contactos.children('div.detalles').find('input[name="siniestro_contacto_nombre"]'),
-            telefono1 = contenedor_contactos.children('div.detalles').find('input[name="siniestro_contacto_telefono1"]'),
-            observaciones = contenedor_contactos.children('div.detalles').find('textarea[name="siniestro_contacto_observaciones"]');
+        var nombre = componentes.contactos.entradas.children('input[name="siniestro_contacto_nombre"]'),
+            telefono1 = componentes.contactos.entradas.children('div.input-group').children('input[name="siniestro_contacto_telefono1"]'),
+            observaciones = componentes.contactos.entradas.children('textarea[name="siniestro_contacto_observaciones"]');
         if (!edicion) {
             edicion = true;
-            $(this).hide();
-            $(this).siblings('button.btn-aceptar').show();
-            $(this).siblings('button.btn-cancelar').show();
-            $(this).siblings('button.btn-borrar').hide();
-            contenedor_contactos.children('div.tabla').find('button[name="siniestro_contacto_nuevo"]').prop('disabled', true);
-            contenedor_contactos.children('div.detalles').find('input').prop('readonly', false);
+            componentes.contactos.botones.children('button[name="siniestro_contacto_editar"]').hide();
+            componentes.contactos.botones.children('button[name="siniestro_contacto_aceptar"]').show();
+            componentes.contactos.botones.children('button[name="siniestro_contacto_cancelar"]').show();
+            componentes.contactos.botones.children('button[name="siniestro_contacto_borrar"]').hide();
+            componentes.contactos.tabla.children('button[name="siniestro_contacto_nuevo"]').prop('disabled', true);
+            componentes.contactos.detalles.find('input').prop('readonly', false);
             observaciones.prop('readonly', false);
             if (telefono1.val() == '') {
                 telefono1.focus();
@@ -392,13 +425,12 @@ $(document).ready(function() {
     }
     
     function contacto_aceptar_click() {
-        var detalles = contenedor_contactos.children('div.detalles'),
-            nombre = detalles.find('input[name="siniestro_contacto_nombre"]'),
-            apellido1 = detalles.find('input[name="siniestro_contacto_apellido1"]'),
-            apellido2 = detalles.find('input[name="siniestro_contacto_apellido2"]'),
-            telefono1 = detalles.find('input[name="siniestro_contacto_telefono1"]'),
-            telefono2 = detalles.find('input[name="siniestro_contacto_telefono2"]'),
-            observaciones = detalles.find('textarea[name="siniestro_contacto_observaciones"]'),
+        var nombre = componentes.contactos.entradas.children('input[name="siniestro_contacto_nombre"]'),
+            apellido1 = componentes.contactos.entradas.children('div.input-group').children('input[name="siniestro_contacto_apellido1"]'),
+            apellido2 = componentes.contactos.entradas.children('div.input-group').children('input[name="siniestro_contacto_apellido2"]'),
+            telefono1 = componentes.contactos.entradas.children('div.input-group').children('input[name="siniestro_contacto_telefono1"]'),
+            telefono2 = componentes.contactos.entradas.children('div.input-group').children('input[name="siniestro_contacto_telefono2"]'),
+            observaciones = componentes.contactos.entradas.children('textarea[name="siniestro_contacto_observaciones"]'),
             t1 = false, t2 = false;
         if (telefono1.val() != '' && telefono_valido(telefono1.val())) {
             t1 = true;
@@ -446,15 +478,15 @@ $(document).ready(function() {
                         contactos.listaContactos[contactos.posicionSeleccionado] = temporal;
                         contactos.contactoSeleccionado = temporal;
                         actualizar_detalles_contacto();
-                        mostrar_contactos(contactos.listaContactos, contenedor_contactos.children('div.tabla').children('table').children('tbody'));
-                        contenedor_contactos.children('div.tabla').children('table').children('tbody').children('tr.contacto').eq(contactos.posicionSeleccionado).css('background-color', colorFondo);
+                        mostrar_contactos(contactos.listaContactos, componentes.contactos.tabla.children('table').children('tbody'));
+                        componentes.contactos.tabla.children('table').children('tbody').children('tr.contacto').eq(contactos.posicionSeleccionado).css('background-color', colorFondo);
                     },
                     error: function(jQxhr, textStatus, errorThrown){
                         alerta('Error en proveedor', 'no ha sido posible actualizar el contacto');
                     }
                 });
             }
-            $(this).siblings('button.btn-cancelar').click();
+            componentes.contactos.botones.children('button[name="siniestro_contacto_cancelar"]').click();
         } else {
             alerta('Error en los datos', 'introduzca un telefono valido');
             if (!t1) {
@@ -467,15 +499,15 @@ $(document).ready(function() {
     
     function contacto_cancelar_click() {
         edicion = false;
-        $(this).hide();
-        $(this).siblings('button.btn-aceptar').prop('disabled', false).hide();
-        $(this).siblings('button.btn-editar').show();
-        $(this).siblings('button.btn-borrar').show();
-        contenedor_contactos.children('div.tabla').find('button[name="siniestro_contacto_nuevo"]').prop('disabled', false);
-        contenedor_contactos.children('div.detalles').find('input').prop('readonly', true);
-        contenedor_contactos.children('div.detalles').find('textarea').prop('readonly', true);
+        componentes.contactos.botones.children('button[name="siniestro_contacto_cancelar"]').hide();
+        componentes.contactos.botones.children('button[name="siniestro_contacto_aceptar"]').prop('disabled', false).hide();
+        componentes.contactos.botones.children('button[name="siniestro_contacto_editar"]').show();
+        componentes.contactos.botones.children('button[name="siniestro_contacto_borrar"]').show();
+        componentes.contactos.tabla.children('button[name="siniestro_contacto_nuevo"]').prop('disabled', false);
+        componentes.contactos.detalles.find('input').prop('readonly', true);
+        componentes.contactos.detalles.find('textarea').prop('readonly', true);
         if (contactos.contactoSeleccionado.id == null) {
-            contenedor_contactos.children('div.detalles').hide();
+            componentes.contactos.detalles.hide();
         } else {
             actualizar_detalles_contacto();
         }
@@ -501,12 +533,11 @@ $(document).ready(function() {
             }
         }
     }
-    
+
     function participante_agregar_click() {
         if (!edicion) {
-            var i, tfoot = $(this).siblings('table').children('tfoot'),
-                boton_actual = $(this),
-                boton_vecino = $(this).parent('div.participantes').parent('div.row').siblings('div.recursos').children('div.tabla').children('button[name="recurso_nuevo"]'),
+            var i, tfoot = componentes.adicional.participantes.elemento.children('table').children('tfoot'),
+                boton_vecino = componentes.adicional.recursos.tabla.children('button[name="recurso_nuevo"]'),
                 select = '<tr><td><div class="container mt-3"><div class="input-group mb-3"><select class="form-control form custom-select">', opciones = '',
                 botones = '</select><div class="input-group-append"><button class="btn btn-aceptar-sm" type="button">+</button><button class="btn btn-cancelar-sm" type="button">x</button></div></div></div></td></tr>';
             tfoot.children('tr').remove();
@@ -527,7 +558,7 @@ $(document).ready(function() {
                     tfoot.find('button.btn-aceptar-sm').click(participante_aceptar_click);
                     tfoot.find('button.btn-cancelar-sm').click(participante_cancelar_click);
                     tfoot.find('select').focus();
-                    boton_actual.hide();
+                    componentes.adicional.participantes.nuevo.hide();
                     boton_vecino.prop('disabled', true);
                 } else {
                     alert('fallo en el proveedor');
@@ -538,8 +569,7 @@ $(document).ready(function() {
     
     function participante_aceptar_click() {
         var select = $(this).parent('div.input-group-append').siblings('select'),
-            tbody = contenedor_adicional.children('div.row').children('div.participantes').children('table').children('tbody'),
-            tfoot = contenedor_adicional.children('div.row').children('div.participantes').children('table').children('tfoot'),
+            tfoot = componentes.adicional.participantes.elemento.children('table').children('tfoot'),
             cancelar = $(this).siblings('button.btn-cancelar-sm');
         if (select.val() > -1) {
             var p = new Participante();
@@ -561,23 +591,23 @@ $(document).ready(function() {
                 }
             });
         } else {
-            contenedor_adicional.children('div.row').children('div.participantes').children('div.participante').show();
+            componentes.adicional.participantes.participante.show();
             tfoot.children('tr').hide();
         }
     }
     
     function participante_cancelar_click() {
-        var tfoot = $(this).parent('div.input-group-append').parent('div.input-group').parent('div.container').parent('td').parent('tr').parent('tfoot'),
-            boton_vecino = tfoot.parent('table').parent('div.participantes').parent('div.row').siblings('div.recursos').children('div.tabla').children('button[name="recurso_nuevo"]');
+        var tfoot = componentes.adicional.participantes.elemento.children('table').children('tfoot'),
+            boton_vecino = componentes.adicional.recursos.tabla.children('button[name="recurso_nuevo"]');
         edicion = false;
         tfoot.children('tr').remove();
-        tfoot.parent('table').siblings('button[name="participante_nuevo"]').show();
+        componentes.adicional.participantes.nuevo.show();
         boton_vecino.prop('disabled', false);
     }
     
     function participante_borrar_click() {
         var tr = $(this).parent('td').parent('tr.participante'),
-            tbody = contenedor_adicional.children('div.row').children('div.participantes').children('table').children('tbody'),
+            tbody = componentes.adicional.participantes.elemento.children('table').children('tbody'),
             participante = adicional.participantes.listaParticipantes[tr.index()];
         if (confirm(participante.multiservicios.nombre + ' dejara de participar en el siniestro')) {
             $.ajax({
@@ -597,13 +627,13 @@ $(document).ready(function() {
     }
     
     function adicional_participante_aceptar_click() {
-        var contenedor = $(this).parent('div.col-12').parent('div.row').parent('div.contenedor'),
-            cancelar = $(this).siblings('button.btn-cancelar'),
-            nombre = contenedor.children('div.row').find('input[name="adicional_participante_nombre"]'),
-            telefono1 = contenedor.children('div.row').find('input[name="adicional_participante_telefono1"]'),
-            telefono2 = contenedor.children('div.row').find('input[name="adicional_participante_telefono2"]'),
-            fax = contenedor.children('div.row').find('input[name="adicional_participante_fax"]'),
-            email = contenedor.children('div.row').find('input[name="adicional_participante_email"]'),
+        var cancelar = componentes.adicional.participantes.botones.children('button[name="adicional_participante_cancelar"]'),
+            entradas = componentes.adicional.participantes.elemento.children('div.participante').children('div.contenedor').children('div.row').children('div.col-12').children('div.form-group'),
+            nombre = entradas.children('input[name="adicional_participante_nombre"]'),
+            telefono1 = entradas.children('div.input-group').children('input[name="adicional_participante_telefono1"]'),
+            telefono2 = entradas.children('div.input-group').children('input[name="adicional_participante_telefono2"]'),
+            fax = entradas.children('input[name="adicional_participante_fax"]'),
+            email = entradas.children('input[name="adicional_participante_email"]'),
             p = new Participante(),
             m = new Multiservicios(),
             nombreOk = true, telefonosOk = true, faxOk = true, emailOk = true;
@@ -682,11 +712,10 @@ $(document).ready(function() {
     }
     
     function adicional_participante_cancelar_click() {
-        var participante = $(this).parent('div.col-12').parent('div.row').parent('div.contenedor').parent('div.participante'),
-            boton_cancelar_vecino = participante.siblings('table').children('tfoot').find('button.btn-cancelar-sm');
+        var boton_cancelar_vecino = componentes.adicional.participantes.elemento.children('table').children('tfoot').children('tr').children('td').children('div.container').children('div.input-group').children('div.input-group-append').children('button.btn-cancelar-sm');
         adicional.participantes.participanteSeleccionado = null;
         actualizar_detalles_participante();
-        participante.hide();
+        componentes.adicional.participantes.participante.hide();
         boton_cancelar_vecino.click();
     }
     
@@ -707,44 +736,44 @@ $(document).ready(function() {
     }
     
     function recurso_adjuntar_click() {
-        var recurso = contenedor_adicional.children('div.recursos').children('div.recurso');
         if (!edicion) {
             adicional.recursos.posicionSeleccionado = -1;
             adicional.recursos.recursoSeleccionado = new Recurso();
             actualizar_detalles_recurso();
-            recurso.find('div.salida').hide();
-            recurso.find('div.entrada').show();
-            recurso.find('button[name="recurso_editar"]').click();
+            componentes.adicional.recursos.entrada_tipo.siblings('div.salida').hide();
+            componentes.adicional.recursos.entrada_fichero.siblings('div.salida').hide();
+            componentes.adicional.recursos.entrada_tipo.show();
+            componentes.adicional.recursos.entrada_fichero.show();
+            componentes.adicional.recursos.botones.children('button[name="recurso_editar"]').click();
         }
     }
     
     function recurso_editar_click() {
-        var textarea = contenedor_adicional.children('div.recursos').children('div.recurso').find('textarea[name="recurso_descripcion"]');
+        var textarea = componentes.adicional.recursos.recurso.children('div.contenedor').children('div.descripcion').children('div.texto').children('textarea[name="recurso_descripcion"]');
         if (!edicion) {
             edicion = true;
             textarea.prop('readonly', false);
-            contenedor_adicional.children('div.row').children('div.participantes').children('button[name="participante_nuevo"]').prop('disabled', true);
-            contenedor_adicional.children('div.recursos').children('div.tabla').children('button[name="recurso_nuevo"]').prop('disabled', true);
+            componentes.adicional.participantes.nuevo.prop('disabled', true);
+            componentes.adicional.recursos.tabla.children('button[name="recurso_nuevo"]').prop('disabled', true);
             if (adicional.recursos.recursoSeleccionado != null && adicional.recursos.recursoSeleccionado.id != null) {
                 textarea.focus();
             } else {
-                contenedor_adicional.children('div.recursos').children('div.recurso').find('select[name="recurso_tipo"]').focus();
+                $('#ventana').children('div.container-fluid').children('div.adicional').children('div.ocultable-contenido').children('div.recursos').children('div.recurso').children('div.contenedor').children('div.archivo').children('div.tipo').children('div.form-group').children('div.entrada').children('select[name="recurso_tipo"]').focus();
             }
-            $(this).hide();
-            $(this).siblings('button.btn-aceptar').show();
-            $(this).siblings('button.btn-cancelar').show();
-            $(this).siblings('button.btn-borrar').hide();
+            componentes.adicional.recursos.botones.children('button[name="recurso_editar"]').hide();
+            componentes.adicional.recursos.botones.children('button[name="recurso_aceptar"]').show();
+            componentes.adicional.recursos.botones.children('button[name="recurso_cancelar"]').show();
+            componentes.adicional.recursos.botones.children('button[name="recurso_borrar"]').hide();
         }
     }
     
     function recurso_aceptar_click() {
         var temporal = new Recurso(),
-            tbody = contenedor_adicional.children('div.recursos').children('div.tabla').children('table').children('tbody'),
-            contenedor = contenedor_adicional.children('div.recursos').children('div.recurso').children('div.contenedor'),
-            tipo = contenedor.children('div.archivo').children('div.tipo').find('select[name="recurso_tipo"]'),
-            nombre = contenedor.children('div.archivo').children('div.fichero').children('div.form-group').children('div.entrada').children('label.recurso_fichero_texto'),
-            descripcion = contenedor.children('div.descripcion').children('div.texto').children('textarea[name="recurso_descripcion"]');
-            cancelar = $(this).siblings('button.btn-cancelar');
+            tbody = componentes.adicional.recursos.tabla.children('table').children('tbody'),
+            tipo = componentes.adicional.recursos.entrada_tipo.children('select[name="recurso_tipo"]'),
+            adicional_recurso_contenido = componentes.adicional.recursos.recurso.children('div.contenedor'),
+            nombre = adicional_recurso_contenido.children('div.archivo').children('div.fichero').children('div.form-group').children('div.entrada').children('label.recurso_fichero_texto'),
+            descripcion = componentes.adicional.recursos.recurso.children('div.contenedor').children('div.descripcion').children('div.texto').children('textarea[name="recurso_descripcion"]');
         if (adicional.recursos.recursoSeleccionado.id != null) {
             temporal.id = adicional.recursos.recursoSeleccionado.id;
             temporal.nombre = adicional.recursos.recursoSeleccionado.nombre;
@@ -763,9 +792,8 @@ $(document).ready(function() {
                     adicional.recursos.recursoSeleccionado = temporal;
                     actualizar_detalles_recurso();
                     mostrar_recursos(adicional.recursos.listaRecursos, tbody);
-                    mostrar_contactos(contactos.listaContactos, contenedor_contactos.children('div.tabla').children('table').children('tbody'));
                     tbody.children('tr.recurso').eq(adicional.recursos.posicionSeleccionado).css('background-color', colorFondo);
-                    cancelar.click();
+                    componentes.adicional.recursos.botones.children('button[name="recurso_cancelar"]').click();
                 },
                 error: function(jQxhr, textStatus, errorThrown){
                     actualizar_detalles_recurso();
@@ -789,7 +817,7 @@ $(document).ready(function() {
                 processData: false,
                 success: function(data, textStatus, jQxhr){
                     $.get('http://localhost:8080/ReForms_Provider/wr/recurso/obtenerRecursos/' + siniestro.id, respuesta_obtenerRecursos, 'json');
-                    cancelar.click();
+                    componentes.adicional.recursos.botones.children('button[name="recurso_cancelar"]').click();
                 },
                 error: function(jQxhr, textStatus, errorThrown){
                     alerta('Error en proveedor', 'no ha sido posible agregar el recurso');
@@ -799,20 +827,22 @@ $(document).ready(function() {
     }
     
     function recurso_cancelar_click() {
-        var recurso = contenedor_adicional.children('div.recursos').children('div.recurso');
         edicion = false;
         adicional.recursos.temp = null;
-        recurso.find('textarea[name="recurso_descripcion"]').prop('readonly', true);
-        contenedor_adicional.children('div.row').children('div.participantes').children('button[name="participante_nuevo"]').prop('disabled', false);
-        contenedor_adicional.children('div.recursos').children('div.tabla').children('button[name="recurso_nuevo"]').prop('disabled', false);
-        $(this).hide();
-        $(this).siblings('button.btn-aceptar').prop('disabled', false).hide();
-        $(this).siblings('button.btn-editar').show();
-        $(this).siblings('button.btn-borrar').show();
-        recurso.find('div.entrada').hide();
-        recurso.find('div.salida').show();
+        componentes.adicional.recursos.recurso.children('div.contenedor').children('div.descripcion').children('div.texto').children('textarea[name="recurso_descripcion"]').prop('readonly', true);
+        componentes.adicional.participantes.nuevo.prop('disabled', false);
+        componentes.adicional.recursos.tabla.children('button[name="recurso_nuevo"]').prop('disabled', false);
+        componentes.adicional.recursos.botones.children('button[name="recurso_cancelar"]').hide();
+        componentes.adicional.recursos.botones.children('button[name="recurso_aceptar"]').prop('disabled', false).hide();
+        componentes.adicional.recursos.botones.children('button[name="recurso_editar"]').show();
+        componentes.adicional.recursos.botones.children('button[name="recurso_borrar"]').show();
+        componentes.adicional.recursos.entrada_tipo.siblings('div.salida').show();
+        componentes.adicional.recursos.entrada_fichero.siblings('div.salida').show();
+        componentes.adicional.recursos.entrada_tipo.hide();
+        componentes.adicional.recursos.entrada_fichero.hide();
         if (adicional.recursos.recursoSeleccionado.id == null) {
-            recurso.hide();
+            componentes.adicional.recursos.entrada_fichero.siblings('div.salida').hide();
+            componentes.adicional.recursos.recurso.hide();
         } else {
             actualizar_detalles_recurso();
         }
@@ -840,25 +870,23 @@ $(document).ready(function() {
     }
     
     function siniestro_contacto_telefono1_keyup() {
-        var aceptar = contenedor_contactos.children('div.detalles').find('button.btn-aceptar');
         if ($(this).val() != '' && telefono_valido($(this).val())) {
-            aceptar.prop('disabled', false);
+            componentes.contactos.botones.children('button[name="siniestro_contacto_aceptar"]').prop('disabled', false);
         } else {
-            aceptar.prop('disabled', true);
+            componentes.contactos.botones.children('button[name="siniestro_contacto_aceptar"]').prop('disabled', true);
         }
     }
     
     function recurso_tipo_change() {
-        var contenedor = contenedor_adicional.children('div.recursos').children('div.recurso').children('div.contenedor'),
-            descripcion = contenedor.children('div.descripcion'),
-            fichero = contenedor.children('div.archivo').children('div.fichero').children('div.form-group').children('div.entrada').children('input[name="recurso_fichero"]');
-        descripcion.children('div.previsualizacion').children('div.contenedor').children('div.vista-previa').remove();
-        descripcion.children('div.previsualizacion').hide();
+        var adicional_recurso_contenido = componentes.adicional.recursos.recurso.children('div.contenedor'),
+            fichero = componentes.adicional.recursos.entrada_fichero.children('input[name="recurso_fichero"]');
+        componentes.adicional.recursos.previsualizacion.children('div.contenedor').children('div.vista-previa').remove();
+        componentes.adicional.recursos.previsualizacion.hide();
         if ($(this).val() == 2) {
-            descripcion.children('div.texto').removeClass('col-4').addClass('col-12').prop('rows', 4);
+            adicional_recurso_contenido.children('div.descripcion').children('div.texto').removeClass('col-4').addClass('col-12').prop('rows', 4);
             fichero.prop('accept', '');
         } else {
-            descripcion.children('div.texto').removeClass('col-12').addClass('col-4').prop('rows', 12);
+            adicional_recurso_contenido.children('div.descripcion').children('div.texto').removeClass('col-12').addClass('col-4').prop('rows', 12);
             if ($(this).val() == 0) {
                 fichero.prop('accept', 'application/pdf');
             } else {
@@ -867,51 +895,53 @@ $(document).ready(function() {
         }
         adicional.recursos.temp = null;
         fichero.val('');
-        fichero.siblings('label.recurso_fichero_texto').text('Examinar . . .');
+        adicional_recurso_contenido.children('div.archivo').children('div.fichero').children('div.form-group').children('div.entrada').children('label.recurso_fichero_texto').text('Examinar . . .');
     }
     
     function recurso_fichero_change() {
-        var contenedor = contenedor_adicional.children('div.recursos').children('div.recurso').children('div.contenedor'),
-            previsualizacion = contenedor.children('div.descripcion').children('div.previsualizacion'),
-            tipo = contenedor.children('div.archivo').children('div.tipo').children('div.form-group').children('div.entrada').children('select[name="recurso_tipo"]'),
-            label = $(this).siblings('label.recurso_fichero_texto'),
+        var adicional_recurso_contenido = componentes.adicional.recursos.recurso.children('div.contenedor'),
+            tipo = componentes.adicional.recursos.entrada_tipo.children('select[name="recurso_tipo"]'),
+            label = adicional_recurso_contenido.children('div.archivo').children('div.fichero').children('div.form-group').children('div.entrada').children('label.recurso_fichero_texto'),
             entradas = this.files,
             lector = new FileReader(),
             nombre = $(this).val(), extension;
         while (nombre.indexOf('\\') != -1) {
             nombre = nombre.slice(nombre.indexOf('\\') + 1, nombre.length);
         }
-        extension = nombre.slice(nombre.indexOf('.') + 1, nombre.length);
+        extension = nombre.toString();
+        while (extension.indexOf('.') != -1) {
+            extension = extension.slice(extension.indexOf('.') + 1, extension.length);
+        }
         lector.onloadend = function (e) {
             adicional.recursos.temp = e.target.result.split('base64,')[1];
-            previsualizacion.children('div.contenedor').children('div.vista-previa').remove();
+            componentes.adicional.recursos.previsualizacion.children('div.contenedor').children('div.vista-previa').remove();
             if (tipo.val() == 0) {
                 if (extension.toLowerCase() == 'pdf') {
                     var pdf = '<iframe src="data:application/pdf;base64,' + adicional.recursos.temp + '"></iframe>'; 
-                    previsualizacion.children('div.contenedor').append('<div class="vista-previa">' + pdf + '</div>');
+                    componentes.adicional.recursos.previsualizacion.children('div.contenedor').append('<div class="vista-previa">' + pdf + '</div>');
                     label.text(nombre);
-                    previsualizacion.show();
+                    componentes.adicional.recursos.previsualizacion.show();
                 } else {
                     adicional.recursos.temp = null;
                     label.text('Examinar . . .');
-                    previsualizacion.hide();
+                    componentes.adicional.recursos.previsualizacion.hide();
                     alerta('Tipo de fichero invalido', 'debe seleccionar un fichero .pdf');
                 }
             } else if (tipo.val() == 1) {
                 if (extension.toLowerCase() == 'jpg' || extension.toLowerCase() == 'jpeg') {
                     var img = '<img src="data:image/jpeg;base64,' + adicional.recursos.temp + '" alt="error al cargar imagen"/>';
-                    previsualizacion.children('div.contenedor').append('<div class="vista-previa">' + img + '</div>');
+                    componentes.adicional.recursos.previsualizacion.children('div.contenedor').append('<div class="vista-previa">' + img + '</div>');
                     label.text(nombre);
-                    previsualizacion.show();
+                    componentes.adicional.recursos.previsualizacion.show();
                 } else {
                     adicional.recursos.temp = null;
                     label.text('Examinar . . .');
-                    previsualizacion.hide();
-                    alerta('Tipo de fichero invalido', 'debe seleccionar un fichero .pdf');
+                    componentes.adicional.recursos.previsualizacion.hide();
+                    alerta('Tipo de fichero invalido', 'debe seleccionar un fichero .jpg / .jpeg');
                 }
             } else {
                 label.text(nombre);
-                previsualizacion.hide();
+                componentes.adicional.recursos.previsualizacion.hide();
             }
         }
         lector.readAsDataURL(entradas[0]);
@@ -931,20 +961,22 @@ $(document).ready(function() {
         var nombre;
         if (status == "success") {
             nombre = data.perito.nombre + ' ' + data.perito.apellido1;
-            informacion.find('input[name="siniestro_peritoActual"]').val(nombre);
+            componentes.siniestro.informacion.children('div.siniestro_peritoActual').children('div.form-group').children('input[name="siniestro_peritoActual"]').val(nombre);
             nombre = siniestro.peritoOriginal.nombre + ' ' + siniestro.peritoOriginal.apellido1;
-            informacion.find('input[name="siniestro_fechaReasignacion"]').val(data.fecha.slice(0, data.fecha.indexOf('T'))).show();
-            informacion.find('input[name="siniestro_peritoOriginal"]').val(nombre).parent('div.form-group').show();
+            componentes.siniestro.informacion.children('div.siniestro_fechaReasignacion').children('div.form-group').show();
+            componentes.siniestro.informacion.children('div.siniestro_fechaReasignacion').children('div.form-group').children('input[name="siniestro_fechaReasignacion"]').val(data.fecha.slice(0, data.fecha.indexOf('T')));
+            componentes.siniestro.informacion.children('div.siniestro_peritoOriginal').children('div.form-group').show();
+            componentes.siniestro.informacion.children('div.siniestro_peritoOriginal').children('div.form-group').children('input[name="siniestro_peritoOriginal"]').val(nombre);
         } else {
             nombre = siniestro.peritoOriginal.nombre + ' ' + siniestro.peritoOriginal.apellido1;
-            informacion.find('input[name="siniestro_peritoActual"]').val(nombre);
-            informacion.find('input[name="siniestro_fechaReasignacion"]').parent('div.form-group').hide();
-            informacion.find('input[name="siniestro_peritoOriginal"]').parent('div.form-group').hide();
+            componentes.siniestro.informacion.children('div.siniestro_peritoActual').children('div.form-group').children('input[name="siniestro_peritoActual"]').val(nombre);
+            componentes.siniestro.informacion.children('div.siniestro_fechaReasignacion').children('div.form-group').hide();
+            componentes.siniestro.informacion.children('div.siniestro_peritoOriginal').children('div.form-group').hide();
         }
     }
     
     function respuesta_obtenerContactos(data, status) {
-        var tbody = contenedor_contactos.children('div.tabla').children('table').children('tbody');
+        var tbody = componentes.contactos.tabla.children('table').children('tbody');
         if (status == "success") {
             contactos.listaContactos = data;
             mostrar_contactos(contactos.listaContactos, tbody);
@@ -954,7 +986,7 @@ $(document).ready(function() {
     }
     
     function respuesta_obtenerParticipantes(data, status) {
-        var tbody = contenedor_adicional.children('div.row').children('div.participantes').children('table').children('tbody');
+        var tbody = componentes.adicional.participantes.elemento.children('table').children('tbody');
         if (status == "success") {
             adicional.participantes.listaParticipantes = data;
             mostrar_participantes(adicional.participantes.listaParticipantes, tbody);
@@ -964,8 +996,8 @@ $(document).ready(function() {
     }
     
     function respuesta_obtenerReplanificaciones(data, status) {
-        var tbody = contenedor_adicional.children('div.row').children('div.replanificaciones').children('table').children('tbody'),
-            h5 = informacion.children('div.container-fluid').find('input[name="siniestro_fecha"]').siblings('h5');
+        var tbody = componentes.adicional.replanificaciones.elemento.children('table').children('tbody'),
+            h5 = componentes.siniestro.informacion.children('div.siniestro_fecha').children('div.form-group').children('h5');
         if (status == "success") {
             adicional.replanificaciones.listaReplanificaciones = data;
             if (adicional.replanificaciones.listaReplanificaciones.length > 0) {
@@ -980,7 +1012,7 @@ $(document).ready(function() {
     }
     
     function respuesta_obtenerReasignaciones(data, status) {
-        var tbody = contenedor_adicional.children('div.row').children('div.reasignaciones').children('table').children('tbody');
+        var tbody = componentes.adicional.reasignaciones.elemento.children('table').children('tbody');
         if (status == "success") {
             adicional.reasignaciones.listaReasignaciones = data;
             mostrar_reasignaciones(adicional.reasignaciones.listaReasignaciones, tbody);
@@ -990,7 +1022,7 @@ $(document).ready(function() {
     }
     
     function respuesta_obtenerRecursos(data, status) {
-        var tbody = contenedor_adicional.children('div.recursos').children('div.tabla').children('table').children('tbody');
+        var tbody = componentes.adicional.recursos.tabla.children('table').children('tbody');
         if (status == "success") {
             adicional.recursos.listaRecursos = data;
             mostrar_recursos(adicional.recursos.listaRecursos, tbody);
@@ -1001,63 +1033,77 @@ $(document).ready(function() {
     
     // Cargar paginas y aplicar controles
     // ====================================================================== //
+    componentes.siniestro.informacion = componentes.siniestro.contenido.children('div.informacion').children('div.container-fluid').children('div.row');
+    componentes.siniestro.observaciones = componentes.siniestro.contenido.children('div.observaciones');
+    componentes.contactos.detalles = componentes.siniestro.contenido.children('div.contactos').children('div.detalles');
+    componentes.contactos.tabla = componentes.siniestro.contenido.children('div.contactos').children('div.tabla');
+    componentes.contactos.botones = componentes.contactos.detalles.children('div.contenedor').children('div.botones').children('div.col-12');
+    componentes.contactos.entradas = componentes.contactos.detalles.children('div.contenedor').children('div.row').children('div.col-12').children('div.form-group');
+    componentes.adicional.participantes.nuevo = componentes.adicional.participantes.elemento.children('button[name="participante_nuevo"]');
+    componentes.adicional.participantes.participante = componentes.adicional.participantes.elemento.children('div.participante');
+    componentes.adicional.participantes.botones = componentes.adicional.participantes.participante.children('div.contenedor').children('div.row').children('div.col-12');
+    componentes.adicional.recursos.entrada_fichero = componentes.adicional.recursos.recurso.children('div.contenedor').children('div.archivo').children('div.fichero').children('div.form-group').children('div.entrada');
+    componentes.adicional.recursos.descarga_fichero = componentes.adicional.recursos.recurso.children('div.contenedor').children('div.archivo').children('div.fichero').children('div.form-group').children('div.salida').children('div.input-group-append').children('a[name="recurso_fichero_descargar"]');
+    componentes.adicional.recursos.entrada_tipo = componentes.adicional.recursos.recurso.children('div.contenedor').children('div.archivo').children('div.tipo').children('div.form-group').children('div.entrada');
+    componentes.adicional.recursos.botones = componentes.adicional.recursos.recurso.children('div.contenedor').children('div.botones').children('div.col-12');
+    componentes.adicional.recursos.previsualizacion = componentes.adicional.recursos.recurso.children('div.contenedor').children('div.descripcion').children('div.previsualizacion');
     sessionStorage.setItem('vuelta', sessionStorage.siniestro);
     sessionStorage.setItem('poliza', JSON.stringify(siniestro.poliza));
     sessionStorage.removeItem('siniestro');
-    poliza.children('div.col-12').load('Html/poliza.html', cargar_poliza);
+    componentes.siniestro.contenido.children('div.poliza').children('div.col-12').load('Html/poliza.html', cargar_poliza);
     if (siniestro.afectado && siniestro.afectado != null) {
         strAux = siniestro.afectado.direccion + ' ' + siniestro.afectado.numero;
         if (siniestro.afectado.piso && siniestro.afectado.piso != null && siniestro.afectado.piso != '') {
             strAux += ', ' + siniestro.afectado.piso;
         }
-        contenedor.children('div.siniestro').children('div.ocultable-contenido').children('div.afectado').find('input[name="siniestro_afectado"]').val(strAux);
-        contenedor.children('div.siniestro').children('div.ocultable-contenido').children('div.afectado').show();
+        componentes.siniestro.contenido.children('div.afectado').children('div.col-12').children('input[name="siniestro_afectado"]').val(strAux);
+        componentes.siniestro.contenido.children('div.afectado').show();
         if (siniestro.afectado.observaciones && siniestro.afectado.observaciones != null && siniestro.afectado.observaciones != '') {
             strAux = siniestro.afectado.observaciones;
-            contenedor.children('div.siniestro').children('div.ocultable-contenido').children('div.afectado').find('textarea[name="siniestro_afectado_observaciones"]').val(strAux);
+            componentes.siniestro.contenido.children('div.afectado').children('div.col-12').children('textarea[name="siniestro_afectado_observaciones"]').val(strAux);
         } else {
-            contenedor.children('div.siniestro').children('div.ocultable-contenido').children('div.afectado').find('textarea[name="siniestro_afectado_observaciones"]').hide();
+            componentes.siniestro.contenido.children('div.afectado').children('div.col-12').children('textarea[name="siniestro_afectado_observaciones"]').hide();
         }
     } else {
-        contenedor.children('div.siniestro').children('div.ocultable-contenido').children('div.afectado').hide();
+        componentes.siniestro.contenido.children('div.afectado').hide();
     }
-    contenedor.children('div.botonera').find('button[name="replanificar"]').click(replanificar_click);
-    contenedor.children('div.botonera').find('button[name="reasignar"]').click(reasignar_click);
-    contenedor.children('div.botonera').find('button[name="volver"]').css({'border-color':colorBorde, 'background-color':colorFondo}).click(volver_click);
-    contenedor.children('div.ocultable').children('div.ocultable-titulo').click(ocultable_click);
+    $('#ventana').children('div.container-fluid').children('div.botonera').children('div.acciones').children('button[name="replanificar"]').click(replanificar_click);
+    $('#ventana').children('div.container-fluid').children('div.botonera').children('div.acciones').children('button[name="reasignar"]').click(reasignar_click);
+    $('#ventana').children('div.container-fluid').children('div.botonera').children('div.volver').children('button[name="volver"]').css({'border-color':colorBorde, 'background-color':colorFondo}).click(volver_click);
+    $('#ventana').children('div.container-fluid').children('div.ocultable').children('div.ocultable-titulo').click(ocultable_click);
     if (siniestro.original && siniestro.original != null) {
-        informacion.find('a[name="siniestro_original_descargar"]').prop('download', siniestro.original.nombre).prop('href', 'data:text/plain;base64,' + siniestro.original.fichero);
+        componentes.siniestro.contenido.children('div.informacion').children('div.container-fluid').children('div.row').children('div.siniestro_original_descargar').children('div.form-group').children('div.input-group').children('div.input-group-append').children('a[name="siniestro_original_descargar"]').prop('download', siniestro.original.nombre).prop('href', 'data:text/plain;base64,' + siniestro.original.fichero);
     } else {
-        informacion.find('a[name="siniestro_original_descargar"]').prop('download', '').prop('href', '');
+        componentes.siniestro.contenido.children('div.informacion').children('div.container-fluid').children('div.row').children('div.siniestro_original_descargar').children('div.form-group').children('div.input-group').children('div.input-group-append').children('a[name="siniestro_original_descargar"]').prop('download', '').prop('href', '');
     }
-    informacion.find('input[name="siniestro_numero"]').val(siniestro.numero);
-    informacion.find('input[name="siniestro_fecha"]').val(siniestro.fechaRegistro.slice(0, siniestro.fechaRegistro.indexOf('T')));
+    componentes.siniestro.contenido.children('div.informacion').children('div.container-fluid').children('div.row').children('div.siniestro_numero').children('div.form-group').children('input[name="siniestro_numero"]').val(siniestro.numero);
+    componentes.siniestro.contenido.children('div.informacion').children('div.container-fluid').children('div.row').children('div.siniestro_fecha').children('div.form-group').children('input[name="siniestro_fecha"]').val(siniestro.fechaRegistro.slice(0, siniestro.fechaRegistro.indexOf('T')));
     actualizar_estado_siniestro();
     $.get('http://localhost:8080/ReForms_Provider/wr/reasignacion/obtenerUltimaReasignacion/' + siniestro.id, respuesta_obtenerUltimaReasignacion, 'json');
-    informacion.find('input[name="siniestro_albaran"]').val(siniestro.albaran);
-    informacion.find('input[name="siniestro_original"]').val(siniestro.original.nombre);
+    componentes.siniestro.contenido.children('div.informacion').children('div.container-fluid').children('div.row').children('div.siniestro_albaran').children('div.form-group').children('input[name="siniestro_albaran"]').val(siniestro.albaran);
+    componentes.siniestro.contenido.children('div.informacion').children('div.container-fluid').children('div.row').children('div.siniestro_original_descargar').children('div.form-group').children('div.input-group').children('input[name="siniestro_original"]').val(siniestro.original.nombre);
     if (siniestro.observaciones && siniestro.observaciones != null && siniestro.observaciones != '') {
-        informacion.siblings('div.observaciones').find('textarea[name="siniestro_observaciones"]').val(siniestro.observaciones);
-        informacion.siblings('div.observaciones').show();
+        componentes.siniestro.observaciones.children('div.col-12').children('textarea[name="siniestro_observaciones"]').val(siniestro.observaciones);
+        componentes.siniestro.observaciones.show();
     } else {
-        informacion.siblings('div.observaciones').hide();
+        componentes.siniestro.observaciones.hide();
     }
-    contenedor_contactos.children('div.tabla').children('button[name="siniestro_contacto_nuevo"]').click(contacto_nuevo_click);
-    contenedor_contactos.children('div.detalles').find('button[name="siniestro_contacto_editar"]').click(contacto_editar_click);
-    contenedor_contactos.children('div.detalles').find('button[name="siniestro_contacto_borrar"]').click(contacto_borrar_click);
-    contenedor_contactos.children('div.detalles').find('button[name="siniestro_contacto_aceptar"]').click(contacto_aceptar_click).hide();
-    contenedor_contactos.children('div.detalles').find('button[name="siniestro_contacto_cancelar"]').click(contacto_cancelar_click).hide();
-    contenedor_contactos.children('div.detalles').find('input[name="siniestro_contacto_telefono1"]').keyup(siniestro_contacto_telefono1_keyup);
-    contenedor_adicional.find('button[name="participante_nuevo"]').click(participante_agregar_click);
-    contenedor_adicional.find('button[name="recurso_nuevo"]').click(recurso_adjuntar_click);
-    contenedor_adicional.find('button[name="adicional_participante_aceptar"]').click(adicional_participante_aceptar_click);
-    contenedor_adicional.find('button[name="adicional_participante_cancelar"]').click(adicional_participante_cancelar_click);
-    contenedor_adicional.children('div.recursos').children('div.recurso').find('button[name="recurso_editar"]').click(recurso_editar_click);
-    contenedor_adicional.children('div.recursos').children('div.recurso').find('button[name="recurso_aceptar"]').click(recurso_aceptar_click).hide();;
-    contenedor_adicional.children('div.recursos').children('div.recurso').find('button[name="recurso_cancelar"]').click(recurso_cancelar_click).hide();;
-    contenedor_adicional.children('div.recursos').children('div.recurso').find('button[name="recurso_borrar"]').click(recurso_borrar_click);
-    contenedor_adicional.children('div.recursos').children('div.recurso').find('input[name="recurso_fichero"]').change(recurso_fichero_change);
-    contenedor_adicional.children('div.recursos').children('div.recurso').find('select[name="recurso_tipo"]').change(recurso_tipo_change);
+    componentes.contactos.tabla.children('button[name="siniestro_contacto_nuevo"]').click(contacto_nuevo_click);
+    componentes.contactos.botones.children('button[name="siniestro_contacto_editar"]').click(contacto_editar_click);
+    componentes.contactos.botones.children('button[name="siniestro_contacto_borrar"]').click(contacto_borrar_click);
+    componentes.contactos.botones.children('button[name="siniestro_contacto_aceptar"]').click(contacto_aceptar_click).hide();
+    componentes.contactos.botones.children('button[name="siniestro_contacto_cancelar"]').click(contacto_cancelar_click).hide();
+    componentes.contactos.entradas.children('div.input-group').children('input[name="siniestro_contacto_telefono1"]').keyup(siniestro_contacto_telefono1_keyup);
+    componentes.adicional.participantes.nuevo.click(participante_agregar_click);
+    componentes.adicional.participantes.botones.children('button[name="adicional_participante_aceptar"]').click(adicional_participante_aceptar_click);
+    componentes.adicional.participantes.botones.children('button[name="adicional_participante_cancelar"]').click(adicional_participante_cancelar_click);
+    componentes.adicional.recursos.tabla.children('button[name="recurso_nuevo"]').click(recurso_adjuntar_click);
+    componentes.adicional.recursos.botones.children('button[name="recurso_editar"]').click(recurso_editar_click);
+    componentes.adicional.recursos.botones.children('button[name="recurso_aceptar"]').click(recurso_aceptar_click).hide();
+    componentes.adicional.recursos.botones.children('button[name="recurso_cancelar"]').click(recurso_cancelar_click).hide();
+    componentes.adicional.recursos.botones.children('button[name="recurso_borrar"]').click(recurso_borrar_click);
+    componentes.adicional.recursos.entrada_fichero.children('input[name="recurso_fichero"]').change(recurso_fichero_change);
+    componentes.adicional.recursos.entrada_tipo.children('select[name="recurso_tipo"]').change(recurso_tipo_change);
     $.get('http://localhost:8080/ReForms_Provider/wr/contacto/obtenerContactos/' + siniestro.id, respuesta_obtenerContactos, 'json');
     $.get('http://localhost:8080/ReForms_Provider/wr/participante/obtenerParticipantes/' + siniestro.id, respuesta_obtenerParticipantes, 'json');
     $.get('http://localhost:8080/ReForms_Provider/wr/replanificacion/obtenerReplanificaciones/' + siniestro.id, respuesta_obtenerReplanificaciones, 'json');
@@ -1068,27 +1114,29 @@ $(document).ready(function() {
     // ====================================================================== //
     $('#ventana').css('border-color', colorBorde);
     $('#ventana').css('background-color', colorFondo);
-    contenedor.find('button.btn-nuevo').css({'border-color':colorBorde, 'background-color':colorFondo});
-    contenedor.find('button.btn-editar').css({'border-color':colorBorde, 'background-color':colorFondo});
-    contenedor.children('div.ocultable').css('border-color', colorBorde);
-    contenedor.children('div.ocultable').children('div.ocultable-contenido').hide();
-    contenedor.children('div.siniestro').children('div.ocultable-contenido').show();
-    contenedor.children('div.siniestro').children('div.ocultable-titulo').find('div.estado').hide();
-    contenedor.children('div.siniestro').children('div.ocultable-titulo').find('input[name="estado"]').css({'border-color':colorBorde, 'background-color':sinColor});
-    contenedor.children('div.siniestro').children('div.ocultable-titulo').find('span.input-group-text').css({'border-color':colorBorde, 'background-color':colorFondo, 'font-size':'1.25em'});
-    informacion.find('a[name="siniestro_original_descargar"]').css({'border-color':colorBordeNeutro, 'background-color':colorFondoNeutro, 'color':colorTextoNeutro});
-    contenedor.children('div.adicional').find('table').children('thead').children('tr').css('background-color', colorBorde);
-    contenedor_contactos.children('div.tabla').children('table').children('thead').children('tr').css('background-color', colorBorde);
-    contenedor_contactos.children('div.detalles').children('div.contenedor').css('border-color', colorBorde);
-    contenedor_adicional.children('div.recursos').children('div.recurso').children('div.contenedor').css('border-color', colorBorde);
-    contenedor_adicional.children('div.row').children('div.participantes').children('div.participante').children('div.contenedor').css('border-color', colorBorde);
-    contenedor_adicional.children('div.recursos').children('div.recurso').children('div.contenedor').children('div.descripcion').children('div.previsualizacion').children('div.contenedor').css('border-color', colorBorde);
-    contenedor_adicional.children('div.recursos').children('div.recurso').find('div[name="recurso_tipo_icono"]').css({'border-color':colorBordeNeutro, 'background-color':colorFondoNeutro});
-    contenedor_adicional.children('div.recursos').children('div.recurso').find('a[name="recurso_fichero_descargar"]').css({'border-color':colorBordeNeutro, 'background-color':colorFondoNeutro, 'color':colorTextoNeutro});
-    contenedor.children('div.acciones').hide();
-    contenedor_contactos.children('div.detalles').hide();
-    contenedor_adicional.children('div.row').children('div.participantes').children('div.participante').hide();
-    contenedor_adicional.children('div.recursos').children('div.recurso').children('div.contenedor').find('div.entrada').hide();
-    contenedor_adicional.children('div.recursos').children('div.recurso').hide();
-    contenedor_adicional.children('div.recursos').children('div.recurso').children('div.contenedor').children('div.descripcion').children('div.previsualizacion').hide();
+    $('#ventana').children('div.container-fluid').find('button.btn-nuevo').css({'border-color':colorBorde, 'background-color':colorFondo});
+    $('#ventana').children('div.container-fluid').find('button.btn-editar').css({'border-color':colorBorde, 'background-color':colorFondo});
+    $('#ventana').children('div.container-fluid').children('div.ocultable').css('border-color', colorBorde);
+    $('#ventana').children('div.container-fluid').children('div.ocultable').children('div.ocultable-contenido').hide();
+    componentes.siniestro.contenido.show();
+    componentes.siniestro.estado.hide();
+    componentes.siniestro.estado.children('input[name="estado"]').css({'border-color':colorBorde, 'background-color':sinColor});
+    componentes.siniestro.estado.children('div.input-group-prepend').children('span.input-group-text').css({'border-color':colorBorde, 'background-color':colorFondo, 'font-size':'1.25em'});
+    $('#ventana').children('div.container-fluid').children('div.siniestro').children('div.ocultable-titulo').children('div.form-inline').children('div.estado').children('div.input-group-prepend').children('span.input-group-text').css({'border-color':colorBorde, 'background-color':colorFondo, 'font-size':'1.25em'});
+    componentes.siniestro.contenido.children('div.informacion').children('div.container-fluid').children('div.row').children('div.siniestro_original_descargar').children('div.form-group').children('div.input-group').children('div.input-group-append').children('a[name="siniestro_original_descargar"]').css({'border-color':colorBordeNeutro, 'background-color':colorFondoNeutro, 'color':colorTextoNeutro});
+    $('#ventana').children('div.container-fluid').children('div.adicional').children('div.ocultable-contenido').find('table').children('thead').children('tr').css('background-color', colorBorde);
+    componentes.contactos.tabla.children('table').children('thead').children('tr').css('background-color', colorBorde);
+    componentes.contactos.detalles.children('div.contenedor').css('border-color', colorBorde);
+    componentes.adicional.recursos.recurso.children('div.contenedor').css('border-color', colorBorde);
+    componentes.adicional.participantes.participante.children('div.contenedor').css('border-color', colorBorde);
+    componentes.adicional.recursos.previsualizacion.children('div.contenedor').css('border-color', colorBorde);
+    componentes.adicional.recursos.recurso.children('div.contenedor').children('div.archivo').children('div.tipo').children('div.form-group').children('div.salida').children('div.input-group-append').children('div[name="recurso_tipo_icono"]').css({'border-color':colorBordeNeutro, 'background-color':colorFondoNeutro});
+    componentes.adicional.recursos.descarga_fichero.css({'border-color':colorBordeNeutro, 'background-color':colorFondoNeutro, 'color':colorTextoNeutro});
+    $('#ventana').children('div.container-fluid').children('div.acciones').hide();
+    componentes.contactos.detalles.hide();
+    componentes.adicional.participantes.participante.hide();
+    componentes.adicional.recursos.entrada_tipo.hide();
+    componentes.adicional.recursos.entrada_fichero.hide();
+    componentes.adicional.recursos.recurso.hide();
+    componentes.adicional.recursos.previsualizacion.hide();
 });

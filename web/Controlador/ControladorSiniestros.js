@@ -31,8 +31,8 @@ $(document).ready(function() {
     // Funciones auxiliares
     // ====================================================================== //
     function alerta(titulo, mensaje) {
-        $('#alerta').find('.modal-title').html(titulo);
-        $('#alerta').find('.modal-body').html(mensaje);
+        $('#alerta').children('div.modal-dialog').children('div.modal-content').children('div.modal-header').children('.modal-title').html(titulo);
+        $('#alerta').children('div.modal-dialog').children('div.modal-content').children('div.modal-body').html(mensaje);
         $('#activador-alerta').click();
     }
     

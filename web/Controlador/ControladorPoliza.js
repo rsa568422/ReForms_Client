@@ -5,7 +5,6 @@ $(document).ready(function() {
     var googleKey = sessionStorage.googleKey,
         colorBorde = $('#btn-siniestros').css('background-color'),
         colorFondo = colorBorde.substring(0, colorBorde.length - 1) + ', 0.1)',
-        sinColor = 'rgb(0, 0, 0, 0)',
         contenedor = $('.marco-poliza'),
         poliza = sessionStorage.poliza ? JSON.parse(sessionStorage.poliza) : null,
         vuelta = sessionStorage.vuelta ? JSON.parse(sessionStorage.vuelta) : null;
@@ -13,8 +12,8 @@ $(document).ready(function() {
     // Funciones auxiliares
     // ====================================================================== //
     function alerta(titulo, mensaje) {
-        $('#alerta').find('.modal-title').html(titulo);
-        $('#alerta').find('.modal-body').html(mensaje);
+        $('#alerta').children('div.modal-dialog').children('div.modal-content').children('div.modal-header').children('.modal-title').html(titulo);
+        $('#alerta').children('div.modal-dialog').children('div.modal-content').children('div.modal-body').html(mensaje);
         $('#activador-alerta').click();
     }
     
