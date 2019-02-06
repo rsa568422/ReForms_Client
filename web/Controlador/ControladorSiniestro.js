@@ -17,7 +17,10 @@ $(document).ready(function() {
         tareas = {
             'listaTareas': [],
             'tareaSeleccionada': null,
-            'posicionSeleccionada': -1
+            'posicionSeleccionada': -1,
+            'ampliaciones': [],
+            'gremios': [],
+            'trabajos': []
         },
         eventos = {
             'listaEventos': [],
@@ -57,7 +60,19 @@ $(document).ready(function() {
                 'tabla': null
             },
             'tareas': {
-                
+                'lista': $('#ventana').children('div.container-fluid').children('div.tareas').children('div.ocultable-contenido').children('div.row').children('div.col-12').children('div.lista').children('div.row'),
+                'botones': $('#ventana').children('div.container-fluid').children('div.tareas').children('div.ocultable-contenido').children('div.row').children('div.col-12').children('div.botones'),
+                'seleccionada': {
+                    'header': null,
+                    'body': null,
+                    'footer': null,
+                    'botones': null
+                },
+                'nueva': {
+                    'header': null,
+                    'body': null,
+                    'botones': null
+                }
             },
             'eventos': {
                 
@@ -98,6 +113,22 @@ $(document).ready(function() {
     
     function telefono_valido(telefonoStr) {
         return /^[69]\d{8}$/.test(telefonoStr);
+    }
+    
+    function calcular_importe(cantidad, trabajo) {
+        var importe, direfencia;
+        if (cantidad <= trabajo.cantidadMin) {
+            importe = trabajo.precioMin;
+        } else if (cantidad <= trabajo.cantidadMed) {
+            direfencia = cantidad - trabajo.cantidadMin;
+            importe = trabajo.precioMin + (direfencia * trabajo.precioMed);
+        } else {
+            direfencia = trabajo.cantidadMed - trabajo.cantidadMin;
+            importe = trabajo.precioMin + (direfencia * trabajo.precioMed);
+            direfencia = cantidad - trabajo.cantidadMed;
+            importe += direfencia * trabajo.precioExtra;
+        }
+        return importe;
     }
     
     function mostrar_contactos(listaContactos, tbody) {
@@ -206,6 +237,21 @@ $(document).ready(function() {
             tbody.children('tr.recurso').click(recurso_click);
         } else {
             tbody.append('<tr class="recurso sin-resultados"><td colspan="2"><h5>No hay recursos</h5></td></tr>');
+        }
+    }
+    
+    function  mostrar_tareas(listaTareas, contenedor) {
+        contenedor.children('div.sin-tareas').remove();
+        contenedor.children('div.tarea').remove();
+        if (listaTareas.length > 0) {
+            var i;
+            for (i = 0; i < listaTareas.length; i++) {
+                contenedor.append('<div class="tarea col-xl-6 col-12"></div>');
+            }
+            contenedor.children('div.tarea').load('Html/tarea.html', cargar_tarea);
+        } else {
+            contenedor.append('<div class="sin-tareas col-12"><h1>Sin tareas registradas</h1></div>');
+            contenedor.children('div.sin-tareas').css({'background-color':colorFondo, 'border-color':colorBorde});
         }
     }
     
@@ -841,7 +887,6 @@ $(document).ready(function() {
         componentes.adicional.recursos.entrada_tipo.hide();
         componentes.adicional.recursos.entrada_fichero.hide();
         if (adicional.recursos.recursoSeleccionado.id == null) {
-            componentes.adicional.recursos.entrada_fichero.siblings('div.salida').hide();
             componentes.adicional.recursos.recurso.hide();
         } else {
             actualizar_detalles_recurso();
@@ -867,6 +912,85 @@ $(document).ready(function() {
                 });
             }
         }
+    }
+    
+    function tarea_click() {
+        var tarea = $(this).parent('div.card').parent('div.contenedor').parent('div.tarea'),
+            i = tarea.index();
+        if (!edicion) {
+            if (tareas.tareaSeleccionada != null && tareas.tareaSeleccionada.id == tareas.listaTareas[i].id) {
+                tareas.posicionSeleccionada = -1;
+                tareas.tareaSeleccionada = null;
+                componentes.tareas.seleccionada.header = null;
+                componentes.tareas.seleccionada.body = null;
+                componentes.tareas.seleccionada.footer = null;
+                componentes.tareas.seleccionada.botones = null;
+                $(this).css('background-color', colorFondo);
+                componentes.tareas.botones.children('button').not('button[name="tarea_nueva"]').hide();
+            } else {
+                tareas.posicionSeleccionada = i;
+                tareas.tareaSeleccionada = tareas.listaTareas[i];
+                componentes.tareas.seleccionada.header = $(this);
+                componentes.tareas.seleccionada.body = $(this).siblings('div.card-body');
+                componentes.tareas.seleccionada.footer = $(this).siblings('div.card-footer');
+                componentes.tareas.seleccionada.botones = componentes.tareas.seleccionada.body.children('div.container-fluid').children('div.row').children('div.col-4').children('div.botones');
+                $(this).css('background-color', colorBorde);
+                tarea.siblings('div.tarea').children('div.contenedor').children('div.card').children('div.card-header').css('background-color', colorFondo);
+                if (siniestro.estado < 4) {
+                    componentes.tareas.botones.children('button').not('button[name="tarea_nueva"]').show();
+                }
+            }
+        }
+    }
+    
+    function tarea_aceptar_click() {
+        alert('tarea_aceptar_click');
+    }
+    
+    function tarea_cancelar_click() {
+        alert('tarea_cancelar_click');
+    }
+    
+    function tarea_nueva_click() {
+        if (!edicion) {
+            if (tareas.tareaSeleccionada != null) {
+                componentes.tareas.seleccionada.header.click();
+            }
+            edicion = true;
+            $(this).prop('disabled', true);
+            componentes.tareas.lista.children('div.sin-tareas').remove();
+            componentes.tareas.lista.append('<div class="tarea-nueva col-xl-6 col-12"></div>');
+            componentes.tareas.lista.children('div.tarea-nueva').load('Html/tarea.html', cargar_tarea_nueva);
+        }
+    }
+    
+    function tarea_nueva_aceptar_click() {
+        alert('tarea_nueva_aceptar_click');
+    }
+    
+    function tarea_nueva_cancelar_click() {
+        componentes.tareas.lista.children('div.tarea-nueva').remove();
+        componentes.tareas.botones.children('button[name="tarea_nueva"]').prop('disabled', false);
+        componentes.tareas.nueva.header = null;
+        componentes.tareas.nueva.body = null;
+        componentes.tareas.nueva.botones = null
+        if (tareas.listaTareas.length == 0) {
+            componentes.tareas.lista.append('<div class="sin-tareas col-12"><h1>Sin tareas registradas</h1></div>');
+            componentes.tareas.lista.children('div.sin-tareas').css({'background-color':colorFondo, 'border-color':colorBorde});
+        }
+        edicion = false;
+    }
+    
+    function tarea_actualizar_click() {
+        alert('tarea_actualizar_click()');
+    }
+    
+    function tarea_ampliar_click() {
+        alert('tarea_ampliar_click()');
+    }
+    
+    function tarea_borrar_click() {
+        alert('tarea_borrar_click()');
     }
     
     function siniestro_contacto_telefono1_keyup() {
@@ -947,6 +1071,73 @@ $(document).ready(function() {
         lector.readAsDataURL(entradas[0]);
     }
     
+    function tarea_gremio_change() {
+        if ($(this).val() != null && tareas.gremios.length > 0) {
+            var aseguradora = siniestro.poliza.cliente.aseguradora.id,
+                gremio = tareas.gremios[$(this).val()].id,
+                codigo = $(this).parent('div.col-4').siblings('div.col-4').children('select.tarea-codigo');
+            $.get('http://localhost:8080/ReForms_Provider/wr/trabajo/obtenerTrabajosPorGremio/' + aseguradora + '/' + gremio, function (data, status) {
+                if (status == 'success') {
+                    var i;
+                    tareas.trabajos = data;
+                    codigo.children('option').remove();
+                    if (tareas.trabajos.length > 0) {
+                        opcion = '<option value=' + 0 + ' selected>' + tareas.trabajos[0].codigo + '</option>';
+                        codigo.append(opcion);
+                        for (i = 1; i < tareas.trabajos.length; i++) {
+                            opcion = '<option value=' + i + '>' + tareas.trabajos[i].codigo + '</option>';
+                            codigo.append(opcion);
+                        }
+                        codigo.change();
+                    } else {
+                        alerta('Sin trabajos', 'no hay trabajos registrados para este gremio con la aseguradora actual');
+                        codigo.change();
+                    }
+                } else {
+                    alert('fallo en el proveedor');
+                }
+            }, 'json');
+        }
+    }
+    
+    function tarea_codigo_change() {
+        var cantidad = componentes.tareas.nueva.body.children('div.container-fluid').children('div.row').children('div.col-4').children('div.tarea-cantidad'),
+            cantidad_valor = cantidad.children('input[type="number"]'),
+            cantidad_unidad = cantidad.children('div.input-group-append').children('span.input-group-text'),
+            importe = componentes.tareas.nueva.body.children('div.container-fluid').children('div.row').children('div.col-4').children('div').children('div.tarea-importe').children('input[type="text"]'),
+            descripcion = componentes.tareas.nueva.body.children('div.container-fluid').children('div.row').children('div.col-8').children('input.tarea-descripcion');
+        if ($(this).val() != null && tareas.trabajos.length > 0) {
+            var i = $(this).val();
+            descripcion.val(tareas.trabajos[i].descripcion);
+            switch (tareas.trabajos[i].medida) {
+                case 0: cantidad_unidad.html('uds.'); break;
+                case 1: cantidad_unidad.html('m'); break;
+                case 2: cantidad_unidad.html('m<sup>2</sup>'); break;
+                case 3: cantidad_unidad.html('m<sup>3</sup>'); break;
+                case 4: cantidad_unidad.html('h'); break;
+                default: cantidad_unidad.html('');
+            }
+        } else {
+            descripcion.val('');
+            cantidad_unidad.html('');
+        }
+        importe.val('');
+        cantidad_valor.val('').keyup();
+        cantidad_valor.focus();
+    }
+    
+    function tarea_cantidad_keyup() {
+        var importe = componentes.tareas.nueva.body.children('div.container-fluid').children('div.row').children('div.col-4').children('div').children('div.tarea-importe').children('input[type="text"]'),
+            codigo = componentes.tareas.nueva.header.children('div.container-fluid').children('div.row').children('div.col-4').children('select.tarea-codigo');
+        if ($(this).val() != '' && $(this).val() > 0 && codigo.val() != null) {
+            componentes.tareas.nueva.botones.children('div.row').children('div.col-6').children('button.tarea-aceptar').prop('disabled', false);
+            importe.val(calcular_importe($(this).val(), tareas.trabajos[codigo.val()]));
+        } else {
+            componentes.tareas.nueva.botones.children('div.row').children('div.col-6').children('button.tarea-aceptar').prop('disabled', true);
+            importe.val('');
+        }
+    }
+    
     // Funciones para cargar paginas y definir su comportamiento
     // ====================================================================== //
     function cargar_poliza(responseTxt, statusTxt) {
@@ -954,6 +1145,131 @@ $(document).ready(function() {
             alerta('Error 404', 'no se pudo cargar poliza.html');
             sessionStorage.removeItem('vuelta');
             sessionStorage.removeItem('poliza');
+        }
+    }
+    
+    function cargar_tarea(responseTxt, statusTxt) {
+        if (statusTxt == 'success') {
+            var tarea = tareas.listaTareas[$(this).index()],
+                header = $(this).children('div.contenedor').children('div.card').children('div.card-header'),
+                body = $(this).children('div.contenedor').children('div.card').children('div.card-body'),
+                footer = $(this).children('div.contenedor').children('div.card').children('div.card-footer'),
+                gremio = header.children('div.container-fluid').children('div.row').children('div.col-4').children('input.tarea-gremio'),
+                descripcion = body.children('div.container-fluid').children('div.row').children('div.col-8').children('input.tarea-descripcion'),
+                codigo = header.children('div.container-fluid').children('div.row').children('div.col-4').children('input.tarea-codigo'),
+                estado = header.children('div.container-fluid').children('div.row').children('div.col-4').children('input.tarea-estado'),
+                cantidad = body.children('div.container-fluid').children('div.row').children('div.col-4').children('div.tarea-cantidad'),
+                cantidad_valor = cantidad.children('input[type="number"]'),
+                cantidad_unidad = cantidad.children('div.input-group-append').children('span.input-group-text'),
+                observaciones = body.children('div.container-fluid').children('div.row').children('div.col-8').children('textarea.tarea-observaciones'),
+                importe = body.children('div.container-fluid').children('div.row').children('div.col-4').children('div').children('div.tarea-importe').children('input[type="text"]'),
+                botones = body.children('div.container-fluid').children('div.row').children('div.col-4').children('div.botones');
+            if (tarea.trabajo.gremio.nombre && tarea.trabajo.gremio.nombre != null && tarea.trabajo.gremio.nombre != '') {
+                gremio.val(tarea.trabajo.gremio.nombre);
+            } else {
+                gremio.val('');
+            }
+            if (tarea.trabajo.descripcion && tarea.trabajo.descripcion != null && tarea.trabajo.descripcion != '') {
+                descripcion.val(tarea.trabajo.descripcion);
+            } else {
+                descripcion.val('');
+            }
+            if (tarea.trabajo.codigo && tarea.trabajo.codigo != null && tarea.trabajo.codigo != '') {
+                codigo.val(tarea.trabajo.codigo);
+            } else {
+                codigo.val('');
+            }
+            switch (tarea.estado) {
+                case 0: estado.val('pendiente'); break;
+                case 1: estado.val('en proceso'); break;
+                case 2: estado.val('finalizada'); break;
+                case 3: estado.val('anulada'); break;
+                default: estado.val('');
+            }
+            if (tarea.cantidad != null) {
+                cantidad_valor.val(tarea.cantidad);
+                switch (tarea.trabajo.medida) {
+                    case 0: cantidad_unidad.html('uds.'); break;
+                    case 1: cantidad_unidad.html('m'); break;
+                    case 2: cantidad_unidad.html('m<sup>2</sup>'); break;
+                    case 3: cantidad_unidad.html('m<sup>3</sup>'); break;
+                    case 4: cantidad_unidad.html('h'); break;
+                    default: cantidad_unidad.html('');
+                }
+            } else {
+                cantidad_valor.val('');
+                cantidad_unidad.html('');
+            }
+            if (tarea.observaciones && tarea.observaciones != null && tarea.observacionese != '') {
+                observaciones.val(tarea.observaciones);
+            } else {
+                observaciones.val('');
+            }
+            if (tarea.importe && tarea.importe != null) {
+                importe.val(tarea.importe);
+            } else {
+                importe.val('');
+            }
+            header.click(tarea_click);
+            botones.children('div.row').children('div.col-6').children('button.tarea-aceptar').click(tarea_aceptar_click);
+            botones.children('div.row').children('div.col-6').children('button.tarea-cancelar').click(tarea_cancelar_click);
+            $(this).children('div.contenedor').children('div.card').css('border-color', colorBorde);
+            header.css({'background-color':colorFondo, 'border-color':colorBorde});
+            footer.css({'background-color':colorFondo, 'border-color':colorBorde});
+            botones.hide();
+            footer.hide();
+        } else {
+            alerta('Error 404', 'no se pudo cargar tarea.html');
+        }
+    }
+    
+    function cargar_tarea_nueva(responseTxt, statusTxt) {
+        if (statusTxt == 'success') {
+            var gremio, padre_gremio,
+                codigo, padre_codigo;
+            componentes.tareas.nueva.header = $(this).children('div.contenedor').children('div.card').children('div.card-header');
+            componentes.tareas.nueva.body = $(this).children('div.contenedor').children('div.card').children('div.card-body');
+            componentes.tareas.nueva.botones = componentes.tareas.nueva.body.children('div.container-fluid').children('div.row').children('div.col-4').children('div.botones');
+            gremio = componentes.tareas.nueva.header.children('div.container-fluid').children('div.row').children('div.col-4').children('input.tarea-gremio');
+            padre_gremio = gremio.parent('div.col-4');
+            codigo = componentes.tareas.nueva.header.children('div.container-fluid').children('div.row').children('div.col-4').children('input.tarea-codigo');
+            padre_codigo = codigo.parent('div.col-4');
+            gremio.remove();
+            codigo.remove();
+            $(this).children('div.contenedor').children('div.card').children('div.card-footer').remove();
+            padre_gremio.append('<select class="tarea-gremio form-control custom-select-lg custom-select"></select>');
+            padre_gremio.children('select.tarea-gremio').change(tarea_gremio_change);
+            padre_codigo.append('<select class="tarea-codigo form-control custom-select-lg custom-select"></select>');
+            padre_codigo.children('select.tarea-codigo').change(tarea_codigo_change);
+            $.get('http://localhost:8080/ReForms_Provider/wr/gremio/obtenerGremios/', function (data, status) {
+                if (status == 'success') {
+                    var i, opcion;
+                    tareas.gremios = data;
+                    if (tareas.gremios.length > 0) {
+                        opcion = '<option value=' + 0 + ' selected>' + tareas.gremios[0].nombre + '</option>';
+                        padre_gremio.children('select.tarea-gremio').append(opcion);
+                        for (i = 1; i < tareas.gremios.length; i++) {
+                            opcion = '<option value=' + i + '>' + tareas.gremios[i].nombre + '</option>';
+                            padre_gremio.children('select.tarea-gremio').append(opcion);
+                        }
+                        padre_gremio.children('select.tarea-gremio').change();
+                    } else {
+                        componentes.tareas.nueva.botones.children('div.row').children('div.col-6').children('button.tarea-cancelar').click();
+                        alerta('Sin gremios', 'no hay gremios registrados, no es posible registrar tareas');
+                    }
+                } else {
+                    alert('fallo en el proveedor');
+                }
+            }, 'json');
+            componentes.tareas.nueva.header.children('div.container-fluid').children('div.row').children('div.col-4').children('input.tarea-estado').val('pendiente');
+            componentes.tareas.nueva.body.children('div.container-fluid').children('div.row').children('div.col-4').children('div.tarea-cantidad').children('input[type="number"]').prop('readonly', false).keyup(tarea_cantidad_keyup);
+            componentes.tareas.nueva.body.children('div.container-fluid').children('div.row').children('div.col-8').children('textarea.tarea-observaciones').prop('readonly', false);
+            componentes.tareas.nueva.botones.children('div.row').children('div.col-6').children('button.tarea-aceptar').prop('disabled', true).click(tarea_nueva_aceptar_click);
+            componentes.tareas.nueva.botones.children('div.row').children('div.col-6').children('button.tarea-cancelar').click(tarea_nueva_cancelar_click);
+            $(this).children('div.contenedor').children('div.card').css('border-color', colorBorde);
+            componentes.tareas.nueva.header.css({'background-color':colorBorde, 'border-color':colorBorde});
+        } else {
+            alerta('Error 404', 'no se pudo cargar tarea.html');
         }
     }
     
@@ -1031,6 +1347,15 @@ $(document).ready(function() {
         }
     }
     
+    function respuesta_obtenerTareas(data, status) {
+        if (status == "success") {
+            tareas.listaTareas = data;
+            mostrar_tareas(tareas.listaTareas, componentes.tareas.lista);
+        } else {
+            alert('fallo en el proveedor');
+        }
+    }
+    
     // Cargar paginas y aplicar controles
     // ====================================================================== //
     componentes.siniestro.informacion = componentes.siniestro.contenido.children('div.informacion').children('div.container-fluid').children('div.row');
@@ -1094,6 +1419,10 @@ $(document).ready(function() {
     componentes.contactos.botones.children('button[name="siniestro_contacto_aceptar"]').click(contacto_aceptar_click).hide();
     componentes.contactos.botones.children('button[name="siniestro_contacto_cancelar"]').click(contacto_cancelar_click).hide();
     componentes.contactos.entradas.children('div.input-group').children('input[name="siniestro_contacto_telefono1"]').keyup(siniestro_contacto_telefono1_keyup);
+    componentes.tareas.botones.children('button[name="tarea_nueva"]').click(tarea_nueva_click);
+    componentes.tareas.botones.children('button[name="tarea_actualizar"]').click(tarea_actualizar_click);
+    componentes.tareas.botones.children('button[name="tarea_ampliar"]').click(tarea_ampliar_click);
+    componentes.tareas.botones.children('button[name="tarea_borrar"]').click(tarea_borrar_click);
     componentes.adicional.participantes.nuevo.click(participante_agregar_click);
     componentes.adicional.participantes.botones.children('button[name="adicional_participante_aceptar"]').click(adicional_participante_aceptar_click);
     componentes.adicional.participantes.botones.children('button[name="adicional_participante_cancelar"]').click(adicional_participante_cancelar_click);
@@ -1109,6 +1438,7 @@ $(document).ready(function() {
     $.get('http://localhost:8080/ReForms_Provider/wr/replanificacion/obtenerReplanificaciones/' + siniestro.id, respuesta_obtenerReplanificaciones, 'json');
     $.get('http://localhost:8080/ReForms_Provider/wr/reasignacion/obtenerReasignaciones/' + siniestro.id, respuesta_obtenerReasignaciones, 'json');
     $.get('http://localhost:8080/ReForms_Provider/wr/recurso/obtenerRecursos/' + siniestro.id, respuesta_obtenerRecursos, 'json');
+    $.get('http://localhost:8080/ReForms_Provider/wr/tarea/obtenerTareas/' + siniestro.id, respuesta_obtenerTareas, 'json');
     
     // Inicializacion de aspecto y colores
     // ====================================================================== //
@@ -1127,6 +1457,7 @@ $(document).ready(function() {
     $('#ventana').children('div.container-fluid').children('div.adicional').children('div.ocultable-contenido').find('table').children('thead').children('tr').css('background-color', colorBorde);
     componentes.contactos.tabla.children('table').children('thead').children('tr').css('background-color', colorBorde);
     componentes.contactos.detalles.children('div.contenedor').css('border-color', colorBorde);
+    componentes.tareas.botones.children('button').not('button.btn-borrar').css({'border-color':colorBorde, 'background-color':colorFondo});
     componentes.adicional.recursos.recurso.children('div.contenedor').css('border-color', colorBorde);
     componentes.adicional.participantes.participante.children('div.contenedor').css('border-color', colorBorde);
     componentes.adicional.recursos.previsualizacion.children('div.contenedor').css('border-color', colorBorde);
@@ -1134,6 +1465,10 @@ $(document).ready(function() {
     componentes.adicional.recursos.descarga_fichero.css({'border-color':colorBordeNeutro, 'background-color':colorFondoNeutro, 'color':colorTextoNeutro});
     $('#ventana').children('div.container-fluid').children('div.acciones').hide();
     componentes.contactos.detalles.hide();
+    if (siniestro.estado > 3) {
+        componentes.tareas.botones.children('button[name="tarea_nueva"]').hide();
+    }
+    componentes.tareas.botones.children('button').not('button[name="tarea_nueva"]').hide();
     componentes.adicional.participantes.participante.hide();
     componentes.adicional.recursos.entrada_tipo.hide();
     componentes.adicional.recursos.entrada_fichero.hide();

@@ -1,0 +1,76 @@
+<script>
+    if (!sessionStorage.usuario) {
+        window.location.href = "http://localhost:8080/ReForms_Client/";
+    }
+</script>
+
+<div class="contenedor container-fluid">
+    <div class="card">
+        <div class="card-header">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-4">
+                        <h5>gremio</h5>
+                        <input class="tarea-gremio form-control form-control-lg" type="text" maxlength="20" readonly/>
+                    </div>
+                    <div class="col-4">
+                        <h5>codigo</h5>
+                        <input class="tarea-codigo form-control form-control-lg" type="text" maxlength="5" readonly/>
+                    </div>
+                    <div class="col-4">
+                        <h5>estado</h5>
+                        <input class="tarea-estado form-control form-control-lg" type="text" maxlength="10" readonly/>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-8">
+                        <h6>descripcion</h6>
+                        <input class="tarea-descripcion form-control" type="text" maxlength="250" readonly/>
+                    </div>
+                    <div class="col-4">
+                        <h6>cantidad</h6>
+                        <div class="tarea-cantidad input-group mb-3">
+                            <input class="form-control" type="number" min=1 step="1" readonly/>
+                            <div class="input-group-append">
+                                <span class="input-group-text"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-8">
+                        <h6>observaciones</h6>
+                        <textarea class="tarea-observaciones form-control" rows="4" maxlength="250" readonly/>
+                    </div>
+                    <div class="col-4">
+                        <div>
+                            <h6>importe</h6>
+                            <div class="tarea-importe input-group mb-3">
+                                <input class="form-control" type="text" readonly/>
+                                <div class="input-group-append">
+                                    <span class="input-group-text">€</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="botones container-fluid">
+                            <div class=" row">
+                                <div class="col-6">
+                                    <button class="tarea-aceptar btn btn-aceptar" type="button">aceptar</button>
+                                </div>
+                                <div class="col-6">
+                                    <button class="tarea-cancelar btn btn-cancelar" type="button">cancelar</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer">lista ampliaciones</div>
+    </div>
+</div>
+    

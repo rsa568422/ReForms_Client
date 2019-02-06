@@ -451,9 +451,11 @@ $(document).ready(function() {
             actual.removeClass('seleccionado').css({'border-color':sinColor, 'background-color':sinColor});
         } else {
             aseguradoras.siniestroSeleccionado = buscador.listaSiniestros[actual.index()];
-            $.get('http://localhost:8080/ReForms_Provider/wr/tarea/buscarTareaPorSiniestro/' + aseguradoras.siniestroSeleccionado.id, function(data, status) {
+            $.get('http://localhost:8080/ReForms_Provider/wr/tarea/obtenerTareas/' + aseguradoras.siniestroSeleccionado.id, function(data, status) {
                 if (status == "success") {
                     tareas = data;
+                } else {
+                    alerta('Error en proveedor', 'no ha sido posible obtener las tareas del siniestro');
                 }
                 actual.siblings('.siniestro').removeClass('seleccionado').css({'border-color':sinColor, 'background-color':sinColor});
                 actual.addClass('seleccionado').css({'border-color':colorBorde, 'background-color':colorFondo});

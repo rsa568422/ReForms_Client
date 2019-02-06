@@ -108,6 +108,49 @@
         margin-top: 0px;
     }
     
+    #ventana div.container-fluid div.tareas div.ocultable-contenido div.row div.col-12 div.botones {
+        margin-bottom: 2%;
+    }
+    
+    #ventana div.container-fluid div.tareas div.ocultable-contenido div.row div.col-12 div.lista div.tarea div.contenedor div.card,
+    #ventana div.container-fluid div.tareas div.ocultable-contenido div.row div.col-12 div.lista div.tarea-nueva div.contenedor div.card {
+        border: 5px solid;
+        border-radius: 10px;
+        margin-bottom: 2%;
+    }
+    
+    #ventana div.container-fluid div.tareas div.ocultable-contenido div.row div.col-12 div.lista div.tarea div.contenedor div.row h5,
+    #ventana div.container-fluid div.tareas div.ocultable-contenido div.row div.col-12 div.lista div.tarea div.contenedor div.row h6,
+    #ventana div.container-fluid div.tareas div.ocultable-contenido div.row div.col-12 div.lista div.tarea-nueva div.contenedor div.row h5,
+    #ventana div.container-fluid div.tareas div.ocultable-contenido div.row div.col-12 div.lista div.tarea-nueva div.contenedor div.row h6 {
+        text-transform: capitalize;
+    }
+    
+    #ventana div.container-fluid div.tareas div.ocultable-contenido div.row div.col-12 div.lista div.sin-tareas {
+        text-align: center;
+        border: 5px solid;
+        border-radius: 10px;
+        margin-bottom: 1%;
+        padding: 3% 1% 3% 1%;
+    }
+    
+    #ventana div.container-fluid div.tareas div.ocultable-contenido div.row div.col-12 div.lista div.tarea div.contenedor div.row input,
+    #ventana div.container-fluid div.tareas div.ocultable-contenido div.row div.col-12 div.lista div.tarea-nueva div.contenedor div.row input,
+    #ventana div.container-fluid div.tareas div.ocultable-contenido div.row div.col-12 div.lista div.tarea-nueva div.contenedor div.row select.tarea-gremio,
+    #ventana div.container-fluid div.tareas div.ocultable-contenido div.row div.col-12 div.lista div.tarea-nueva div.contenedor div.row select.tarea-codigo {
+        text-align: center;
+    }
+    
+    #ventana div.container-fluid div.tareas div.ocultable-contenido div.row div.col-12 div.lista div.tarea div.contenedor div.row input.tarea-importe,
+    #ventana div.container-fluid div.tareas div.ocultable-contenido div.row div.col-12 div.lista div.tarea-nueva div.contenedor div.row input.tarea-importe {
+        margin-bottom: 10%;
+    }
+    
+    button[name="tarea_nueva"], button[name="tarea_actualizar"], button[name="tarea_ampliar"] {
+        min-width: 96px;
+        margin-left: 1%;
+    }
+    
     #ventana div.container-fluid div.adicional div.ocultable-contenido div.participantes div.participante div.contenedor {
         border: 5px solid;
         border-radius: 10px;
@@ -216,6 +259,7 @@
 <script src="Entidad/Contacto.js"></script>
 <script src="Entidad/Participante.js"></script>
 <script src="Entidad/Multiservicios.js"></script>
+<script src="Entidad/Tarea.js"></script>
 <script src="Entidad/Recurso.js"></script>
 <script src="Entidad/Adjunto.js"></script>
 <script src="Controlador/ControladorSiniestro.js"></script>
@@ -395,7 +439,15 @@
             </div>
             <div class="ocultable-contenido">
                 <div class="row">
-                    <div class="col-12">Tabla con las tareas</div>
+                    <div class="col-12">
+                        <div class="botones">
+                            <button name="tarea_nueva" class="btn btn-nuevo" type="button">nueva</button>
+                            <button name="tarea_actualizar" class="btn" type="button">actualizar</button>
+                            <button name="tarea_ampliar" class="btn" type="button">ampliar</button>
+                            <button name="tarea_borrar" class="btn btn-borrar" type="button">borrar</button>
+                        </div>
+                        <div class="lista container-fluid"><div class="row"></div></div>
+                    </div>
                 </div>
             </div>
         </div>

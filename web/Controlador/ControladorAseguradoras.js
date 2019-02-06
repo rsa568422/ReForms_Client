@@ -18,7 +18,7 @@ $(document).ready(function() {
         $("#btnNuevoTrabajoAceptar").hide();
         $("#btnNuevoTrabajoCancelar").hide();
         $(".trabajo").remove();
-        $.get("http://localhost:8080/ReForms_Provider/wr/trabajo/buscarTrabajoPorAseguradoraGremio/" + aseguradora.id + "/" + gremio.id, function(data, status) {
+        $.get("http://localhost:8080/ReForms_Provider/wr/trabajo/obtenerTrabajosPorGremio/" + aseguradora.id + "/" + gremio.id, function(data, status) {
             if (status == "success") {
                 var i;
                 trabajos = data;
