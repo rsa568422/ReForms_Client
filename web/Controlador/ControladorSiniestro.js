@@ -47,6 +47,10 @@ $(document).ready(function() {
             }
         },
         componentes = {
+            'botonera': {
+                'botones': $('#ventana').children('div.container-fluid').children('div.botonera').children('div.acciones'),
+                'acciones': $('#ventana').children('div.container-fluid').children('div.acciones')
+            },
             'siniestro': {
             	'contenido': $('#ventana').children('div.container-fluid').children('div.siniestro').children('div.ocultable-contenido'),
                 'informacion': null,
@@ -240,7 +244,7 @@ $(document).ready(function() {
         }
     }
     
-    function  mostrar_tareas(listaTareas, contenedor) {
+    function mostrar_tareas(listaTareas, contenedor) {
         contenedor.children('div.sin-tareas').remove();
         contenedor.children('div.tarea').remove();
         if (listaTareas.length > 0) {
@@ -255,9 +259,9 @@ $(document).ready(function() {
         }
     }
     
-    function actualizar_estado_siniestro() {
+    function actualizar_estado_siniestro(estado) {
         var strAux;
-        switch (siniestro.estado) {
+        switch (estado) {
             case 0: strAux = 'pendiente'; break;
             case 1: strAux = 'en proceso'; break;
             case 2: strAux = 'finalizado'; break;
@@ -270,6 +274,49 @@ $(document).ready(function() {
         }
         componentes.siniestro.informacion.children('div.siniestro_estado').children('div.form-group').children('input[name="siniestro_estado"]').val(strAux);
         componentes.siniestro.estado.children('input[name="estado"]').val(strAux);
+        if (estado < 4) {
+            componentes.tareas.botones.show();
+            componentes.botonera.botones.children('button[name="replanificar"]').show();
+            componentes.botonera.botones.children('button[name="reasignar"]').show();
+            if (estado < 2) {
+                componentes.botonera.botones.children('button[name="cerrar"]').hide();
+            } else {
+                componentes.botonera.botones.children('button[name="cerrar"]').show();
+            }
+            componentes.botonera.botones.children('button[name="facturar"]').hide();
+            componentes.botonera.botones.children('button[name="cobrar"]').hide();
+        } else {
+            componentes.tareas.botones.hide();
+            switch (estado) {
+                case 4:
+                    componentes.botonera.botones.children('button').not('button[name="facturar"]').hide();
+                    componentes.botonera.botones.children('button[name="facturar"]').show();
+                    break;
+                case 6:
+                    componentes.botonera.botones.children('button').not('button[name="cobrar"]').hide();
+                    componentes.botonera.botones.children('button[name="cobrar"]').show();
+                    break;
+                default:
+                    componentes.botonera.botones.children('button').hide();
+                    break;
+            }
+        }
+    }
+    
+    function actualizar_fecha_siniestro() {
+        var fecha = componentes.siniestro.contenido.children('div.informacion').children('div.container-fluid').children('div.row').children('div.siniestro_fecha').children('div.form-group').children('input[name="siniestro_fecha"]'),
+            h5 = componentes.siniestro.informacion.children('div.siniestro_fecha').children('div.form-group').children('h5');
+        if (siniestro.estado != null && siniestro.estado > 3) {
+            h5.html('Fecha de cierre');
+            fecha.val(siniestro.fechaCierre.slice(0, siniestro.fechaCierre.indexOf('T')));
+        } else {
+            if (adicional.replanificaciones.listaReplanificaciones.length > 0)  {
+                h5.html('Fecha replanificada');
+            } else {
+                h5.html('Fecha de registro');
+            }
+            fecha.val(siniestro.fechaRegistro.slice(0, siniestro.fechaRegistro.indexOf('T')));
+        }
     }
     
     function actualizar_detalles_contacto() {
@@ -393,13 +440,81 @@ $(document).ready(function() {
     // Funciones controladoras para componentes
     // ====================================================================== //
     function replanificar_click() {
-        alert('replanificar_click()');
-        $('#ventana').children('div.container-fluid').children('div.acciones').hide();
+        if (!edicion) {
+            alert('replanificar_click()');
+            $('#ventana').children('div.container-fluid').children('div.acciones').hide();
+        }
     }
     
     function reasignar_click() {
-        alert('reasignar_click()');
-        $('#ventana').children('div.container-fluid').children('div.acciones').show();
+        if (!edicion) {
+            alert('reasignar_click()');
+            $('#ventana').children('div.container-fluid').children('div.acciones').show();
+        }
+    }
+    function cerrar_click() {
+        if (!edicion) {
+            if (confirm('Se cerrara el siniestro de forma permanente')) {
+                $.ajax({
+                    url: 'http://localhost:8080/ReForms_Provider/wr/siniestro/cerrarSiniestro/' + siniestro.id,
+                    dataType: 'json',
+                    type: 'put',
+                    contentType: 'application/json;charset=UTF-8',
+                    data: JSON.stringify(siniestro),
+                    processData: false,
+                    success: function(data, textStatus, jQxhr){
+                        $.get('http://localhost:8080/ReForms_Provider/wr/siniestro/consultarEstado/' + siniestro.id, respuesta_consultarEstado, 'text');
+                        $.get('http://localhost:8080/ReForms_Provider/wr/tarea/obtenerTareas/' + siniestro.id, respuesta_obtenerTareas, 'json');
+                    },
+                    error: function(jQxhr, textStatus, errorThrown){
+                        alerta('Error en proveedor', 'no ha sido posible cerrar el siniestro');
+                    }
+                });
+            }
+        }
+    }
+    
+    function facturar_click() {
+        if (!edicion) {
+            if (confirm('Se cambiara el estado del siniestro a facturado de forma permanente')) {
+                $.ajax({
+                    url: 'http://localhost:8080/ReForms_Provider/wr/siniestro/facturarSiniestro/' + siniestro.id,
+                    dataType: 'json',
+                    type: 'put',
+                    contentType: 'application/json;charset=UTF-8',
+                    data: JSON.stringify(siniestro),
+                    processData: false,
+                    success: function(data, textStatus, jQxhr){
+                        $.get('http://localhost:8080/ReForms_Provider/wr/siniestro/consultarEstado/' + siniestro.id, respuesta_consultarEstado, 'text');
+                        $.get('http://localhost:8080/ReForms_Provider/wr/tarea/obtenerTareas/' + siniestro.id, respuesta_obtenerTareas, 'json');
+                    },
+                    error: function(jQxhr, textStatus, errorThrown){
+                        alerta('Error en proveedor', 'no ha sido posible marcar como facturado el siniestro');
+                    }
+                });
+            }
+        }
+    }
+    
+    function cobrar_click() {
+        if (!edicion) {
+            if (confirm('Se cambiara el estado del siniestro a cobrado de forma permanente')) {
+                $.ajax({
+                    url: 'http://localhost:8080/ReForms_Provider/wr/siniestro/cobrarSiniestro/' + siniestro.id,
+                    dataType: 'json',
+                    type: 'put',
+                    contentType: 'application/json;charset=UTF-8',
+                    data: JSON.stringify(siniestro),
+                    processData: false,
+                    success: function(data, textStatus, jQxhr){
+                        $.get('http://localhost:8080/ReForms_Provider/wr/siniestro/consultarEstado/' + siniestro.id, respuesta_consultarEstado, 'text');
+                    },
+                    error: function(jQxhr, textStatus, errorThrown){
+                        alerta('Error en proveedor', 'no ha sido posible marcar como cobrado el siniestro');
+                    }
+                });
+            }
+        }
     }
     
     function volver_click() {
@@ -921,6 +1036,7 @@ $(document).ready(function() {
             if (tareas.tareaSeleccionada != null && tareas.tareaSeleccionada.id == tareas.listaTareas[i].id) {
                 tareas.posicionSeleccionada = -1;
                 tareas.tareaSeleccionada = null;
+                componentes.tareas.seleccionada.footer.slideUp();
                 componentes.tareas.seleccionada.header = null;
                 componentes.tareas.seleccionada.body = null;
                 componentes.tareas.seleccionada.footer = null;
@@ -939,16 +1055,78 @@ $(document).ready(function() {
                 if (siniestro.estado < 4) {
                     componentes.tareas.botones.children('button').not('button[name="tarea_nueva"]').show();
                 }
+                if (tareas.tareaSeleccionada.fechaAmpliacion != null && tareas.tareaSeleccionada.fechaAmpliacion != '') {
+                    componentes.tareas.seleccionada.footer.slideDown();
+                }
+                componentes.tareas.seleccionada.header.parent('div.card').parent('div.contenedor').parent('div.tarea').siblings('div.tarea').children('div.contenedor').children('div.card').children('div.card-footer').slideUp();
             }
         }
     }
     
     function tarea_aceptar_click() {
-        alert('tarea_aceptar_click');
+        var estado = componentes.tareas.seleccionada.header.children('div.container-fluid').children('div.row').children('div.col-4').children('select.tarea-estado'),
+            observaciones = componentes.tareas.seleccionada.body.children('div.container-fluid').children('div.row').children('div.col-8').children('textarea.tarea-observaciones'),
+            oaux;
+        if (tareas.tareaSeleccionada.observaciones && tareas.tareaSeleccionada.observaciones != null) {
+            oaux = tareas.tareaSeleccionada.observaciones;
+        } else {
+            oaux = '';
+        }
+        if (estado.val() != tareas.tareaSeleccionada.estado || observaciones.val() != oaux) {
+            var temporal = new Tarea();
+            temporal.id = tareas.tareaSeleccionada.id;
+            temporal.cantidad = tareas.tareaSeleccionada.cantidad;
+            temporal.estado = Number(estado.val());
+            temporal.observaciones = observaciones.val() != '' ? observaciones.val() : null;
+            temporal.siniestro = tareas.tareaSeleccionada.siniestro;
+            temporal.trabajo = tareas.tareaSeleccionada.trabajo;
+            temporal.ampliacion = tareas.tareaSeleccionada.ampliacion ? tareas.tareaSeleccionada.ampliacion : null;
+            temporal.fechaAmpliacion = tareas.tareaSeleccionada.fechaAmpliacion ? tareas.tareaSeleccionada.fechaAmpliacion : null;
+            temporal.importe = tareas.tareaSeleccionada.importe;
+            $.ajax({
+                url: 'http://localhost:8080/ReForms_Provider/wr/tarea/actualizarTarea/' + temporal.id,
+                dataType: 'json',
+                type: 'put',
+                contentType: 'application/json;charset=UTF-8',
+                data: JSON.stringify(temporal),
+                processData: false,
+                success: function(data, textStatus, jQxhr){
+                    tareas.tareaSeleccionada = temporal;
+                    tareas.listaTareas.splice(tareas.posicionSeleccionada, 1, temporal);
+                    componentes.tareas.seleccionada.botones.children('div.row').children('div.col-6').children('button.tarea-cancelar').click();
+                    $.get('http://localhost:8080/ReForms_Provider/wr/siniestro/consultarEstado/' + siniestro.id, respuesta_consultarEstado, 'text');
+                },
+                error: function(jQxhr, textStatus, errorThrown){
+                    alerta('Error en proveedor', 'no ha sido posible actualizar la tarea');
+                }
+            });
+        } else {
+            componentes.tareas.seleccionada.botones.children('div.row').children('div.col-6').children('button.tarea-cancelar').click();
+        }
     }
     
     function tarea_cancelar_click() {
-        alert('tarea_cancelar_click');
+        var observaciones = componentes.tareas.seleccionada.body.children('div.container-fluid').children('div.row').children('div.col-8').children('textarea.tarea-observaciones'),
+            padre_estado = componentes.tareas.seleccionada.header.children('div.container-fluid').children('div.row').children('div.col-4').children('select.tarea-estado').parent();
+        edicion = false;
+        padre_estado.children('select.tarea-estado').remove();
+        padre_estado.append('<input class="tarea-estado form-control form-control-lg" type="text" maxlength="10" readonly/>');
+        switch (tareas.tareaSeleccionada.estado) {
+            case 0: padre_estado.children('input.tarea-estado').val('pendiente'); break;
+            case 1: padre_estado.children('input.tarea-estado').val('en proceso'); break;
+            case 2: padre_estado.children('input.tarea-estado').val('finalizada'); break;
+            case 3: padre_estado.children('input.tarea-estado').val('anulada'); break;
+            default: padre_estado.children('input.tarea-estado').val('desconocido'); break;
+        }
+        observaciones.prop('readonly', true);
+        if (tareas.tareaSeleccionada.observaciones && tareas.tareaSeleccionada.observaciones != null) {
+            observaciones.val(tareas.tareaSeleccionada.observaciones);
+        } else {
+            observaciones.val('');
+        }
+        componentes.tareas.botones.children('button').not('button[name="tarea_borrar"]').prop('disabled', false);
+        componentes.tareas.botones.children('button[name="tarea_borrar"]').show();
+        componentes.tareas.seleccionada.botones.hide();
     }
     
     function tarea_nueva_click() {
@@ -965,7 +1143,32 @@ $(document).ready(function() {
     }
     
     function tarea_nueva_aceptar_click() {
-        alert('tarea_nueva_aceptar_click');
+        var t = new Tarea();
+        t.siniestro = siniestro;
+        t.trabajo = tareas.trabajos[componentes.tareas.nueva.header.children('div.container-fluid').children('div.row').children('div.col-4').children('select.tarea-codigo').val()];
+        t.siniestro.poliza.cliente.aseguradora.logo = null;
+        t.siniestro.peritoOriginal.aseguradora.logo = null;
+        t.cantidad = componentes.tareas.nueva.body.children('div.container-fluid').children('div.row').children('div.col-4').children('div.tarea-cantidad').children('input[type="number"]').val();
+        t.observaciones = componentes.tareas.nueva.body.children('div.container-fluid').children('div.row').children('div.col-8').children('textarea.tarea-observaciones').val();
+        if (t.observaciones == '') {
+            t.observaciones = null;
+        }
+        $.ajax({
+            url: 'http://localhost:8080/ReForms_Provider/wr/tarea/agregarTarea',
+            dataType: 'json',
+            type: 'post',
+            contentType: 'application/json;charset=UTF-8',
+            data: JSON.stringify(t),
+            processData: false,
+            success: function(data, textStatus, jQxhr){
+                componentes.tareas.nueva.botones.children('div.row').children('div.col-6').children('button.tarea-cancelar').click();
+                $.get('http://localhost:8080/ReForms_Provider/wr/tarea/obtenerTareas/' + siniestro.id, respuesta_obtenerTareas, 'json');
+                $.get('http://localhost:8080/ReForms_Provider/wr/siniestro/consultarEstado/' + siniestro.id, respuesta_consultarEstado, 'text');
+            },
+            error: function(jQxhr, textStatus, errorThrown){
+                alerta('Error en proveedor', 'no ha sido posible agregar la tarea');
+            }
+        });
     }
     
     function tarea_nueva_cancelar_click() {
@@ -982,7 +1185,26 @@ $(document).ready(function() {
     }
     
     function tarea_actualizar_click() {
-        alert('tarea_actualizar_click()');
+        if (!edicion) {
+            var opcion, padre_estado = componentes.tareas.seleccionada.header.children('div.container-fluid').children('div.row').children('div.col-4').children('input.tarea-estado').parent();
+            edicion = true;
+            padre_estado.children('input.tarea-estado').remove();
+            padre_estado.append('<select class="tarea-estado form-control custom-select-lg custom-select"></select>');
+            opcion = '<option value=' + 0 + '>pendiente</option>';
+            padre_estado.children('select.tarea-estado').append(opcion);
+            opcion = '<option value=' + 1 + '>en proceso</option>';
+            padre_estado.children('select.tarea-estado').append(opcion);
+            opcion = '<option value=' + 2 + '>finalizada</option>';
+            padre_estado.children('select.tarea-estado').append(opcion);
+            opcion = '<option value=' + 3 + '>anulada</option>';
+            padre_estado.children('select.tarea-estado').append(opcion);
+            padre_estado.children('select.tarea-estado').children('option').eq(tareas.tareaSeleccionada.estado).prop('selected', true);
+            componentes.tareas.seleccionada.body.children('div.container-fluid').children('div.row').children('div.col-8').children('textarea.tarea-observaciones').prop('readonly', false);
+            componentes.tareas.botones.children('button').not('button[name="tarea_borrar"]').prop('disabled', true);
+            componentes.tareas.botones.children('button[name="tarea_borrar"]').hide();
+            componentes.tareas.seleccionada.botones.show();
+            padre_estado.children('select.tarea-estado').focus();
+        }
     }
     
     function tarea_ampliar_click() {
@@ -1131,7 +1353,7 @@ $(document).ready(function() {
             codigo = componentes.tareas.nueva.header.children('div.container-fluid').children('div.row').children('div.col-4').children('select.tarea-codigo');
         if ($(this).val() != '' && $(this).val() > 0 && codigo.val() != null) {
             componentes.tareas.nueva.botones.children('div.row').children('div.col-6').children('button.tarea-aceptar').prop('disabled', false);
-            importe.val(calcular_importe($(this).val(), tareas.trabajos[codigo.val()]));
+            importe.val(calcular_importe($(this).val(), tareas.trabajos[codigo.val()]).toFixed(2));
         } else {
             componentes.tareas.nueva.botones.children('div.row').children('div.col-6').children('button.tarea-aceptar').prop('disabled', true);
             importe.val('');
@@ -1206,9 +1428,9 @@ $(document).ready(function() {
                 observaciones.val('');
             }
             if (tarea.importe && tarea.importe != null) {
-                importe.val(tarea.importe);
+                importe.val(tarea.importe.toFixed(2));
             } else {
-                importe.val('');
+                importe.val('0.00');
             }
             header.click(tarea_click);
             botones.children('div.row').children('div.col-6').children('button.tarea-aceptar').click(tarea_aceptar_click);
@@ -1312,15 +1534,10 @@ $(document).ready(function() {
     }
     
     function respuesta_obtenerReplanificaciones(data, status) {
-        var tbody = componentes.adicional.replanificaciones.elemento.children('table').children('tbody'),
-            h5 = componentes.siniestro.informacion.children('div.siniestro_fecha').children('div.form-group').children('h5');
+        var tbody = componentes.adicional.replanificaciones.elemento.children('table').children('tbody');
         if (status == "success") {
             adicional.replanificaciones.listaReplanificaciones = data;
-            if (adicional.replanificaciones.listaReplanificaciones.length > 0) {
-                h5.html('Fecha replanificada');
-            } else {
-                h5.html('Fecha de registro');
-            }
+            actualizar_fecha_siniestro();
             mostrar_replanificaciones(adicional.replanificaciones.listaReplanificaciones, tbody);
         } else {
             alert('fallo en el proveedor');
@@ -1351,6 +1568,15 @@ $(document).ready(function() {
         if (status == "success") {
             tareas.listaTareas = data;
             mostrar_tareas(tareas.listaTareas, componentes.tareas.lista);
+        } else {
+            alert('fallo en el proveedor');
+        }
+    }
+    
+    function respuesta_consultarEstado(data, status) {
+        if (status == "success") {
+            siniestro.estado = Number(data);
+            actualizar_estado_siniestro(siniestro.estado);
         } else {
             alert('fallo en el proveedor');
         }
@@ -1392,8 +1618,11 @@ $(document).ready(function() {
     } else {
         componentes.siniestro.contenido.children('div.afectado').hide();
     }
-    $('#ventana').children('div.container-fluid').children('div.botonera').children('div.acciones').children('button[name="replanificar"]').click(replanificar_click);
-    $('#ventana').children('div.container-fluid').children('div.botonera').children('div.acciones').children('button[name="reasignar"]').click(reasignar_click);
+    componentes.botonera.botones.children('button[name="replanificar"]').click(replanificar_click);
+    componentes.botonera.botones.children('button[name="reasignar"]').click(reasignar_click);
+    componentes.botonera.botones.children('button[name="cerrar"]').click(cerrar_click);
+    componentes.botonera.botones.children('button[name="facturar"]').click(facturar_click);
+    componentes.botonera.botones.children('button[name="cobrar"]').click(cobrar_click);
     $('#ventana').children('div.container-fluid').children('div.botonera').children('div.volver').children('button[name="volver"]').css({'border-color':colorBorde, 'background-color':colorFondo}).click(volver_click);
     $('#ventana').children('div.container-fluid').children('div.ocultable').children('div.ocultable-titulo').click(ocultable_click);
     if (siniestro.original && siniestro.original != null) {
@@ -1402,8 +1631,8 @@ $(document).ready(function() {
         componentes.siniestro.contenido.children('div.informacion').children('div.container-fluid').children('div.row').children('div.siniestro_original_descargar').children('div.form-group').children('div.input-group').children('div.input-group-append').children('a[name="siniestro_original_descargar"]').prop('download', '').prop('href', '');
     }
     componentes.siniestro.contenido.children('div.informacion').children('div.container-fluid').children('div.row').children('div.siniestro_numero').children('div.form-group').children('input[name="siniestro_numero"]').val(siniestro.numero);
-    componentes.siniestro.contenido.children('div.informacion').children('div.container-fluid').children('div.row').children('div.siniestro_fecha').children('div.form-group').children('input[name="siniestro_fecha"]').val(siniestro.fechaRegistro.slice(0, siniestro.fechaRegistro.indexOf('T')));
-    actualizar_estado_siniestro();
+    actualizar_fecha_siniestro();
+    actualizar_estado_siniestro(siniestro.estado);
     $.get('http://localhost:8080/ReForms_Provider/wr/reasignacion/obtenerUltimaReasignacion/' + siniestro.id, respuesta_obtenerUltimaReasignacion, 'json');
     componentes.siniestro.contenido.children('div.informacion').children('div.container-fluid').children('div.row').children('div.siniestro_albaran').children('div.form-group').children('input[name="siniestro_albaran"]').val(siniestro.albaran);
     componentes.siniestro.contenido.children('div.informacion').children('div.container-fluid').children('div.row').children('div.siniestro_original_descargar').children('div.form-group').children('div.input-group').children('input[name="siniestro_original"]').val(siniestro.original.nombre);
@@ -1463,7 +1692,7 @@ $(document).ready(function() {
     componentes.adicional.recursos.previsualizacion.children('div.contenedor').css('border-color', colorBorde);
     componentes.adicional.recursos.recurso.children('div.contenedor').children('div.archivo').children('div.tipo').children('div.form-group').children('div.salida').children('div.input-group-append').children('div[name="recurso_tipo_icono"]').css({'border-color':colorBordeNeutro, 'background-color':colorFondoNeutro});
     componentes.adicional.recursos.descarga_fichero.css({'border-color':colorBordeNeutro, 'background-color':colorFondoNeutro, 'color':colorTextoNeutro});
-    $('#ventana').children('div.container-fluid').children('div.acciones').hide();
+    componentes.botonera.acciones.hide();
     componentes.contactos.detalles.hide();
     if (siniestro.estado > 3) {
         componentes.tareas.botones.children('button[name="tarea_nueva"]').hide();

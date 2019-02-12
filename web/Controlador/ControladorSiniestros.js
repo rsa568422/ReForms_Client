@@ -83,9 +83,9 @@ $(document).ready(function() {
                 descripcion = '<div class="col-3">' + listaTareas[i].trabajo.descripcion + '</div>';
                 switch (listaTareas[i].estado) {
                     case 0: estado = '<div class="col-3">pendiente</div>'; break;
-                    case 0: estado = '<div class="col-3">en proceso</div>'; break;
-                    case 0: estado = '<div class="col-3">finalizada</div>'; break;
-                    case 0: estado = '<div class="col-3">anulada</div>'; break;
+                    case 1: estado = '<div class="col-3">en proceso</div>'; break;
+                    case 2: estado = '<div class="col-3">finalizada</div>'; break;
+                    case 3: estado = '<div class="col-3">anulada</div>'; break;
                     default: estado = '<div class="col-3"></div>';
                 }
                 tareas += '<div class="row">' + gremio + codigo + descripcion + estado + '</div>';

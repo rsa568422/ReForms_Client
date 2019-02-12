@@ -58,8 +58,7 @@
         margin-bottom: 1%;
     }
     
-    #ventana div.container-fluid div.botonera div.acciones button[name="replanificar"],
-    #ventana div.container-fluid div.botonera div.acciones button[name="reasignar"] {
+    #ventana div.container-fluid div.botonera div.acciones button.btn-botonera {
         margin-right: 1%;
         border-color: rgb(106, 90, 205);
         background-color: rgb(106, 90, 205, 0.1);
@@ -135,6 +134,7 @@
     }
     
     #ventana div.container-fluid div.tareas div.ocultable-contenido div.row div.col-12 div.lista div.tarea div.contenedor div.row input,
+    #ventana div.container-fluid div.tareas div.ocultable-contenido div.row div.col-12 div.lista div.tarea div.contenedor div.row select.tarea-estado,
     #ventana div.container-fluid div.tareas div.ocultable-contenido div.row div.col-12 div.lista div.tarea-nueva div.contenedor div.row input,
     #ventana div.container-fluid div.tareas div.ocultable-contenido div.row div.col-12 div.lista div.tarea-nueva div.contenedor div.row select.tarea-gremio,
     #ventana div.container-fluid div.tareas div.ocultable-contenido div.row div.col-12 div.lista div.tarea-nueva div.contenedor div.row select.tarea-codigo {
@@ -270,6 +270,9 @@
             <div class="acciones col-10">
                 <button name="replanificar" class="btn btn-botonera" type="button">replanificar</button>
                 <button name="reasignar" class="btn btn-botonera" type="button">reasignar</button>
+                <button name="cerrar" class="btn btn-botonera" type="button">cerrar</button>
+                <button name="facturar" class="btn btn-botonera" type="button">facturar</button>
+                <button name="cobrar" class="btn btn-botonera" type="button">cobrar</button>
             </div>
             <div class="volver col-2">
                 <button name="volver" class="btn btn-botonera" type="button">volver</button>
