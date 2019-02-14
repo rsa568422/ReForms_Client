@@ -119,18 +119,35 @@ $(document).ready(function() {
         return /^[69]\d{8}$/.test(telefonoStr);
     }
     
+    function invertir_color(color) {
+        var c, r, g, b, t;
+        c = color.substring(4, color.length - 1);
+        r = Number(c.substring(0, c.indexOf(',')));
+        c = c.substring(c.indexOf(',') + 2, c.length);
+        g = Number(c.substring(0, c.indexOf(',')));
+        c = c.substring(c.indexOf(',') + 2, c.length);
+        if (c.indexOf(',') == -1) {
+            b = c;
+            t = null;
+        } else {
+            b = Number(c.substring(0, c.indexOf(',')));
+            t = c.substring(c.indexOf(',') + 2, c.length);
+        }
+        r = 255 - r;
+        g = 255 - g;
+        b = 255 - b;
+        return t == null ? ('rgb(' + r + ', ' + g + ', ' + b + ')') : ('rgb(' + r + ', ' + g + ', ' + b + ', ' + t + ')');
+    }
+    
     function calcular_importe(cantidad, trabajo) {
         var importe, direfencia;
         if (cantidad <= trabajo.cantidadMin) {
             importe = trabajo.precioMin;
         } else if (cantidad <= trabajo.cantidadMed) {
-            direfencia = cantidad - trabajo.cantidadMin;
-            importe = trabajo.precioMin + (direfencia * trabajo.precioMed);
+            importe = trabajo.precioMed;
         } else {
-            direfencia = trabajo.cantidadMed - trabajo.cantidadMin;
-            importe = trabajo.precioMin + (direfencia * trabajo.precioMed);
             direfencia = cantidad - trabajo.cantidadMed;
-            importe += direfencia * trabajo.precioExtra;
+            importe = trabajo.precioMed + (direfencia * trabajo.precioExtra);
         }
         return importe;
     }
@@ -212,9 +229,9 @@ $(document).ready(function() {
                     contacto = null;
                 }
                 if (contacto != null) {
-                    tbody.append('<tr class="participante"><td>' + listaParticipantes[i].multiservicios.nombre + ' (' + contacto + ')<button class="btn btn-borrar-sm" type="button">&times;</button></td></tr>');
+                    tbody.append('<tr class="participante"><td>' + listaParticipantes[i].multiservicios.nombre + ' (' + contacto + ')<button class="btn btn-borrar-sm" type="button">&Chi;</button></td></tr>');
                 } else {
-                    tbody.append('<tr class="participante"><td>' + listaParticipantes[i].multiservicios.nombre + '<button class="btn btn-borrar-sm" type="button">&times;</button></td></tr>');
+                    tbody.append('<tr class="participante"><td>' + listaParticipantes[i].multiservicios.nombre + '<button class="btn btn-borrar-sm" type="button">&Chi;</button></td></tr>');
                 }
             }
             tbody.children('tr.participante').children('td').mouseenter(function () {if (!edicion) {$(this).children('button.btn-borrar-sm').show();}});
@@ -278,6 +295,11 @@ $(document).ready(function() {
             componentes.tareas.botones.show();
             componentes.botonera.botones.children('button[name="replanificar"]').show();
             componentes.botonera.botones.children('button[name="reasignar"]').show();
+            if (estado == 0 && tareas.listaTareas.length == 0 && eventos.listaEventos.length == 0) {
+                componentes.botonera.botones.children('button[name="borrar"]').show();
+            } else {
+                componentes.botonera.botones.children('button[name="borrar"]').hide();
+            }
             if (estado < 2) {
                 componentes.botonera.botones.children('button[name="cerrar"]').hide();
             } else {
@@ -287,6 +309,7 @@ $(document).ready(function() {
             componentes.botonera.botones.children('button[name="cobrar"]').hide();
         } else {
             componentes.tareas.botones.hide();
+            componentes.botonera.botones.children('button[name="borrar"]').hide();
             switch (estado) {
                 case 4:
                     componentes.botonera.botones.children('button').not('button[name="facturar"]').hide();
@@ -439,19 +462,85 @@ $(document).ready(function() {
     
     // Funciones controladoras para componentes
     // ====================================================================== //
+    function borrar_click() {
+        if (!edicion) {
+            alert('borrar_click()');
+        }
+    }
+    
     function replanificar_click() {
         if (!edicion) {
-            alert('replanificar_click()');
-            $('#ventana').children('div.container-fluid').children('div.acciones').hide();
+            componentes.botonera.acciones.children('div.contenedor').children('div.accion').remove();
+            componentes.botonera.acciones.children('div.contenedor').append('<div class="accion"></div>');
+            componentes.botonera.acciones.children('div.contenedor').children('div.accion').load('Html/replanificacion.html', cargar_replanificacion);
         }
+    }
+    
+    function replanificacion_aceptar_click() {
+        var fecha = componentes.botonera.acciones.children('div.contenedor').children('div.accion').children('div.container-fluid').children('div.row').children('div.nueva').children('div.form-group').children('input.accion-fecha-nueva'),
+            r = new Replanificacion();
+        r.fecha = new Date(fecha.val());
+        r.siniestro = siniestro;
+        $.ajax({
+            url: 'http://localhost:8080/ReForms_Provider/wr/replanificacion/replanificarSiniestro',
+            dataType: 'json',
+            type: 'post',
+            contentType: 'application/json;charset=UTF-8',
+            data: JSON.stringify(r),
+            processData: false,
+            success: function(data, textStatus, jQxhr){
+                siniestro.fechaRegistro = fecha.val().concat(siniestro.fechaRegistro.substring(siniestro.fechaRegistro.indexOf('T'), siniestro.fechaRegistro.length));
+                $.get('http://localhost:8080/ReForms_Provider/wr/replanificacion/obtenerReplanificaciones/' + siniestro.id, respuesta_obtenerReplanificaciones, 'json');
+            },
+            error: function(jQxhr, textStatus, errorThrown){
+                alerta('Error en proveedor', 'no ha sido posible replanificar el siniestro');
+            }
+        });
+        $(this).siblings('button.btn-accion-cancelar').click();
+    }
+    
+    function replanificacion_cancelar_click() {
+        edicion = false;
+        componentes.botonera.acciones.slideUp();
     }
     
     function reasignar_click() {
         if (!edicion) {
-            alert('reasignar_click()');
-            $('#ventana').children('div.container-fluid').children('div.acciones').show();
+            componentes.botonera.acciones.children('div.contenedor').children('div.accion').remove();
+            componentes.botonera.acciones.children('div.contenedor').append('<div class="accion"></div>');
+            componentes.botonera.acciones.children('div.contenedor').children('div.accion').load('Html/reasignacion.html', cargar_reasignacion);
         }
     }
+    
+    function reasignacion_aceptar_click() {
+        var select = componentes.botonera.acciones.children('div.contenedor').children('div.accion').children('div.container-fluid').children('div.row').children('div.nuevo').children('div.form-group').children('select.accion-perito-nuevo'),
+            r = new Reasignacion();
+        r.siniestro = siniestro;
+        r.perito = new Perito();
+        r.perito.id = select.val();
+        $.ajax({
+            url: 'http://localhost:8080/ReForms_Provider/wr/reasignacion/reasignarSiniestro',
+            dataType: 'json',
+            type: 'post',
+            contentType: 'application/json;charset=UTF-8',
+            data: JSON.stringify(r),
+            processData: false,
+            success: function(data, textStatus, jQxhr){
+                $.get('http://localhost:8080/ReForms_Provider/wr/reasignacion/obtenerReasignaciones/' + siniestro.id, respuesta_obtenerReasignaciones, 'json');
+                $.get('http://localhost:8080/ReForms_Provider/wr/reasignacion/obtenerUltimaReasignacion/' + siniestro.id, respuesta_obtenerUltimaReasignacion, 'json');
+            },
+            error: function(jQxhr, textStatus, errorThrown){
+                alerta('Error en proveedor', 'no ha sido posible reasignar el siniestro');
+            }
+        });
+        $(this).siblings('button.btn-accion-cancelar').click();
+    }
+    
+    function reasignacion_cancelar_click() {
+        edicion = false;
+        componentes.botonera.acciones.slideUp();
+    }
+    
     function cerrar_click() {
         if (!edicion) {
             if (confirm('Se cerrara el siniestro de forma permanente')) {
@@ -463,7 +552,6 @@ $(document).ready(function() {
                     data: JSON.stringify(siniestro),
                     processData: false,
                     success: function(data, textStatus, jQxhr){
-                        $.get('http://localhost:8080/ReForms_Provider/wr/siniestro/consultarEstado/' + siniestro.id, respuesta_consultarEstado, 'text');
                         $.get('http://localhost:8080/ReForms_Provider/wr/tarea/obtenerTareas/' + siniestro.id, respuesta_obtenerTareas, 'json');
                     },
                     error: function(jQxhr, textStatus, errorThrown){
@@ -485,7 +573,6 @@ $(document).ready(function() {
                     data: JSON.stringify(siniestro),
                     processData: false,
                     success: function(data, textStatus, jQxhr){
-                        $.get('http://localhost:8080/ReForms_Provider/wr/siniestro/consultarEstado/' + siniestro.id, respuesta_consultarEstado, 'text');
                         $.get('http://localhost:8080/ReForms_Provider/wr/tarea/obtenerTareas/' + siniestro.id, respuesta_obtenerTareas, 'json');
                     },
                     error: function(jQxhr, textStatus, errorThrown){
@@ -700,7 +787,7 @@ $(document).ready(function() {
             var i, tfoot = componentes.adicional.participantes.elemento.children('table').children('tfoot'),
                 boton_vecino = componentes.adicional.recursos.tabla.children('button[name="recurso_nuevo"]'),
                 select = '<tr><td><div class="container mt-3"><div class="input-group mb-3"><select class="form-control form custom-select">', opciones = '',
-                botones = '</select><div class="input-group-append"><button class="btn btn-aceptar-sm" type="button">+</button><button class="btn btn-cancelar-sm" type="button">x</button></div></div></div></td></tr>';
+                botones = '</select><div class="input-group-append"><button class="btn btn-aceptar-sm" type="button">&radic;</button><button class="btn btn-cancelar-sm" type="button">&Chi;</button></div></div></div></td></tr>';
             tfoot.children('tr').remove();
             $.get('http://localhost:8080/ReForms_Provider/wr/multiservicios/obtenerMultiserviciosDisponibles/' + siniestro.id, function(data, status) {
                 if (status == "success") {
@@ -1063,26 +1150,65 @@ $(document).ready(function() {
         }
     }
     
+    function tarea_actualizar_click() {
+        if (!edicion) {
+            var padre_estado = componentes.tareas.seleccionada.header.children('div.container-fluid').children('div.row').children('div.col-4').children('input.tarea-estado').parent(),
+                importe = componentes.tareas.seleccionada.body.children('div.container-fluid').children('div.row').children('div.col-4').children('div').children('div.tarea-importe'),
+                opcion;
+            edicion = true;
+            padre_estado.children('input.tarea-estado').remove();
+            padre_estado.append('<select class="tarea-estado form-control custom-select-lg custom-select"></select>');
+            opcion = '<option value=' + 0 + '>pendiente</option>';
+            padre_estado.children('select.tarea-estado').append(opcion);
+            opcion = '<option value=' + 1 + '>en proceso</option>';
+            padre_estado.children('select.tarea-estado').append(opcion);
+            opcion = '<option value=' + 2 + '>finalizada</option>';
+            padre_estado.children('select.tarea-estado').append(opcion);
+            opcion = '<option value=' + 3 + '>anulada</option>';
+            padre_estado.children('select.tarea-estado').append(opcion);
+            padre_estado.children('select.tarea-estado').children('option').eq(tareas.tareaSeleccionada.estado).prop('selected', true);
+            componentes.tareas.seleccionada.body.children('div.container-fluid').children('div.row').children('div.col-8').children('textarea.tarea-observaciones').prop('readonly', false);
+            if (!(tareas.tareaSeleccionada.trabajo.cantidadMin && tareas.tareaSeleccionada.trabajo.cantidadMin != null)) {
+                componentes.tareas.seleccionada.body.children('div.container-fluid').children('div.row').children('div.col-4').children('div.tarea-cantidad').children('input[type="number"]').prop('readonly', false);
+                importe.children('input[type="text"]').remove();
+                importe.prepend('<input class="form-control" type="number" min="0.0" step="0.01"/>');
+                importe.children('input[type="number"]').val(tareas.tareaSeleccionada.importe.toFixed(2));
+            }
+            componentes.tareas.botones.children('button').not('button[name="tarea_borrar"]').prop('disabled', true);
+            componentes.tareas.botones.children('button[name="tarea_borrar"]').hide();
+            componentes.tareas.seleccionada.botones.show();
+            padre_estado.children('select.tarea-estado').focus();
+        }
+    }
+    
     function tarea_aceptar_click() {
         var estado = componentes.tareas.seleccionada.header.children('div.container-fluid').children('div.row').children('div.col-4').children('select.tarea-estado'),
             observaciones = componentes.tareas.seleccionada.body.children('div.container-fluid').children('div.row').children('div.col-8').children('textarea.tarea-observaciones'),
-            oaux;
+            cantidad = componentes.tareas.seleccionada.body.children('div.container-fluid').children('div.row').children('div.col-4').children('div.tarea-cantidad').children('input[type="number"]'),
+            importe = componentes.tareas.seleccionada.body.children('div.container-fluid').children('div.row').children('div.col-4').children('div').children('div.tarea-importe'),
+            oaux = '', caux = false;
         if (tareas.tareaSeleccionada.observaciones && tareas.tareaSeleccionada.observaciones != null) {
             oaux = tareas.tareaSeleccionada.observaciones;
-        } else {
-            oaux = '';
         }
-        if (estado.val() != tareas.tareaSeleccionada.estado || observaciones.val() != oaux) {
+        if (tareas.tareaSeleccionada.trabajo.cantidadMin && tareas.tareaSeleccionada.trabajo.cantidadMin != null) {
+            caux = true;
+        }
+        if (!caux || estado.val() != tareas.tareaSeleccionada.estado || observaciones.val() != oaux) {
             var temporal = new Tarea();
             temporal.id = tareas.tareaSeleccionada.id;
-            temporal.cantidad = tareas.tareaSeleccionada.cantidad;
             temporal.estado = Number(estado.val());
             temporal.observaciones = observaciones.val() != '' ? observaciones.val() : null;
             temporal.siniestro = tareas.tareaSeleccionada.siniestro;
             temporal.trabajo = tareas.tareaSeleccionada.trabajo;
             temporal.ampliacion = tareas.tareaSeleccionada.ampliacion ? tareas.tareaSeleccionada.ampliacion : null;
             temporal.fechaAmpliacion = tareas.tareaSeleccionada.fechaAmpliacion ? tareas.tareaSeleccionada.fechaAmpliacion : null;
-            temporal.importe = tareas.tareaSeleccionada.importe;
+            if (caux) {
+                temporal.cantidad = tareas.tareaSeleccionada.cantidad;
+                temporal.importe = tareas.tareaSeleccionada.importe;
+            } else {
+                temporal.cantidad = cantidad.val();
+                temporal.importe = Number(importe.children('input[type="number"]').val());
+            }
             $.ajax({
                 url: 'http://localhost:8080/ReForms_Provider/wr/tarea/actualizarTarea/' + temporal.id,
                 dataType: 'json',
@@ -1103,12 +1229,20 @@ $(document).ready(function() {
         } else {
             componentes.tareas.seleccionada.botones.children('div.row').children('div.col-6').children('button.tarea-cancelar').click();
         }
+        
     }
     
     function tarea_cancelar_click() {
         var observaciones = componentes.tareas.seleccionada.body.children('div.container-fluid').children('div.row').children('div.col-8').children('textarea.tarea-observaciones'),
             padre_estado = componentes.tareas.seleccionada.header.children('div.container-fluid').children('div.row').children('div.col-4').children('select.tarea-estado').parent();
         edicion = false;
+        if (!(tareas.tareaSeleccionada.trabajo.cantidadMin && tareas.tareaSeleccionada.trabajo.cantidadMin != null)) {
+            var importe = componentes.tareas.seleccionada.body.children('div.container-fluid').children('div.row').children('div.col-4').children('div').children('div.tarea-importe');
+            componentes.tareas.seleccionada.body.children('div.container-fluid').children('div.row').children('div.col-4').children('div.tarea-cantidad').children('input[type="number"]').prop('readonly', true).val(tareas.tareaSeleccionada.cantidad);
+            importe.children('input[type="number"]').remove();
+            importe.prepend('<input class="form-control" type="text" readonly/>');
+            importe.children('input[type="text"]').val(tareas.tareaSeleccionada.importe.toFixed(2));
+        }
         padre_estado.children('select.tarea-estado').remove();
         padre_estado.append('<input class="tarea-estado form-control form-control-lg" type="text" maxlength="10" readonly/>');
         switch (tareas.tareaSeleccionada.estado) {
@@ -1149,6 +1283,9 @@ $(document).ready(function() {
         t.siniestro.poliza.cliente.aseguradora.logo = null;
         t.siniestro.peritoOriginal.aseguradora.logo = null;
         t.cantidad = componentes.tareas.nueva.body.children('div.container-fluid').children('div.row').children('div.col-4').children('div.tarea-cantidad').children('input[type="number"]').val();
+        if (!(t.trabajo.cantidadMin && t.trabajo.cantidadMin != null)) {
+            t.importe = componentes.tareas.nueva.body.children('div.container-fluid').children('div.row').children('div.col-4').children('div').children('div.tarea-importe').children('input[type="number"]').val();
+        }
         t.observaciones = componentes.tareas.nueva.body.children('div.container-fluid').children('div.row').children('div.col-8').children('textarea.tarea-observaciones').val();
         if (t.observaciones == '') {
             t.observaciones = null;
@@ -1163,7 +1300,6 @@ $(document).ready(function() {
             success: function(data, textStatus, jQxhr){
                 componentes.tareas.nueva.botones.children('div.row').children('div.col-6').children('button.tarea-cancelar').click();
                 $.get('http://localhost:8080/ReForms_Provider/wr/tarea/obtenerTareas/' + siniestro.id, respuesta_obtenerTareas, 'json');
-                $.get('http://localhost:8080/ReForms_Provider/wr/siniestro/consultarEstado/' + siniestro.id, respuesta_consultarEstado, 'text');
             },
             error: function(jQxhr, textStatus, errorThrown){
                 alerta('Error en proveedor', 'no ha sido posible agregar la tarea');
@@ -1184,29 +1320,6 @@ $(document).ready(function() {
         edicion = false;
     }
     
-    function tarea_actualizar_click() {
-        if (!edicion) {
-            var opcion, padre_estado = componentes.tareas.seleccionada.header.children('div.container-fluid').children('div.row').children('div.col-4').children('input.tarea-estado').parent();
-            edicion = true;
-            padre_estado.children('input.tarea-estado').remove();
-            padre_estado.append('<select class="tarea-estado form-control custom-select-lg custom-select"></select>');
-            opcion = '<option value=' + 0 + '>pendiente</option>';
-            padre_estado.children('select.tarea-estado').append(opcion);
-            opcion = '<option value=' + 1 + '>en proceso</option>';
-            padre_estado.children('select.tarea-estado').append(opcion);
-            opcion = '<option value=' + 2 + '>finalizada</option>';
-            padre_estado.children('select.tarea-estado').append(opcion);
-            opcion = '<option value=' + 3 + '>anulada</option>';
-            padre_estado.children('select.tarea-estado').append(opcion);
-            padre_estado.children('select.tarea-estado').children('option').eq(tareas.tareaSeleccionada.estado).prop('selected', true);
-            componentes.tareas.seleccionada.body.children('div.container-fluid').children('div.row').children('div.col-8').children('textarea.tarea-observaciones').prop('readonly', false);
-            componentes.tareas.botones.children('button').not('button[name="tarea_borrar"]').prop('disabled', true);
-            componentes.tareas.botones.children('button[name="tarea_borrar"]').hide();
-            componentes.tareas.seleccionada.botones.show();
-            padre_estado.children('select.tarea-estado').focus();
-        }
-    }
-    
     function tarea_ampliar_click() {
         alert('tarea_ampliar_click()');
     }
@@ -1215,11 +1328,28 @@ $(document).ready(function() {
         alert('tarea_borrar_click()');
     }
     
-    function siniestro_contacto_telefono1_keyup() {
-        if ($(this).val() != '' && telefono_valido($(this).val())) {
-            componentes.contactos.botones.children('button[name="siniestro_contacto_aceptar"]').prop('disabled', false);
+    function accion_fecha_nueva_change() {
+        var aceptar = componentes.botonera.acciones.children('div.contenedor').children('div.accion').children('div.container-fluid').children('div.row').children('div.botones').children('button.btn-accion-aceptar');
+        if ($(this).val() != '') {
+            var fn = new Date($(this).val()),
+                fa = new Date(siniestro.fechaRegistro.substring(0, siniestro.fechaRegistro.indexOf('T')));
+            if (fn > fa) {
+                aceptar.prop('disabled', false);
+            } else {
+                aceptar.prop('disabled', true);
+                alerta('Fecha de replanificacion invalida', 'la fecha de replanificacion debe ser porterior a la fecha actual del sineistro');
+            }
         } else {
-            componentes.contactos.botones.children('button[name="siniestro_contacto_aceptar"]').prop('disabled', true);
+            aceptar.prop('disabled', true);
+        }
+    }
+    
+    function accion_perito_nuevo_change() {
+        var aceptar = componentes.botonera.acciones.children('div.contenedor').children('div.accion').children('div.container-fluid').children('div.row').children('div.botones').children('button.btn-accion-aceptar');
+        if ($(this).val() != -1) {
+            aceptar.prop('disabled', false);
+        } else {
+            aceptar.prop('disabled', true);
         }
     }
     
@@ -1326,7 +1456,7 @@ $(document).ready(function() {
         var cantidad = componentes.tareas.nueva.body.children('div.container-fluid').children('div.row').children('div.col-4').children('div.tarea-cantidad'),
             cantidad_valor = cantidad.children('input[type="number"]'),
             cantidad_unidad = cantidad.children('div.input-group-append').children('span.input-group-text'),
-            importe = componentes.tareas.nueva.body.children('div.container-fluid').children('div.row').children('div.col-4').children('div').children('div.tarea-importe').children('input[type="text"]'),
+            importe = componentes.tareas.nueva.body.children('div.container-fluid').children('div.row').children('div.col-4').children('div').children('div.tarea-importe'),
             descripcion = componentes.tareas.nueva.body.children('div.container-fluid').children('div.row').children('div.col-8').children('input.tarea-descripcion');
         if ($(this).val() != null && tareas.trabajos.length > 0) {
             var i = $(this).val();
@@ -1337,26 +1467,53 @@ $(document).ready(function() {
                 case 2: cantidad_unidad.html('m<sup>2</sup>'); break;
                 case 3: cantidad_unidad.html('m<sup>3</sup>'); break;
                 case 4: cantidad_unidad.html('h'); break;
+                case 5: cantidad_unidad.html('km'); break;
                 default: cantidad_unidad.html('');
+            }
+            importe.children('input').remove();
+            if (tareas.trabajos[i].cantidadMin && tareas.trabajos[i].cantidadMin != null) {
+                importe.prepend('<input class="form-control" type="text" readonly/>');
+            } else {
+                importe.prepend('<input class="form-control" type="number" min="0.0" step="0.01" val="0.0"/>');
             }
         } else {
             descripcion.val('');
             cantidad_unidad.html('');
         }
-        importe.val('');
         cantidad_valor.val('').keyup();
         cantidad_valor.focus();
     }
     
+    function siniestro_contacto_telefono1_keyup() {
+        if ($(this).val() != '' && telefono_valido($(this).val())) {
+            componentes.contactos.botones.children('button[name="siniestro_contacto_aceptar"]').prop('disabled', false);
+        } else {
+            componentes.contactos.botones.children('button[name="siniestro_contacto_aceptar"]').prop('disabled', true);
+        }
+    }
+    
     function tarea_cantidad_keyup() {
-        var importe = componentes.tareas.nueva.body.children('div.container-fluid').children('div.row').children('div.col-4').children('div').children('div.tarea-importe').children('input[type="text"]'),
+        var importe = componentes.tareas.nueva.body.children('div.container-fluid').children('div.row').children('div.col-4').children('div').children('div.tarea-importe'),
             codigo = componentes.tareas.nueva.header.children('div.container-fluid').children('div.row').children('div.col-4').children('select.tarea-codigo');
-        if ($(this).val() != '' && $(this).val() > 0 && codigo.val() != null) {
-            componentes.tareas.nueva.botones.children('div.row').children('div.col-6').children('button.tarea-aceptar').prop('disabled', false);
-            importe.val(calcular_importe($(this).val(), tareas.trabajos[codigo.val()]).toFixed(2));
+        if (codigo.val() != null) {
+            if (tareas.trabajos[codigo.val()].cantidadMin && tareas.trabajos[codigo.val()].cantidadMin != null) {
+                if ($(this).val() != '' && $(this).val() > 0) {
+                    componentes.tareas.nueva.botones.children('div.row').children('div.col-6').children('button.tarea-aceptar').prop('disabled', false);
+                    importe.children('input[type="text"]').val(calcular_importe($(this).val(), tareas.trabajos[codigo.val()]).toFixed(2));
+                } else {
+                    componentes.tareas.nueva.botones.children('div.row').children('div.col-6').children('button.tarea-aceptar').prop('disabled', true);
+                    importe.children('input[type="text"]').val('');
+                }
+            } else {
+                if ($(this).val() != '' && $(this).val() > 0) {
+                    componentes.tareas.nueva.botones.children('div.row').children('div.col-6').children('button.tarea-aceptar').prop('disabled', false);
+                } else {
+                    componentes.tareas.nueva.botones.children('div.row').children('div.col-6').children('button.tarea-aceptar').prop('disabled', true);
+                }
+            }
         } else {
             componentes.tareas.nueva.botones.children('div.row').children('div.col-6').children('button.tarea-aceptar').prop('disabled', true);
-            importe.val('');
+            importe.children('input').val('');
         }
     }
     
@@ -1367,6 +1524,65 @@ $(document).ready(function() {
             alerta('Error 404', 'no se pudo cargar poliza.html');
             sessionStorage.removeItem('vuelta');
             sessionStorage.removeItem('poliza');
+        }
+    }
+    
+    function cargar_replanificacion(responseTxt, statusTxt) {
+        if (statusTxt == 'success') {
+            var row = componentes.botonera.acciones.children('div.contenedor').children('div.accion').children('div.container-fluid').children('div.row');
+            edicion = true;
+            row.children('div.botones').children('button.btn-accion-aceptar').prop('disabled', true).click(replanificacion_aceptar_click);
+            row.children('div.botones').children('button.btn-accion-cancelar').click(replanificacion_cancelar_click);
+            row.children('div.nueva').children('div.form-group').children('input.accion-fecha-nueva').val(siniestro.fechaRegistro.slice(0, siniestro.fechaRegistro.indexOf('T'))).change(accion_fecha_nueva_change);
+            row.children('div.actual').children('div.form-group').children('input.accion-fecha-actual').val(siniestro.fechaRegistro.slice(0, siniestro.fechaRegistro.indexOf('T')));
+            componentes.botonera.acciones.slideDown();
+            $('#ventana').children('div.container-fluid').children('div.ocultable').children('div.ocultable-contenido').slideUp();
+            row.children('div.nueva').children('div.form-group').children('input.accion-fecha-nueva').focus();
+        } else {
+            componentes.botonera.acciones.children('div.contenedor').children('div.accion').remove();
+            alerta('Error 404', 'no se pudo cargar replanificacion.html');
+        }
+    }
+    
+    function cargar_reasignacion(responseTxt, statusTxt) {
+        if (statusTxt == 'success') {
+            var i, nombre, actual,
+                row = componentes.botonera.acciones.children('div.contenedor').children('div.accion').children('div.container-fluid').children('div.row');
+                select = row.children('div.nuevo').children('div.form-group').children('select.accion-perito-nuevo');
+            edicion = true;
+            row.children('div.botones').children('button.btn-accion-aceptar').prop('disabled', true).click(reasignacion_aceptar_click);
+            row.children('div.botones').children('button.btn-accion-cancelar').click(reasignacion_cancelar_click);
+            if (adicional.reasignaciones.listaReasignaciones.length == 0) {
+                nombre = siniestro.peritoOriginal.nombre + ' ' +  siniestro.peritoOriginal.apellido1;
+                actual = siniestro.peritoOriginal.id;
+            } else {
+                nombre = adicional.reasignaciones.listaReasignaciones[0].perito.nombre + ' ' + adicional.reasignaciones.listaReasignaciones[0].perito.apellido1;
+                actual = adicional.reasignaciones.listaReasignaciones[0].perito.id;
+            }
+            row.children('div.actual').children('div.form-group').children('input.accion-perito-actual').val(nombre);
+            $.get("http://localhost:8080/ReForms_Provider/wr/perito/buscarPeritoPorAseguradora/" + siniestro.poliza.cliente.aseguradora.id, function(data, status) {
+                if (status == "success") {
+                    if (data.length > 1) {
+                        for (i = 0; i < data.length; i++) {
+                            if (data[i].id != actual) {
+                                nombre = data[i].nombre + ' ' + data[i].apellido1;
+                                select.append('<option value=' + data[i].id + '>' + nombre + '</option>');
+                            }
+                        }
+                    } else {
+                        select.append('<option value=-1>sin peritos disponibles</option>');
+                    }
+                    select.children('option:first').prop('selected', true);
+                    $('#ventana').children('div.container-fluid').children('div.ocultable').children('div.ocultable-contenido').slideUp();
+                    componentes.botonera.acciones.slideDown();
+                    select.change(accion_perito_nuevo_change);
+                    select.change();
+                    select.focus();
+                }
+            }, "json");
+        } else {
+            componentes.botonera.acciones.children('div.contenedor').children('div.accion').remove();
+            alerta('Error 404', 'no se pudo cargar reasignacion.html');
         }
     }
     
@@ -1416,6 +1632,7 @@ $(document).ready(function() {
                     case 2: cantidad_unidad.html('m<sup>2</sup>'); break;
                     case 3: cantidad_unidad.html('m<sup>3</sup>'); break;
                     case 4: cantidad_unidad.html('h'); break;
+                    case 5: cantidad_unidad.html('km'); break;
                     default: cantidad_unidad.html('');
                 }
             } else {
@@ -1485,6 +1702,7 @@ $(document).ready(function() {
             }, 'json');
             componentes.tareas.nueva.header.children('div.container-fluid').children('div.row').children('div.col-4').children('input.tarea-estado').val('pendiente');
             componentes.tareas.nueva.body.children('div.container-fluid').children('div.row').children('div.col-4').children('div.tarea-cantidad').children('input[type="number"]').prop('readonly', false).keyup(tarea_cantidad_keyup);
+            componentes.tareas.nueva.body.children('div.container-fluid').children('div.row').children('div.col-4').children('div.tarea-cantidad').children('input[type="number"]').click(tarea_cantidad_keyup);
             componentes.tareas.nueva.body.children('div.container-fluid').children('div.row').children('div.col-8').children('textarea.tarea-observaciones').prop('readonly', false);
             componentes.tareas.nueva.botones.children('div.row').children('div.col-6').children('button.tarea-aceptar').prop('disabled', true).click(tarea_nueva_aceptar_click);
             componentes.tareas.nueva.botones.children('div.row').children('div.col-6').children('button.tarea-cancelar').click(tarea_nueva_cancelar_click);
@@ -1564,19 +1782,20 @@ $(document).ready(function() {
         }
     }
     
-    function respuesta_obtenerTareas(data, status) {
+    function respuesta_consultarEstado(data, status) {
         if (status == "success") {
-            tareas.listaTareas = data;
-            mostrar_tareas(tareas.listaTareas, componentes.tareas.lista);
+            siniestro.estado = Number(data);
+            actualizar_estado_siniestro(siniestro.estado);
         } else {
             alert('fallo en el proveedor');
         }
     }
     
-    function respuesta_consultarEstado(data, status) {
+    function respuesta_obtenerTareas(data, status) {
         if (status == "success") {
-            siniestro.estado = Number(data);
-            actualizar_estado_siniestro(siniestro.estado);
+            tareas.listaTareas = data;
+            mostrar_tareas(tareas.listaTareas, componentes.tareas.lista);
+            $.get('http://localhost:8080/ReForms_Provider/wr/siniestro/consultarEstado/' + siniestro.id, respuesta_consultarEstado, 'text');
         } else {
             alert('fallo en el proveedor');
         }
@@ -1618,6 +1837,7 @@ $(document).ready(function() {
     } else {
         componentes.siniestro.contenido.children('div.afectado').hide();
     }
+    componentes.botonera.botones.children('button[name="borrar"]').click(borrar_click);
     componentes.botonera.botones.children('button[name="replanificar"]').click(replanificar_click);
     componentes.botonera.botones.children('button[name="reasignar"]').click(reasignar_click);
     componentes.botonera.botones.children('button[name="cerrar"]').click(cerrar_click);
@@ -1677,6 +1897,7 @@ $(document).ready(function() {
     $('#ventana').children('div.container-fluid').find('button.btn-editar').css({'border-color':colorBorde, 'background-color':colorFondo});
     $('#ventana').children('div.container-fluid').children('div.ocultable').css('border-color', colorBorde);
     $('#ventana').children('div.container-fluid').children('div.ocultable').children('div.ocultable-contenido').hide();
+    componentes.botonera.botones.children('button.btn-botonera').css({'border-color':invertir_color(colorBorde), 'background-color':invertir_color(colorFondo)});
     componentes.siniestro.contenido.show();
     componentes.siniestro.estado.hide();
     componentes.siniestro.estado.children('input[name="estado"]').css({'border-color':colorBorde, 'background-color':sinColor});

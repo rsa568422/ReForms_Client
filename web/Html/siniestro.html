@@ -60,8 +60,6 @@
     
     #ventana div.container-fluid div.botonera div.acciones button.btn-botonera {
         margin-right: 1%;
-        border-color: rgb(106, 90, 205);
-        background-color: rgb(106, 90, 205, 0.1);
     }
     
     #ventana div.container-fluid div.botonera div.volver {
@@ -162,6 +160,17 @@
         min-width: 96px;
     }
     
+    #ventana div.container-fluid div.botonera div.acciones button[name="borrar"] {
+        margin-right: 1%;
+        font-weight: bold;
+        text-transform: uppercase;
+        min-width: 96px;
+        color: rgb(139, 0, 0);
+        border-color: rgb(255, 0, 0);
+        background-color: rgb(255, 0, 0, 0.4);
+        box-shadow: 0px 0px 5px 5px rgb(255, 0, 0, 0.4);
+    }
+    
     button.btn-borrar {
         position: absolute;
         right: 0px;
@@ -227,6 +236,11 @@
         margin-bottom: 2%;
     }
     
+    #ventana div.container-fluid div.acciones div.contenedor div.accion div.container-fluid div.row div.botones button.btn-aceptar-sm,
+    #ventana div.container-fluid div.acciones div.contenedor div.accion div.container-fluid div.row div.botones button.btn-cancelar-sm {
+        margin-top: 1.95rem;
+    }
+    
     #ventana div.container-fluid div.adicional div.ocultable-contenido div.recursos div.tabla button[name="recurso_nuevo"] {
         margin-bottom: 0px;
     }
@@ -262,12 +276,16 @@
 <script src="Entidad/Tarea.js"></script>
 <script src="Entidad/Recurso.js"></script>
 <script src="Entidad/Adjunto.js"></script>
+<script src="Entidad/Replanificacion.js"></script>
+<script src="Entidad/Reasignacion.js"></script>
+<script src="Entidad/Perito.js"></script>
 <script src="Controlador/ControladorSiniestro.js"></script>
 
 <div id="ventana">
     <div class="container-fluid">
         <div class="botonera row">
             <div class="acciones col-10">
+                <button name="borrar" class="btn" type="button">borrar</button>
                 <button name="replanificar" class="btn btn-botonera" type="button">replanificar</button>
                 <button name="reasignar" class="btn btn-botonera" type="button">reasignar</button>
                 <button name="cerrar" class="btn btn-botonera" type="button">cerrar</button>
@@ -279,7 +297,7 @@
             </div>
         </div>
         <div class="acciones row">
-            <div class="contenedor col-12">acciones</div>
+            <div class="contenedor col-12"></div>
         </div>
         <div class="siniestro ocultable">
             <div class="ocultable-titulo">
@@ -460,7 +478,7 @@
             </div>
             <div class="ocultable-contenido">
                 <div class="row">
-                    <div class="col-12">Tabla con los eventos</div>
+                    <div class="col-12"><p style="margin: 1%"><h1>en construccion</h1></p></div>
                 </div>
             </div>
         </div>

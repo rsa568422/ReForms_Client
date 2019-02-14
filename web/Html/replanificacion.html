@@ -1,0 +1,26 @@
+<script>
+    if (!sessionStorage.usuario) {
+        window.location.href = "http://localhost:8080/ReForms_Client/";
+    }
+</script>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="actual col-xl-2 col-4">
+            <div class="form-group">
+                <h5>Fecha actual</h5>
+                <input class="accion-fecha-actual form-control" type="date" readonly/>
+            </div>
+        </div>
+        <div class="nueva col-xl-2 col-4">
+            <div class="form-group">
+                <h5>Nueva fecha</h5>
+                <input class="accion-fecha-nueva form-control" type="date"/>
+            </div>
+        </div>
+        <div class="botones col-xl-2 col-4">
+            <button class="btn-accion-aceptar btn btn-aceptar-sm">&radic;</button>
+            <button class="btn-accion-cancelar btn btn-cancelar-sm">&Chi;</button>
+        </div>
+    </div>
+</div>
