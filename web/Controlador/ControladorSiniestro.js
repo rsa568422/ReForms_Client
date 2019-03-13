@@ -564,23 +564,39 @@ $(document).ready(function() {
     
     function facturar_click() {
         if (!edicion) {
-            if (confirm('Se cambiara el estado del siniestro a facturado de forma permanente')) {
-                $.ajax({
-                    url: 'http://localhost:8080/ReForms_Provider/wr/siniestro/facturarSiniestro/' + siniestro.id,
-                    dataType: 'json',
-                    type: 'put',
-                    contentType: 'application/json;charset=UTF-8',
-                    data: JSON.stringify(siniestro),
-                    processData: false,
-                    success: function(data, textStatus, jQxhr){
-                        $.get('http://localhost:8080/ReForms_Provider/wr/tarea/obtenerTareas/' + siniestro.id, respuesta_obtenerTareas, 'json');
-                    },
-                    error: function(jQxhr, textStatus, errorThrown){
-                        alerta('Error en proveedor', 'no ha sido posible marcar como facturado el siniestro');
-                    }
-                });
-            }
+            componentes.botonera.acciones.children('div.contenedor').children('div.accion').remove();
+            componentes.botonera.acciones.children('div.contenedor').append('<div class="accion"></div>');
+            componentes.botonera.acciones.children('div.contenedor').children('div.accion').load('Html/facturacion.html', cargar_facturacion);
         }
+    }
+    
+    function facturacion_aceptar_click() {
+        if (confirm('Se cambiara el estado del siniestro a facturado de forma permanente')) {
+            var entrada = componentes.botonera.acciones.children('div.contenedor').children('div.accion').children('div.container-fluid').children('div.row').children('div.albaran').children('div.form-group').children('input.form-control');
+            siniestro.albaran = entrada.val() != '' ? Number(entrada.val()) : null;
+            $.ajax({
+                url: 'http://localhost:8080/ReForms_Provider/wr/siniestro/facturarSiniestro/' + siniestro.id,
+                dataType: 'json',
+                type: 'put',
+                contentType: 'application/json;charset=UTF-8',
+                data: JSON.stringify(siniestro),
+                processData: false,
+                success: function(data, textStatus, jQxhr){
+                    $.get('http://localhost:8080/ReForms_Provider/wr/tarea/obtenerTareas/' + siniestro.id, respuesta_obtenerTareas, 'json');
+                    componentes.siniestro.contenido.children('div.informacion').children('div.container-fluid').children('div.row').children('div.siniestro_albaran ').children('div.form-group').children('input[name="siniestro_albaran"]').val(siniestro.albaran);
+                },
+                error: function(jQxhr, textStatus, errorThrown){
+                    alerta('Error en proveedor', 'no ha sido posible marcar como facturado el siniestro');
+                    siniestro.albaran = null;
+                }
+            });
+            $(this).siblings('button.btn-accion-cancelar').click();
+        }
+    }
+    
+    function facturacion_cancelar_click() {
+        edicion = false;
+        componentes.botonera.acciones.slideUp();
     }
     
     function cobrar_click() {
@@ -790,7 +806,7 @@ $(document).ready(function() {
                 botones = '</select><div class="input-group-append"><button class="btn btn-aceptar-sm" type="button">&radic;</button><button class="btn btn-cancelar-sm" type="button">&Chi;</button></div></div></div></td></tr>';
             tfoot.children('tr').remove();
             $.get('http://localhost:8080/ReForms_Provider/wr/multiservicios/obtenerMultiserviciosDisponibles/' + siniestro.id, function(data, status) {
-                if (status == "success") {
+                if (status == 'success') {
                     edicion = true;
                     adicional.participantes.multiserviciosDisponibles = data;
                     if (adicional.participantes.multiserviciosDisponibles.length > 0) {
@@ -1137,15 +1153,20 @@ $(document).ready(function() {
                 componentes.tareas.seleccionada.body = $(this).siblings('div.card-body');
                 componentes.tareas.seleccionada.footer = $(this).siblings('div.card-footer');
                 componentes.tareas.seleccionada.botones = componentes.tareas.seleccionada.body.children('div.container-fluid').children('div.row').children('div.col-4').children('div.botones');
-                $(this).css('background-color', colorBorde);
                 tarea.siblings('div.tarea').children('div.contenedor').children('div.card').children('div.card-header').css('background-color', colorFondo);
                 if (siniestro.estado < 4) {
-                    componentes.tareas.botones.children('button').not('button[name="tarea_nueva"]').show();
+                    componentes.tareas.botones.children('button').not('button[name="tarea_ampliar"]').show();
+                    if (tareas.tareaSeleccionada.trabajo.cantidadMin && tareas.tareaSeleccionada.trabajo.cantidadMin != null) {
+                        componentes.tareas.botones.children('button[name="tarea_ampliar"]').show();
+                    } else {
+                        componentes.tareas.botones.children('button[name="tarea_ampliar"]').hide();
+                    }
                 }
                 if (tareas.tareaSeleccionada.fechaAmpliacion != null && tareas.tareaSeleccionada.fechaAmpliacion != '') {
                     componentes.tareas.seleccionada.footer.slideDown();
                 }
                 componentes.tareas.seleccionada.header.parent('div.card').parent('div.contenedor').parent('div.tarea').siblings('div.tarea').children('div.contenedor').children('div.card').children('div.card-footer').slideUp();
+                $(this).css('background-color', colorBorde);
             }
         }
     }
@@ -1313,6 +1334,9 @@ $(document).ready(function() {
         componentes.tareas.nueva.header = null;
         componentes.tareas.nueva.body = null;
         componentes.tareas.nueva.botones = null
+        
+        
+        
         if (tareas.listaTareas.length == 0) {
             componentes.tareas.lista.append('<div class="sin-tareas col-12"><h1>Sin tareas registradas</h1></div>');
             componentes.tareas.lista.children('div.sin-tareas').css({'background-color':colorFondo, 'border-color':colorBorde});
@@ -1321,7 +1345,8 @@ $(document).ready(function() {
     }
     
     function tarea_ampliar_click() {
-        alert('tarea_ampliar_click()');
+        alert('tarea_ampliar_click()\n' + componentes.tareas.seleccionada.footer.html());
+        componentes.tareas.seleccionada.footer.slideDown();
     }
     
     function tarea_borrar_click() {
@@ -1350,6 +1375,14 @@ $(document).ready(function() {
             aceptar.prop('disabled', false);
         } else {
             aceptar.prop('disabled', true);
+        }
+    }
+    
+    function accion_albaran_change() {
+        if ($(this).val() == '' || $(this).val() < 1) {
+            componentes.botonera.acciones.children('div.contenedor').children('div.accion').children('div.container-fluid').children('div.row').children('div.botones').children('button.btn-accion-aceptar').prop('disabled', true);
+        } else {
+            componentes.botonera.acciones.children('div.contenedor').children('div.accion').children('div.container-fluid').children('div.row').children('div.botones').children('button.btn-accion-aceptar').prop('disabled', false);
         }
     }
     
@@ -1430,20 +1463,28 @@ $(document).ready(function() {
                 codigo = $(this).parent('div.col-4').siblings('div.col-4').children('select.tarea-codigo');
             $.get('http://localhost:8080/ReForms_Provider/wr/trabajo/obtenerTrabajosPorGremio/' + aseguradora + '/' + gremio, function (data, status) {
                 if (status == 'success') {
-                    var i;
+                    var i, j, existe, opcion;
                     tareas.trabajos = data;
                     codigo.children('option').remove();
-                    if (tareas.trabajos.length > 0) {
-                        opcion = '<option value=' + 0 + ' selected>' + tareas.trabajos[0].codigo + '</option>';
-                        codigo.append(opcion);
-                        for (i = 1; i < tareas.trabajos.length; i++) {
+                    for (i = 0; i < tareas.trabajos.length; i++) {
+                        existe = false;
+                        j = 0;
+                        while (!existe && j < tareas.listaTareas.length) {
+                            if (tareas.trabajos[i].id == tareas.listaTareas[j].trabajo.id) {
+                                existe = true;
+                            }
+                            j++;
+                        }
+                        if (!existe) {
                             opcion = '<option value=' + i + '>' + tareas.trabajos[i].codigo + '</option>';
                             codigo.append(opcion);
                         }
-                        codigo.change();
-                    } else {
+                    }
+                    if (codigo.children('option').length == 0) {
                         alerta('Sin trabajos', 'no hay trabajos registrados para este gremio con la aseguradora actual');
                         codigo.change();
+                    } else {
+                        codigo.children('option').eq(0).prop('selected', true);
                     }
                 } else {
                     alert('fallo en el proveedor');
@@ -1561,7 +1602,7 @@ $(document).ready(function() {
             }
             row.children('div.actual').children('div.form-group').children('input.accion-perito-actual').val(nombre);
             $.get("http://localhost:8080/ReForms_Provider/wr/perito/buscarPeritoPorAseguradora/" + siniestro.poliza.cliente.aseguradora.id, function(data, status) {
-                if (status == "success") {
+                if (status == 'success') {
                     if (data.length > 1) {
                         for (i = 0; i < data.length; i++) {
                             if (data[i].id != actual) {
@@ -1583,6 +1624,22 @@ $(document).ready(function() {
         } else {
             componentes.botonera.acciones.children('div.contenedor').children('div.accion').remove();
             alerta('Error 404', 'no se pudo cargar reasignacion.html');
+        }
+    }
+    
+    function cargar_facturacion(responseTxt, statusTxt) {
+        if (statusTxt == 'success') {
+            var row = componentes.botonera.acciones.children('div.contenedor').children('div.accion').children('div.container-fluid').children('div.row');
+            edicion = true;
+            row.children('div.albaran').children('div.form-group').children('input.form-control').val('').change(accion_albaran_change);
+            row.children('div.albaran').children('div.form-group').children('input.form-control').val('').keyup(accion_albaran_change);
+            row.children('div.botones').children('button.btn-accion-aceptar').prop('disabled', true).click(facturacion_aceptar_click);
+            row.children('div.botones').children('button.btn-accion-cancelar').click(facturacion_cancelar_click);
+            componentes.botonera.acciones.slideDown();
+            $('#ventana').children('div.container-fluid').children('div.ocultable').children('div.ocultable-contenido').slideUp();
+        } else {
+            componentes.botonera.acciones.children('div.contenedor').children('div.accion').remove();
+            alerta('Error 404', 'no se pudo cargar facturacion.html');
         }
     }
     
@@ -1715,7 +1772,7 @@ $(document).ready(function() {
     
     function respuesta_obtenerUltimaReasignacion (data, status) {
         var nombre;
-        if (status == "success") {
+        if (status == 'success') {
             nombre = data.perito.nombre + ' ' + data.perito.apellido1;
             componentes.siniestro.informacion.children('div.siniestro_peritoActual').children('div.form-group').children('input[name="siniestro_peritoActual"]').val(nombre);
             nombre = siniestro.peritoOriginal.nombre + ' ' + siniestro.peritoOriginal.apellido1;
@@ -1733,7 +1790,7 @@ $(document).ready(function() {
     
     function respuesta_obtenerContactos(data, status) {
         var tbody = componentes.contactos.tabla.children('table').children('tbody');
-        if (status == "success") {
+        if (status == 'success') {
             contactos.listaContactos = data;
             mostrar_contactos(contactos.listaContactos, tbody);
         } else {
@@ -1743,7 +1800,7 @@ $(document).ready(function() {
     
     function respuesta_obtenerParticipantes(data, status) {
         var tbody = componentes.adicional.participantes.elemento.children('table').children('tbody');
-        if (status == "success") {
+        if (status == 'success') {
             adicional.participantes.listaParticipantes = data;
             mostrar_participantes(adicional.participantes.listaParticipantes, tbody);
         } else {
@@ -1753,7 +1810,7 @@ $(document).ready(function() {
     
     function respuesta_obtenerReplanificaciones(data, status) {
         var tbody = componentes.adicional.replanificaciones.elemento.children('table').children('tbody');
-        if (status == "success") {
+        if (status == 'success') {
             adicional.replanificaciones.listaReplanificaciones = data;
             actualizar_fecha_siniestro();
             mostrar_replanificaciones(adicional.replanificaciones.listaReplanificaciones, tbody);
@@ -1764,7 +1821,7 @@ $(document).ready(function() {
     
     function respuesta_obtenerReasignaciones(data, status) {
         var tbody = componentes.adicional.reasignaciones.elemento.children('table').children('tbody');
-        if (status == "success") {
+        if (status == 'success') {
             adicional.reasignaciones.listaReasignaciones = data;
             mostrar_reasignaciones(adicional.reasignaciones.listaReasignaciones, tbody);
         } else {
@@ -1774,7 +1831,7 @@ $(document).ready(function() {
     
     function respuesta_obtenerRecursos(data, status) {
         var tbody = componentes.adicional.recursos.tabla.children('table').children('tbody');
-        if (status == "success") {
+        if (status == 'success') {
             adicional.recursos.listaRecursos = data;
             mostrar_recursos(adicional.recursos.listaRecursos, tbody);
         } else {
@@ -1783,7 +1840,7 @@ $(document).ready(function() {
     }
     
     function respuesta_consultarEstado(data, status) {
-        if (status == "success") {
+        if (status == 'success') {
             siniestro.estado = Number(data);
             actualizar_estado_siniestro(siniestro.estado);
         } else {
@@ -1792,7 +1849,7 @@ $(document).ready(function() {
     }
     
     function respuesta_obtenerTareas(data, status) {
-        if (status == "success") {
+        if (status == 'success') {
             tareas.listaTareas = data;
             mostrar_tareas(tareas.listaTareas, componentes.tareas.lista);
             $.get('http://localhost:8080/ReForms_Provider/wr/siniestro/consultarEstado/' + siniestro.id, respuesta_consultarEstado, 'text');

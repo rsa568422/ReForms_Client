@@ -1,0 +1,20 @@
+<script>
+    if (!sessionStorage.usuario) {
+        window.location.href = "http://localhost:8080/ReForms_Client/";
+    }
+</script>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="albaran col-xl-2 col-4">
+            <div class="form-group">
+                <h5>Nº de albaran</h5>
+                <input class="form-control" type="number" min="0" step="1"/>
+            </div>
+        </div>
+        <div class="botones col-xl-2 col-4">
+            <button class="btn-accion-aceptar btn btn-aceptar-sm">&radic;</button>
+            <button class="btn-accion-cancelar btn btn-cancelar-sm">&Chi;</button>
+        </div>
+    </div>
+</div>

@@ -223,7 +223,7 @@ $(document).ready(function() {
             logo = generarLogo(aseguradoras.listaAseguradoras[i]);
             if (aseguradoras.aseguradoraSeleccionada != null && aseguradoras.aseguradoraSeleccionada.id == aseguradoras.listaAseguradoras[i].id) {
                 div.children('.seleccionada').removeClass('seleccionada');
-                logo = logo.replace('logo', "logo seleccionada");
+                logo = logo.replace('class="logo"', 'class="logo seleccionada"');
             }
             div.append(logo);
         }
@@ -263,7 +263,7 @@ $(document).ready(function() {
     
     function actualizar_tabla_siniestros(tbody, pagina) {
         $.get(establecer_ruta(pagina).recurso, function(data, status) {
-            if (status == "success") {
+            if (status == 'success') {
                 buscador.listaSiniestros = data;
                 mostrar_tabla_siniestros(tbody, buscador.listaSiniestros);
             } else {
@@ -399,10 +399,10 @@ $(document).ready(function() {
         if (telefono && direccion) {
             ruta = establecer_ruta(0);
             $.get(ruta.cuenta, function(data, status) {
-                if (status == "success") {
+                if (status == 'success') {
                     buscador.totalSiniestros = new Number(data);
                     $.get(ruta.recurso, function(data, status) {
-                        if (status == "success") {
+                        if (status == 'success') {
                             buscador.listaSiniestros = data;
                         } else {
                             buscador.listaSiniestros = [];
@@ -452,7 +452,7 @@ $(document).ready(function() {
         } else {
             aseguradoras.siniestroSeleccionado = buscador.listaSiniestros[actual.index()];
             $.get('http://localhost:8080/ReForms_Provider/wr/tarea/obtenerTareas/' + aseguradoras.siniestroSeleccionado.id, function(data, status) {
-                if (status == "success") {
+                if (status == 'success') {
                     tareas = data;
                 } else {
                     alerta('Error en proveedor', 'no ha sido posible obtener las tareas del siniestro');
@@ -545,9 +545,9 @@ $(document).ready(function() {
                                 '<input name="piso" class="form-control" type="text" maxlength="20" placeholder="piso"/>' +
                             '</div>';
                 entradas_informacion.append(entrada);
-                entradas_informacion.find('input[name="cp"]').change(comprobar_direccion);
-                entradas_informacion.find('input[name="direccion"]').change(comprobar_direccion);
-                entradas_informacion.find('input[name="numero"]').change(comprobar_direccion);
+                entradas_informacion.find('input[name="cp"]').keyup(comprobar_direccion);
+                entradas_informacion.find('input[name="direccion"]').keyup(comprobar_direccion);
+                entradas_informacion.find('input[name="numero"]').keyup(comprobar_direccion);
                 break;
             default:
                 entradas_informacion.hide();
@@ -572,10 +572,10 @@ $(document).ready(function() {
                 tabla = contenedor.children('div.resultados').children('div.col-12').children('div.tabla').children('table'),
                 ruta = establecer_ruta(0);
             $.get(ruta.cuenta, function(data, status) {
-                if (status == "success") {
+                if (status == 'success') {
                     buscador.totalSiniestros = new Number(data);
                     $.get(ruta.recurso, function(data, status) {
-                        if (status == "success") {
+                        if (status == 'success') {
                             buscador.listaSiniestros = data;
                         } else {
                             buscador.listaSiniestros = [];
@@ -633,7 +633,7 @@ $(document).ready(function() {
     // Cargar paginas y aplicar controles
     // ====================================================================== //
     $.get('http://localhost:8080/ReForms_Provider/wr/aseguradora/obtenerAseguradoras', function(data, status) {
-        if (status == "success") {
+        if (status == 'success') {
             aseguradoras.listaAseguradoras = data;
             mostrar_aseguradoras(contenedor.children('.aseguradoras'));
         }

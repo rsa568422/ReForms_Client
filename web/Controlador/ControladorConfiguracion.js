@@ -86,7 +86,7 @@ $(document).ready(function() {
     });
     
     $.get("http://localhost:8080/ReForms_Provider/wr/aseguradora/obtenerAseguradoras", function(data, status) {
-        if (status == "success") {
+        if (status == 'success') {
             var i, a = null;
             la = data;
             if (localStorage.aseguradoraPredeterminada) {

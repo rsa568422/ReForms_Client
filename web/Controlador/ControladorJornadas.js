@@ -26,15 +26,15 @@ $(document).ready(function() {
     
     function mostrar_calendario(a, m, tbody) {
         $.get('http://localhost:8080/ReForms_Provider/wr/jornada/infoMes/' + a + '/' + m, function(data, status) {
-            if (status == "success") {
+            if (status == 'success') {
                 var primero = new Number(data.slice(0, data.indexOf('/'))),
                     maximo = new Number(data.slice(data.indexOf('/') + 1, data.length)),
                     semana, actual = 1, posicion = 0;
                     
                 $.get('http://localhost:8080/ReForms_Provider/wr/jornada/contarJornadaPorMes/' + a + '/' + m, function(data, status) {
-                    if (status == "success") {
+                    if (status == 'success') {
                         $.get('http://localhost:8080/ReForms_Provider/wr/jornada/buscarJornadaPorMes/' + a + '/' + m, function(data, status) {
-                            if (status == "success") {
+                            if (status == 'success') {
                                 alert(data.length);
                             } else {
                                 alert('no llega nada');

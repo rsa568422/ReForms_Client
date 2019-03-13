@@ -250,8 +250,7 @@ $(document).ready(function() {
     }
     
     function cp_valido(cpStr) {
-        var patron = /^\d{5}$/;
-        return patron.test(cpStr);
+        return /^\d{5}$/.test(cpStr);
     }
     
     function matricula_valida(matriculaStr) {
@@ -1732,7 +1731,7 @@ $(document).ready(function() {
             vehiculo.find('input[name="matricula"]').prop('readonly', true);
             cuerpo.children('.mantenimiento').remove();
             $.get('http://localhost:8080/ReForms_Provider/wr/mantenimiento/buscarMantenimientoPorVehiculo/' + vehiculos.vehiculoSeleccionado.id, function(data, status) {
-                if (status == "success") {
+                if (status == 'success') {
                     vehiculos.listaMantenimientos = data;
                     for (i = 0; i < vehiculos.listaMantenimientos.length; i++) {
                         var fechaStr = vehiculos.listaMantenimientos[i].fecha, tipoStr;

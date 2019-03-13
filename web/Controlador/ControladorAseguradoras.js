@@ -19,7 +19,7 @@ $(document).ready(function() {
         $("#btnNuevoTrabajoCancelar").hide();
         $(".trabajo").remove();
         $.get("http://localhost:8080/ReForms_Provider/wr/trabajo/obtenerTrabajosPorGremio/" + aseguradora.id + "/" + gremio.id, function(data, status) {
-            if (status == "success") {
+            if (status == 'success') {
                 var i;
                 trabajos = data;
                 for (i = 0; i < trabajos.length; i++) {
@@ -48,7 +48,7 @@ $(document).ready(function() {
         $.get("http://localhost:8080/ReForms_Provider/wr/perito/buscarPeritoPorAseguradora/" + aseguradora.id, function(data, status) {
             var tbody = $("#peritos").find("table").children("tbody");
             tbody.children("tr").remove();
-            if (status == "success") {
+            if (status == 'success') {
                 var i;
                 peritos = data;
                 for (i = 0; i < peritos.length; i++) {
@@ -89,7 +89,7 @@ $(document).ready(function() {
             }
         }, "json");
         $.get("http://localhost:8080/ReForms_Provider/wr/gremio/obtenerGremios", function(data, status) {
-            if (status == "success") {
+            if (status == 'success') {
                 var i;
                 gremios = data;
                 $(".gremio").remove();
@@ -298,7 +298,7 @@ $(document).ready(function() {
     $("#nuevaAseguradora").hide();
     
     $.get("http://localhost:8080/ReForms_Provider/wr/aseguradora/obtenerAseguradoras", function(data, status) {
-        if (status == "success") {
+        if (status == 'success') {
             var i, a = null;
             la = data;
             if (localStorage.aseguradoraPredeterminada) {
@@ -329,7 +329,7 @@ $(document).ready(function() {
                 $("#peritos").hide();
                 $("#trabajos").hide();
                 $("#nuevaAseguradora").load("Html/aseguradora.html", function(responseTxt, statusTxt) {
-                    if(statusTxt === "success") {
+                    if(statusTxt === 'success') {
                         //comportamiento de los controles
                         $(this).find(".btn-aceptar").click(nuevaAseguradora_aceptar_click);
                         $(this).find(".btn-cancelar").click(nuevaAseguradora_cancelar_click);
@@ -438,7 +438,7 @@ $(document).ready(function() {
     
     $("#btnNuevoTrabajo").click(function() {
         $("#nuevoTrabajo").load("Html/trabajo.html", function(responseTxt, statusTxt) {
-            if(statusTxt === "success") {
+            if(statusTxt === 'success') {
                 $(this).find(".input-aceptar").click(function() {
                     var error = false,
                         t = new Trabajo(),

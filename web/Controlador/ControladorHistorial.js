@@ -55,7 +55,7 @@ $(document).ready(function() {
     
     function actualizar_tabla_siniestros(tbody, pagina) {
         $.get('http://localhost:8080/ReForms_Provider/wr/siniestro/buscarSiniestroPorNumeroPoliza/' + pagina + '/' + poliza.cliente.aseguradora.id + '///' + poliza.numero, function(data, status) {
-            if (status == "success") {
+            if (status == 'success') {
                 siniestros.listaSiniestros = data;
                 mostrar_tabla_siniestros(tbody, siniestros.listaSiniestros);
             } else {
@@ -128,10 +128,10 @@ $(document).ready(function() {
     // Cargar paginas y aplicar controles
     // ====================================================================== //
     $.get('http://localhost:8080/ReForms_Provider/wr/siniestro/contarSiniestroPorNumeroPoliza/' + poliza.cliente.aseguradora.id + '///' + poliza.numero, function(data, status) {
-        if (status == "success") {
+        if (status == 'success') {
             siniestros.totalSiniestros = new Number(data);
             $.get('http://localhost:8080/ReForms_Provider/wr/siniestro/buscarSiniestroPorNumeroPoliza/0/' + poliza.cliente.aseguradora.id + '///' + poliza.numero, function(data, status) {
-                if (status == "success") {
+                if (status == 'success') {
                     siniestros.listaSiniestros = data;
                 }
                 mostrar_siniestros(tabla, siniestros.listaSiniestros, siniestros.totalSiniestros);

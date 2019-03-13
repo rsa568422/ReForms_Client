@@ -1,0 +1,169 @@
+<script>
+    if (!sessionStorage.usuario) {
+        window.location.href = "http://localhost:8080/ReForms_Client/";
+    }
+</script>
+
+<style>
+    div.marco-poliza div.info div.asegurado div.titulo div.col-12 h4,
+    div.marco-poliza div.info div.propiedad div.titulo div.col-12 h4 {
+        text-align: center;
+    }
+    
+    textarea {
+        resize: none;
+    }
+    
+    div.marco-poliza div.info div.propiedad div.detalles div.col-12 div.marco,
+    div.marco-poliza div.info div.asegurado div.detalles div.col-12 div.marco{
+        border-style: solid;
+        border-width: 3px;
+        border-radius: 5px;
+        margin-bottom: 1%;
+    }
+</style>
+
+<div class="marco marco-poliza container-fluid">
+    <div class="info row">
+        <div class="asegurado col-xl-6 col-12 container-fluid">
+            <div class="titulo row">
+                <div class="col-12">
+                    <h4>Asegurado</h4>
+                </div>
+            </div>
+            <div class="nombre row">
+                <div class="col-12">
+                    <div class="form-group">
+                        <h5>Nombre *</h5>
+                        <input class="nombre form-control" type="text" maxlength="50" required/>
+                    </div>
+                </div>
+            </div>
+            <div class="apellidos row">
+                <div class="col-12">
+                    <div class="form-group">
+                        <h5>Apellidos *</h5>
+                        <div class="input-group mb-3">
+                            <input class="apellido1 form-control" type="text" maxlength="50" required/>
+                            <input class="apellido2 form-control" type="text" maxlength="50"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="telefonos row">
+                <div class="col-12">
+                    <div class="form-group">
+                        <h5>Telefonos *</h5>
+                        <div class="input-group mb-3">
+                            <input class="telefono1 form-control" type="text" maxlength="9" required/>
+                            <input class="telefono2 form-control" type="text" maxlength="9"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="tipo row">
+                <div class="col-12">
+                    <div class="form-group">
+                        <h5>Tipo</h5>
+                        <select class="tipo form-control custom-select">
+                            <option value="0" selected>normal</option>
+                            <option value="1">preferente</option>
+                            <option value="2">VIP</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="observaciones row">
+                <div class="col-12">
+                    <div class="form-group">
+                        <h5>Observaciones</h5>
+                        <textarea class="observaciones-cliente form-control" rows="4" maxlength="250"/>
+                    </div>
+                </div>
+            </div>
+            <div class="sugerencias row">
+                <div class="col-12">
+                    <div class="table-responsive-md">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr><th colspan="2">Sugerencias</th></tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="detalles row">
+                <div class="col-12">
+                    <div class="marco">detalles</div>
+                </div>
+            </div>
+        </div>
+        <div class="propiedad col-xl-6 col-12 container-fluid">
+            <div class="titulo row">
+                <div class="col-12">
+                    <h4>Propiedad</h4>
+                </div>
+            </div>
+            <div class="localidad row">
+                <div class="col-12">
+                    <div class="form-group">
+                        <h5>Codigo postal *</h5>
+                        <div class="input-group mb-3">
+                            <input class="cp form-control" type="text" maxlength="5" required/>
+                            <input class="nombre form-control" type="text" maxlength="100" readonly/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="direccion row">
+                <div class="col-12">
+                    <div class="form-group">
+                        <h5>Direccion *</h5>
+                        <div class="input-group mb-3">
+                            <input class="direccion form-control" type="text" maxlength="250" required/>
+                            <input class="numero form-control" type="number" min="0"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="piso row">
+                <div class="col-12">
+                    <div class="form-group">
+                        <h5>Piso</h5>
+                        <input class="piso form-control" type="text" maxlength="20"/>
+                    </div>
+                </div>
+            </div>
+            <div class="observaciones row">
+                <div class="col-12">
+                    <div class="form-group">
+                        <h5>Observaciones</h5>
+                        <textarea class="observaciones-propiedad form-control" rows="4" maxlength="250"/>
+                    </div>
+                </div>
+            </div>
+            <div class="sugerencias row">
+                <div class="col-12">
+                    <div class="table-responsive-md">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr><th colspan="3">Sugerencias</th></tr>
+                            </thead>
+                            <tbody></tbody>
+                            <tfoot></tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="detalles row">
+                <div class="col-12">
+                    <div class="marco">detalles</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="mapa row">
+        <div class="col-12"></div>
+    </div>
+</div>

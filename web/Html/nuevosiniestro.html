@@ -10,18 +10,33 @@
         border-radius: 20px;
     }
     
-    div.container-fluid div.progreso {
+    #ventana div.container-fluid div.row {
         padding: 2%;
+    }
+    
+    #ventana div.container-fluid div.progreso {
         border-bottom: 15px solid;
     }
     
-    div.container-fluid div.progreso div.progress {
+    #ventana div.container-fluid div.progreso div.col-12 div.progress {
         border: 1px solid;
         border-radius: 3px;
     }
     
-    div.container-fluid div.progreso div.progress div.progress-bar {
+    #ventana div.container-fluid div.progreso div.col-12 div.progress div.progress-bar {
         width:0%;
+    }
+    
+    #ventana div.container-fluid div.botones div.col-6 button.btn {
+        min-width: 96px;
+    }
+    
+    #ventana div.container-fluid div.botones div.col-6:first-child {
+        text-align: left;
+    }
+    
+    #ventana div.container-fluid div.botones div.col-6:last-child {
+        text-align: right;
     }
     
     .btn-aceptar, .btn-cancelar {
@@ -41,9 +56,35 @@
         border-color: rgb(255, 0, 0);
         background-color: rgb(255, 0, 0, 0.1);
     }
+    
+    h6.info {
+        margin-top: 1%;
+    }
+    
+    .logo {
+        margin-right: 1%;
+        padding: 0.5%;
+        border: solid 1px;
+        border-radius: 5px;
+        width: 96px;
+        height: 72px;
+    }
+    
+    .seleccionada {
+        margin-right: 1%;
+        padding: 0.25%;
+        border: solid 3px;
+        border-radius: 5px;
+        width: 96px;
+        height: 72px;
+    }
 </style>
 
 <script src="Entidad/Siniestro.js"></script>
+<script src="Entidad/Poliza.js"></script>
+<script src="Entidad/Cliente.js"></script>
+<script src="Entidad/Propiedad.js"></script>
+<script src="Entidad/Localidad.js"></script>
 <script src="Controlador/ControladorNuevoSiniestro.js"></script>
 
 <div id="ventana">
@@ -54,25 +95,43 @@
                 <div class="progress">
                     <div class="progress-bar progress-bar-striped progress-bar-animated"></div>
                 </div>
+                <span class="badge badge-secondary"></span>
             </div>
         </div>
-        <div class="aseguradora row">
-            <div class="col-12">
-                aseguradora (aseguradora y numero de siniestro)
+        <div class="pasos row">
+            <div class="paso paso1 col-12 container-fluid">
+                <div class="row">
+                    <div class="col-xl-4 col-12">
+                        <h5>Seleccione aseguradora</h5>
+                        <div class="logos"></div>
+                    </div>
+                    <div class="col-xl-8 col-12">
+                        <h5>Introduzca Nº de siniestro</h5>
+                        <input name="numero_siniestro" class="form-control form-control-lg" type="text" maxlength="16"/>
+                        <h6 class="info"></h6>
+                    </div>
+                </div>
             </div>
-        </div>
-        <div class="poliza row">
-            <div class="col-12"></div>
-        </div>
-        <div class="registro row">
-            <div class="col-12">
-                registro (fecha, perito, original y observaciones)
+            <div class="paso paso2 col-12 container-fluid">
+                <div class="numero-poliza row">
+                    <h4>Nº de poliza</h4>
+                    <input name="numero_poliza" class="form-control form-control-lg" type="text" maxlength="10"/>
+                    <h6 class="info"></h6>
+                </div>
+                <div class="info-poliza"></div>
+            </div>
+            <div class="paso paso3 col-12 container-fluid">
+                cosas finales
             </div>
         </div>
         <div class="botones row">
-            <div class="col-12">
-                <button class="btn btn-aceptar" type="button">aceptar</button>
-                <button class="btn btn-cancelar" type="button">cancelar</button>
+            <div class="col-6">
+                <button class="btn btn-cancelar">cancelar</button>
+                <button class="btn btn-volver">volver</button>
+            </div>
+            <div class="col-6">
+                <button class="btn btn-continuar">continuar</button>
+                <button class="btn btn-aceptar">aceptar</button>
             </div>
         </div>
     </div>
