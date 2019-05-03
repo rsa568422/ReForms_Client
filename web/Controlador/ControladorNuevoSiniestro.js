@@ -570,7 +570,7 @@ $(document).ready(function() {
                 observaciones.prop('readonly', false).val('');
                 $.get('http://localhost:8080/ReForms_Provider/wr/localidad/buscarLocalidadPorCodigoPostal/' + pasos.paso2.poliza.propiedad.localidad.cp, function(data, status) {
                     if (status == 'success') {
-                        pasos.paso2.poliza.propiedad.localidad.nombre = data.nombre;
+                        pasos.paso2.poliza.propiedad.localidad = data;
                     }
                     nombre.prop('readonly', status == 'success').val(pasos.paso2.poliza.propiedad.localidad.nombre);
                 }, 'json');
