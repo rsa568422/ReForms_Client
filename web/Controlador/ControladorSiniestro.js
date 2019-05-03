@@ -106,7 +106,7 @@ $(document).ready(function() {
             }
         },
         strAux, edicion = false;
-    
+        
     // Funciones auxiliares
     // ====================================================================== //
     function alerta(titulo, mensaje) {
@@ -1424,35 +1424,44 @@ $(document).ready(function() {
         lector.onloadend = function (e) {
             adicional.recursos.temp = e.target.result.split('base64,')[1];
             componentes.adicional.recursos.previsualizacion.children('div.contenedor').children('div.vista-previa').remove();
-            if (tipo.val() == 0) {
-                if (extension.toLowerCase() == 'pdf') {
-                    var pdf = '<iframe src="data:application/pdf;base64,' + adicional.recursos.temp + '"></iframe>'; 
-                    componentes.adicional.recursos.previsualizacion.children('div.contenedor').append('<div class="vista-previa">' + pdf + '</div>');
-                    label.text(nombre);
-                    componentes.adicional.recursos.previsualizacion.show();
+            
+            var test = '' + adicional.recursos.temp;
+            if (test.length <= 16777215) {
+                if (tipo.val() == 0) {
+                    if (extension.toLowerCase() == 'pdf') {
+                        var pdf = '<iframe src="data:application/pdf;base64,' + adicional.recursos.temp + '"></iframe>'; 
+                        componentes.adicional.recursos.previsualizacion.children('div.contenedor').append('<div class="vista-previa">' + pdf + '</div>');
+                        label.text(nombre);
+                        componentes.adicional.recursos.previsualizacion.show();
+                    } else {
+                        adicional.recursos.temp = null;
+                        label.text('Examinar . . .');
+                        componentes.adicional.recursos.previsualizacion.hide();
+                        alerta('Tipo de fichero invalido', 'debe seleccionar un fichero .pdf');
+                    }
+                } else if (tipo.val() == 1) {
+                    if (extension.toLowerCase() == 'jpg' || extension.toLowerCase() == 'jpeg') {
+                        var img = '<img src="data:image/jpeg;base64,' + adicional.recursos.temp + '" alt="error al cargar imagen"/>';
+                        componentes.adicional.recursos.previsualizacion.children('div.contenedor').append('<div class="vista-previa">' + img + '</div>');
+                        label.text(nombre);
+                        componentes.adicional.recursos.previsualizacion.show();
+                    } else {
+                        adicional.recursos.temp = null;
+                        label.text('Examinar . . .');
+                        componentes.adicional.recursos.previsualizacion.hide();
+                        alerta('Tipo de fichero invalido', 'debe seleccionar un fichero .jpg / .jpeg');
+                    }
                 } else {
-                    adicional.recursos.temp = null;
-                    label.text('Examinar . . .');
-                    componentes.adicional.recursos.previsualizacion.hide();
-                    alerta('Tipo de fichero invalido', 'debe seleccionar un fichero .pdf');
-                }
-            } else if (tipo.val() == 1) {
-                if (extension.toLowerCase() == 'jpg' || extension.toLowerCase() == 'jpeg') {
-                    var img = '<img src="data:image/jpeg;base64,' + adicional.recursos.temp + '" alt="error al cargar imagen"/>';
-                    componentes.adicional.recursos.previsualizacion.children('div.contenedor').append('<div class="vista-previa">' + img + '</div>');
                     label.text(nombre);
-                    componentes.adicional.recursos.previsualizacion.show();
-                } else {
-                    adicional.recursos.temp = null;
-                    label.text('Examinar . . .');
                     componentes.adicional.recursos.previsualizacion.hide();
-                    alerta('Tipo de fichero invalido', 'debe seleccionar un fichero .jpg / .jpeg');
                 }
             } else {
-                label.text(nombre);
+                adicional.recursos.temp = null;
+                label.text('Examinar . . .');
                 componentes.adicional.recursos.previsualizacion.hide();
+                alerta('Tamaño de fichero invalido', 'debe seleccionar un fichero de tamaño no superior a 16Mb');
             }
-        }
+        };
         lector.readAsDataURL(entradas[0]);
     }
     

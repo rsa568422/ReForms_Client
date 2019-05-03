@@ -3,6 +3,7 @@ function Siniestro() {
     this.numero = null;
     this.fechaRegistro = null;
     this.fechaCierre = null;
+    this.estado = 0;
     this.observaciones = null;
     this.albaran = null;
     this.afectado = null;

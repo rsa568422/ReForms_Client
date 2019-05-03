@@ -10,7 +10,9 @@
         border-radius: 20px;
     }
     
-    #ventana div.container-fluid div.row {
+    #ventana div.container-fluid div.row,
+    #ventana div.container-fluid div.pasos div.paso3 div.adicional div.afectado div.con-afectado,
+    #ventana div.container-fluid div.pasos div.paso3 div.adicional div.afectado div.resumen {
         padding: 2%;
     }
     
@@ -18,7 +20,9 @@
         border-bottom: 15px solid;
     }
     
-    #ventana div.container-fluid div.progreso div.col-12 div.progress {
+    #ventana div.container-fluid div.progreso div.col-12 div.progress,
+    #ventana div.container-fluid div.pasos div.paso3 div.adicional div.afectado div.con-afectado,
+    #ventana div.container-fluid div.pasos div.paso3 div.adicional div.afectado div.resumen {
         border: 1px solid;
         border-radius: 3px;
     }
@@ -27,7 +31,8 @@
         width:0%;
     }
     
-    #ventana div.container-fluid div.botones div.col-6 button.btn {
+    #ventana div.container-fluid div.botones div.col-6 button.btn,
+    #ventana div.container-fluid div.pasos div.paso3 div.adicional div.afectado div.sin-afectado button.btn {
         min-width: 96px;
     }
     
@@ -39,7 +44,9 @@
         text-align: right;
     }
     
-    .btn-aceptar, .btn-cancelar {
+    .btn-aceptar, .btn-cancelar,
+    #ventana div.container-fluid div.pasos div.paso3 div.adicional div.afectado div.resumen div.container-fluid button.btn {
+        min-width: 96px;
         margin-top: 1%;
         margin-bottom: 1%;
     }
@@ -61,6 +68,13 @@
         margin-top: 1%;
     }
     
+    #ventana div.container-fluid div.pasos div.paso3 div.adicional div.afectado div.con-afectado div.sugerencias,
+    #ventana div.container-fluid div.pasos div.paso3 div.adicional div.afectado div.con-afectado div.mapa,
+    #ventana div.container-fluid div.pasos div.paso3 div.adicional div.afectado div.resumen div.container-fluid div.mapa,
+    #ventana div.container-fluid div.pasos div.paso3 div.adicional div.afectado div.resumen div.container-fluid button.btn {
+        margin-top: 4%;
+    }
+    
     .logo {
         margin-right: 1%;
         padding: 0.5%;
@@ -78,9 +92,23 @@
         width: 96px;
         height: 72px;
     }
+    
+    #ventana div.container-fluid div.pasos div.paso3 div.adicional div.afectado div.sin-afectado {
+        padding-top: 6%;
+        text-align: center;
+    }
+    
+    @media only screen and (max-width: 1200px) {
+        #ventana div.container-fluid div.pasos div.paso3 div.principal div.perito,
+        #ventana div.container-fluid div.pasos div.paso3 div.principal div.original,
+        #ventana div.container-fluid div.pasos div.paso3 div.adicional div.afectado {
+            margin-top: 2%;
+        }
+    }
 </style>
 
 <script src="Entidad/Siniestro.js"></script>
+<script src="Entidad/Recurso.js"></script>
 <script src="Entidad/Poliza.js"></script>
 <script src="Entidad/Cliente.js"></script>
 <script src="Entidad/Propiedad.js"></script>
@@ -121,7 +149,105 @@
                 <div class="info-poliza"></div>
             </div>
             <div class="paso paso3 col-12 container-fluid">
-                cosas finales
+                <div class="principal row">
+                    <div class="fecha col-xl-4 col-12">
+                        <h5>Fecha de registro</h5>
+                        <input name="fecha" class="form-control" type="date" required/>
+                    </div>
+                    <div class="perito col-xl-4 col-12">
+                        <h5>Perito</h5>
+                        <select name="perito" class="form-control custom-select">
+                            <option value=0>prueba</option>
+                        </select>
+                    </div>
+                    <div class="original col-xl-4 col-12">
+                        <h5>Original</h5>
+                        <div class="custom-file">
+                            <input name="original" class="custom-file-input" type="file" accept="application/pdf" required/>
+                            <label for="original" class="original-texto custom-file-label">Examinar . . .</label>
+                        </div>
+                    </div>
+                </div> 
+                <div class="adicional row">
+                    <div class="observaciones col-xl-6 col-12">
+                        <h5>Observaciones</h5>
+                        <textarea name="observaciones" class="form-control" rows="4" maxlength="250"/>
+                    </div>
+                    <div class="afectado col-xl-6 col-12">
+                        <h5>Afectado</h5>
+                        <div class="sin-afectado">
+                            <button class="btn" type="button">agregar</button>
+                        </div>
+                        <div class="con-afectado">
+                            <div class="container-fluid">
+                                <div class="localidad row">
+                                    <div class="col-12">
+                                        <div class="form-group">
+                                            <h5>Codigo postal *</h5>
+                                            <div class="input-group mb-3">
+                                                <input class="cp form-control" type="text" maxlength="5" required/>
+                                                <input class="nombre form-control" type="text" maxlength="100" readonly/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="direccion row">
+                                    <div class="col-12">
+                                        <div class="form-group">
+                                            <h5>Direccion *</h5>
+                                            <div class="input-group mb-3">
+                                                <input class="direccion form-control" type="text" maxlength="250" required/>
+                                                <input class="numero form-control" type="number" min="0"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="piso row">
+                                    <div class="col-12">
+                                        <div class="form-group">
+                                            <h5>Piso</h5>
+                                            <input class="piso form-control" type="text" maxlength="20"/>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="observaciones row">
+                                    <div class="col-12">
+                                        <div class="form-group">
+                                            <h5>Observaciones</h5>
+                                            <textarea class="observaciones form-control" rows="4" maxlength="250"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <button class="btn btn-aceptar" type="button">aceptar</button>
+                            <button class="btn btn-cancelar" type="button">cancelar</button>
+                            <div class="sugerencias">
+                                <div class="table-responsive-md">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr><th colspan="3">Sugerencias</th></tr>
+                                        </thead>
+                                        <tbody></tbody>
+                                        <tfoot></tfoot>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="mapa"></div>
+                        </div>
+                        <div class="resumen">
+                            <div class="container-fluid">
+                                <div class="info">
+                                    <div><strong>Direccion</strong></div>
+                                    <div class="direccion"></div>
+                                    <div class="piso"></div>
+                                    <div class="localidad"></div>
+                                </div>
+                                <div class="mapa"></div>
+                                <button class="btn" type="button">cambiar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
         <div class="botones row">
