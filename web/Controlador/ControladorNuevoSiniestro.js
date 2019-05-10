@@ -1161,8 +1161,8 @@ $(document).ready(function() {
             componentes.pasos.paso2.poliza.propiedad.children('div.localidad').children('div.col-12').children('div.form-group').children('div.input-group').children('input.cp').keyup(editarpoliza_propiedad_keyup);
             componentes.pasos.paso2.poliza.propiedad.children('div.localidad').children('div.col-12').children('div.form-group').children('div.input-group').children('input.cp').keyup(cp_keyup);
             componentes.pasos.paso2.poliza.propiedad.children('div.direccion').children('div.col-12').children('div.form-group').children('div.input-group').children('input.direccion').keyup(editarpoliza_propiedad_keyup);
+            componentes.pasos.paso2.poliza.propiedad.children('div.direccion').children('div.col-12').children('div.form-group').children('div.input-group').children('input.numero').change(editarpoliza_propiedad_keyup);
             componentes.pasos.paso2.poliza.propiedad.children('div.direccion').children('div.col-12').children('div.form-group').children('div.input-group').children('input.numero').keyup(editarpoliza_propiedad_keyup);
-            componentes.pasos.paso2.poliza.propiedad.children('div.direccion').children('div.col-12').children('div.form-group').children('div.input-group').children('input.numero').click(editarpoliza_propiedad_keyup);
             componentes.pasos.paso2.poliza.propiedad.children('div.piso').children('div.col-12').children('div.form-group').children('input.piso').keyup(editarpoliza_propiedad_keyup);
             componentes.pasos.paso2.poliza.asegurado.children('div.sugerencias').children('div.col-12').children('div.table-responsive-md').children('table').children('thead').css('background-color', colorBorde);
             componentes.pasos.paso2.poliza.propiedad.children('div.sugerencias').children('div.col-12').children('div.table-responsive-md').children('table').children('thead').css('background-color', colorBorde);
@@ -1219,8 +1219,8 @@ $(document).ready(function() {
     componentes.pasos.paso3.afectado.children('div.con-afectado').children('div.container-fluid').children('div.localidad').children('div.col-12').children('div.form-group').children('div.input-group').children('input.cp').keyup(afectado_keyup);
     componentes.pasos.paso3.afectado.children('div.con-afectado').children('div.container-fluid').children('div.localidad').children('div.col-12').children('div.form-group').children('div.input-group').children('input.cp').keyup(afectado_cp_keyup);
     componentes.pasos.paso3.afectado.children('div.con-afectado').children('div.container-fluid').children('div.direccion').children('div.col-12').children('div.form-group').children('div.input-group').children('input.direccion').keyup(afectado_keyup);
+    componentes.pasos.paso3.afectado.children('div.con-afectado').children('div.container-fluid').children('div.direccion').children('div.col-12').children('div.form-group').children('div.input-group').children('input.numero').change(afectado_keyup);
     componentes.pasos.paso3.afectado.children('div.con-afectado').children('div.container-fluid').children('div.direccion').children('div.col-12').children('div.form-group').children('div.input-group').children('input.numero').keyup(afectado_keyup);
-    componentes.pasos.paso3.afectado.children('div.con-afectado').children('div.container-fluid').children('div.direccion').children('div.col-12').children('div.form-group').children('div.input-group').children('input.numero').click(afectado_keyup);
     componentes.pasos.paso3.afectado.children('div.con-afectado').children('button.btn-aceptar').prop('disabled', true).click(afectado_aceptar_click);
     componentes.pasos.paso3.afectado.children('div.con-afectado').children('button.btn-cancelar').click(afectado_cancelar_click);
     componentes.pasos.paso3.afectado.children('div.resumen').children('div.container-fluid').children('button.btn').click(afectado_modificar_click);

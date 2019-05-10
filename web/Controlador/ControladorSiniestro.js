@@ -464,7 +464,19 @@ $(document).ready(function() {
     // ====================================================================== //
     function borrar_click() {
         if (!edicion) {
-            alert('borrar_click()');
+            if (confirm('el siniestro se eliminara permanentemente')) {
+                $.ajax({
+                    url: 'http://localhost:8080/ReForms_Provider/wr/siniestro/borrarSiniestro/' + siniestro.id,
+                    type: 'delete',
+                    contentType: 'application/json;charset=UTF-8',
+                    success: function(data, textStatus, jQxhr){
+                        $('#btn-siniestros').click();
+                    },
+                    error: function(jqXhr, textStatus, errorThrown){
+                        alerta('Error en proveedor', 'no ha sido posible borrar el siniestro');
+                    }
+                });
+            }
         }
     }
     
@@ -1350,7 +1362,24 @@ $(document).ready(function() {
     }
     
     function tarea_borrar_click() {
-        alert('tarea_borrar_click()');
+        if (!edicion) {
+            if (confirm('la tarea se eliminara permanentemente')) {
+                $.ajax({
+                    url: 'http://localhost:8080/ReForms_Provider/wr/tarea/borrarTarea/' + tareas.tareaSeleccionada.id,
+                    type: 'delete',
+                    contentType: 'application/json;charset=UTF-8',
+                    success: function(data, textStatus, jQxhr){
+                        tareas.posicionSeleccionada = -1;
+                        tareas.tareaSeleccionada = null;
+                        componentes.tareas.botones.children('button[name="tarea_borrar"]').hide();
+                        $.get('http://localhost:8080/ReForms_Provider/wr/tarea/obtenerTareas/' + siniestro.id, respuesta_obtenerTareas, 'json');
+                    },
+                    error: function(jqXhr, textStatus, errorThrown){
+                        alerta('Error en proveedor', 'no ha sido posible borrar la tarea');
+                    }
+                });
+            }
+        }
     }
     
     function accion_fecha_nueva_change() {
@@ -1491,10 +1520,10 @@ $(document).ready(function() {
                     }
                     if (codigo.children('option').length == 0) {
                         alerta('Sin trabajos', 'no hay trabajos registrados para este gremio con la aseguradora actual');
-                        codigo.change();
                     } else {
                         codigo.children('option').eq(0).prop('selected', true);
                     }
+                    codigo.change();
                 } else {
                     alert('fallo en el proveedor');
                 }
@@ -1767,8 +1796,8 @@ $(document).ready(function() {
                 }
             }, 'json');
             componentes.tareas.nueva.header.children('div.container-fluid').children('div.row').children('div.col-4').children('input.tarea-estado').val('pendiente');
-            componentes.tareas.nueva.body.children('div.container-fluid').children('div.row').children('div.col-4').children('div.tarea-cantidad').children('input[type="number"]').prop('readonly', false).keyup(tarea_cantidad_keyup);
-            componentes.tareas.nueva.body.children('div.container-fluid').children('div.row').children('div.col-4').children('div.tarea-cantidad').children('input[type="number"]').click(tarea_cantidad_keyup);
+            componentes.tareas.nueva.body.children('div.container-fluid').children('div.row').children('div.col-4').children('div.tarea-cantidad').children('input[type="number"]').prop('readonly', false).change(tarea_cantidad_keyup);
+            componentes.tareas.nueva.body.children('div.container-fluid').children('div.row').children('div.col-4').children('div.tarea-cantidad').children('input[type="number"]').keyup(tarea_cantidad_keyup);
             componentes.tareas.nueva.body.children('div.container-fluid').children('div.row').children('div.col-8').children('textarea.tarea-observaciones').prop('readonly', false);
             componentes.tareas.nueva.botones.children('div.row').children('div.col-6').children('button.tarea-aceptar').prop('disabled', true).click(tarea_nueva_aceptar_click);
             componentes.tareas.nueva.botones.children('div.row').children('div.col-6').children('button.tarea-cancelar').click(tarea_nueva_cancelar_click);

@@ -1,0 +1,41 @@
+<script>
+    if (!sessionStorage.usuario) {
+        window.location.href = "http://localhost:8080/ReForms_Client/";
+    }
+</script>
+
+<div class="contenedor container-fluid">
+    <div class="card">
+        <div class="card-header">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-12">
+                        <h4 class="fecha"></h4>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12">
+                        <h5 class="gerente"></h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-12">
+                        <textarea class="observaciones form-control" rows="4" maxlength="250" readonly/>
+                    </div>
+                </div>
+                <div class="botones row">
+                    <button class="btn btn-editar" type="button">editar</button>
+                    <button class="btn btn-aceptar" type="button">aceptar</button>
+                    <button class="btn btn-cancelar" type="button">cancelar</button>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer">
+            footer
+        </div>
+    </div>
+</div>
