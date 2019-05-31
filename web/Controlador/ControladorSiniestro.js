@@ -1983,6 +1983,10 @@ $(document).ready(function() {
     $.get('http://localhost:8080/ReForms_Provider/wr/reasignacion/obtenerReasignaciones/' + siniestro.id, respuesta_obtenerReasignaciones, 'json');
     $.get('http://localhost:8080/ReForms_Provider/wr/recurso/obtenerRecursos/' + siniestro.id, respuesta_obtenerRecursos, 'json');
     $.get('http://localhost:8080/ReForms_Provider/wr/tarea/obtenerTareas/' + siniestro.id, respuesta_obtenerTareas, 'json');
+    $('#ventana').children('div.container-fluid').children('div.eventos').children('div.ocultable-contenido').children('div.row').children('div.col-12').children('h1').dblclick(function () {
+        sessionStorage.setItem('evento', '{"nombre":"prueba"}');
+        $('#btn-jornadas').click();
+    });
     
     // Inicializacion de aspecto y colores
     // ====================================================================== //
@@ -2020,3 +2024,4 @@ $(document).ready(function() {
     componentes.adicional.recursos.recurso.hide();
     componentes.adicional.recursos.previsualizacion.hide();
 });
+

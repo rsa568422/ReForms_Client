@@ -4,6 +4,21 @@
     }
 </script>
 
+<style>
+    div.contenedor div.card div.card-footer div.container-fluid div.grupo div.col-12 div.contenedor {
+        padding: 0px;
+    }
+    
+    div.contenedor div.card div.card-footer div.container-fluid div.tabla div.col-12 table thead,
+    div.contenedor div.card div.card-footer div.container-fluid div.tabla div.col-12 table tbody {
+        text-align: center;
+    }
+    
+    div.contenedor div.card div.card-footer div.container-fluid div.grupo {
+        margin-top: 3%;
+    }
+</style>
+
 <div class="contenedor container-fluid">
     <div class="card">
         <div class="card-header">
@@ -35,7 +50,28 @@
             </div>
         </div>
         <div class="card-footer">
-            footer
+            <div class="container-fluid">
+                <div class="tabla row">
+                    <div class="col-12">
+                        <div class="table-responsive-md">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Grupo</th>
+                                        <th>Zona</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                                <tfoot></tfoot>
+                            </table>
+                            <button class="btn btn-nuevo" type="button">nuevo</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="grupo row">
+                    <div class="col-12"></div>
+                </div>
+            </div>
         </div>
     </div>
 </div>

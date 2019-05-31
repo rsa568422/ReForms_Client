@@ -1,0 +1,96 @@
+<script>
+    if (!sessionStorage.usuario) {
+        window.location.href = "http://localhost:8080/ReForms_Client/";
+    }
+</script>
+
+<style>
+    div.contenedor div.card div.card-body div.container-fluid div.activos div.integrantes h5.titulo,
+    div.contenedor div.card div.card-body div.container-fluid div.activos div.vehiculo h5.titulo {
+        margin-bottom: 3%;
+        text-decoration: black underline solid;
+    }
+    
+    div.contenedor div.card div.card-body div.container-fluid div.observaciones {
+        margin-top: 3%;
+    }
+    
+    div.contenedor div.card div.card-body div.container-fluid div.activos div.integrantes table {
+        width: 100%;
+    }
+    
+    div.contenedor div.card div.card-body div.container-fluid div.activos div.integrantes table tbody tr.integrante {
+        vertical-align: central;
+    }
+    
+    div.contenedor div.card div.card-body div.container-fluid div.activos div.integrantes table tbody tr.integrante td.icono {
+        width: 32px;
+    }
+    
+    div.contenedor div.card div.card-body div.container-fluid div.activos div.integrantes table tbody tr.integrante td.nombre {
+        text-align: left;
+    }
+    
+    div.contenedor div.card div.card-body div.container-fluid div.activos div.integrantes div.nuevo button.btn-aceptar-sm {
+        font-weight: bold;
+        color: rgb(0, 128, 0);
+        border-color: rgb(0, 128, 0);
+        background-color: rgb(0, 128, 0, 0.1);
+    }
+    
+    div.contenedor div.card div.card-body div.container-fluid div.activos div.integrantes div.nuevo {
+        padding: 0px;
+    }
+    
+    div.contenedor div.card div.card-body div.container-fluid div.activos div.vehiculo select[name="grupo_vehiculo"] {
+        margin-top: 1rem;
+    }
+</style>
+
+<div class="contenedor container-fluid">
+    <div class="card">
+        <div class="card-header">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-12">
+                        <h4>nombre grupo</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="container-fluid">
+                <div class="activos row">
+                    <div class="integrantes col-6">
+                        <h5 class="titulo">Integrantes:</h5>
+                        <table>
+                            <tbody></tbody>
+                        </table>
+                        <div class="nuevo container mt-3">
+                            <div class="input-group mb-3">
+                                <select name="grupo_operario" class="form-control custom-select"></select>
+                                <div class="input-group-append">
+                                    <button class="btn btn-aceptar-sm" type="button">+</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="vehiculo col-6">
+                        <h5 class="titulo">Vehiculo:</h5>
+                        <select name="grupo_vehiculo" class="form-control custom-select" disabled></select>
+                    </div>
+                </div>
+                <div class="observaciones row">
+                    <div class="col-12">
+                        <textarea class="form-control" rows="4" maxlength="250" readonly/>
+                    </div>
+                </div>
+                <div class="botones row">
+                    <button class="btn btn-editar" type="button">editar</button>
+                    <button class="btn btn-aceptar" type="button">aceptar</button>
+                    <button class="btn btn-cancelar" type="button">cancelar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

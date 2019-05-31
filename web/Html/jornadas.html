@@ -11,43 +11,6 @@
         padding: 3% 3% 3% 3%;
     }
     
-    input[name="fecha"] {
-        margin-bottom: 3%;
-    }
-    
-    div.calendario table {
-        width: 100%;
-        margin-bottom: 3%;
-    }
-    
-    div.calendario table thead th h4 {
-        text-align: center;
-    }
-    
-    div.dia {
-        border: solid 1px;
-        border-radius: 5px;
-        margin: 0.5%;
-        padding-top: 10px;
-        padding-left: 2px;
-        padding-right: 2px;
-        width: 100%;
-        height: 50px;
-        text-align: center;
-    }
-    
-    div.seleccionado {
-        border: solid 3px;
-        border-radius: 5px;
-        margin: 0.5%;
-        padding-top: 10px;
-        padding-left: 0px;
-        padding-right: 0px;
-        width: 100%;
-        height: 50px;
-        text-align: center;
-    }
-    
     textarea {
         resize: none;
     }
@@ -71,46 +34,165 @@
         background-color: rgb(255, 0, 0, 0.1);
     }
     
-    #ventana div.container-fluid div.row div.jornada h4.fecha {
-        font-weight: bold;
+    #ventana div.jornadas div.calendario input[type="date"],
+    #ventana div.jornadas div.calendario table {
+        width: 100%;
+        margin-bottom: 3%;
     }
     
-    #ventana div.container-fluid div.row div.jornada div.botones {
+    #ventana div.jornadas div.calendario table thead th h4 {
+        text-align: center;
+    }
+    
+    #ventana div.jornadas div.calendario table tbody div.dia {
+        border: solid 1px;
+        border-radius: 5px;
+        margin: 0.5%;
+        padding-top: 10px;
+        padding-left: 2px;
+        padding-right: 2px;
+        width: 100%;
+        height: 50px;
+        text-align: center;
+    }
+    
+    #ventana div.jornadas div.calendario table tbody div.seleccionado {
+        border: solid 3px;
+        border-radius: 5px;
+        margin: 0.5%;
+        padding-top: 10px;
+        padding-left: 0px;
+        padding-right: 0px;
+        width: 100%;
+        height: 50px;
+        text-align: center;
+    }
+    
+    #ventana div.jornadas div.detalles,
+    #ventana div.jornadas div.detalles div.botones {
         margin-top: 3%;
     }
     
+    #ventana div.jornadas div.detalles div.col-12 {
+        padding: 0px;
+    }
+    
+    /*
+    #ventana div.container-fluid div.row div {
+        border: black solid 1px;
+        padding-bottom: 1%;
+        padding-top: 1%;
+        margin-bottom: 1%;
+        margin-top: 1%;
+    }
+    */
     @media only screen and (max-width: 1200px) {
-        #ventana div.container-fluid div.row div.jornada {
-            margin-top: 2%;
-        }
+        
     }
 </style>
 
 <script src="Entidad/Jornada.js"></script>
+<script src="Entidad/Grupo.js"></script>
+<script src="Entidad/Integrante.js"></script>
+<script src="Entidad/Conductor.js"></script>
+<script src="Entidad/Operario.js"></script>
+<script src="Entidad/Vehiculo.js"></script>
 <script src="Controlador/ControladorJornadas.js"></script>
 
 <div id="ventana">
     <div class="container-fluid">
         <div class="row">
-            <div class="calendario col-xl-6">
-                <input name="fecha" type="date" class="form-control"/>
-                <table>
-                    <thead>
-                        <tr>
-                            <th><h4>L</h4></th>
-                            <th><h4>M</h4></th>
-                            <th><h4>X</h4></th>
-                            <th><h4>J</h4></th>
-                            <th><h4>V</h4></th>
-                            <th><h4>S</h4></th>
-                            <th><h4>D</h4></th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-                <button name="nueva" class="btn btn-nuevo" type="button">nueva</button>
+            <div class="seleccion-grupo col-xl-6">
+                <div class="jornadas container-fluid">
+                    <div class="calendario row">
+                        <div class="col-12">
+                            <input class="fecha form-control" type="date"/>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th><h4>L</h4></th>
+                                        <th><h4>M</h4></th>
+                                        <th><h4>X</h4></th>
+                                        <th><h4>J</h4></th>
+                                        <th><h4>V</h4></th>
+                                        <th><h4>S</h4></th>
+                                        <th><h4>D</h4></th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                            <button class="btn btn-nuevo" type="button">nueva</button>
+                        </div>
+                    </div>
+                    <div class="detalles row">
+                        <div class="col-12"></div>
+                    </div>
+                </div>
+                <div class="jornada container-fluid">
+                    <div class="seleccion row">
+                        seleccion
+                    </div>
+                    <div class="grupo row">
+                        grupo
+                    </div>
+                    <div class="agenda row">
+                        <div class="col-12 container-fluid">
+                            <div class="tabla row">
+                                tabla
+                            </div>
+                            <div class="detalles row">
+                                <div class="cita col-6">
+                                    cita
+                                </div>
+                                <div class="extra col-6 container-fluid">
+                                    <div class="evento row">
+                                        evento
+                                    </div>
+                                    <div class="tareas row">
+                                        tareas
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="jornada col-xl-6"></div>
+            <div class="seleccion-evento col-xl-6">
+                <div class="siniestros container-fluid">
+                    <div class="mapa row">
+                        mapa
+                    </div>
+                    <div class="tabla row">
+                        tabla
+                    </div>
+                </div>
+                <div class="siniestro container-fluid">
+                    <div class="resumen row">
+                        <div class="contactos col-6">
+                            contacto
+                        </div>
+                        <div class="direccion col-6">
+                            direccion
+                        </div>
+                    </div>
+                    <div class="tareas row">
+                        <div class="tabla col-6">
+                            tabla
+                        </div>
+                        <div class="detalles col-6">
+                            detalles
+                        </div>
+                    </div>
+                    <div class="citas row">
+                        <div class="tabla col-6">
+                            tabla
+                        </div>
+                        <div class="detalles col-6">
+                            detalles
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
