@@ -39,10 +39,10 @@ $(document).ready(function() {
     function edicion_click() {
         sessionStorage.setItem('poliza', JSON.stringify(poliza));
         sessionStorage.setItem('vuelta', JSON.stringify(vuelta));
-        $('#contenido').load('Html/editarPoliza.html', cargar_editar_poliza);
+        $('#contenido').load('Html/editarpoliza.html', cargar_editar_poliza);
     }
     
-    // Funciones para cargar paginas y definir su comportamiento
+    // Funciones para cargar paginas y controlar respuestas del proveedor
     // ====================================================================== //
     function cargar_historial(responseTxt, statusTxt) {
         if (statusTxt != 'success') {

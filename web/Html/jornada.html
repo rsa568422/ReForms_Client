@@ -17,6 +17,11 @@
     div.contenedor div.card div.card-footer div.container-fluid div.grupo {
         margin-top: 3%;
     }
+    
+    div.contenedor div.card div.card-body div.container-fluid div.botones button.btn-citas {
+        position: absolute;
+        right: 1.25rem;
+    }
 </style>
 
 <div class="contenedor container-fluid">
@@ -39,13 +44,14 @@
             <div class="container-fluid">
                 <div class="row">
                     <div class="col-12">
-                        <textarea class="observaciones form-control" rows="4" maxlength="250" readonly/>
+                        <textarea class="observaciones form-control" rows="4" maxlength="250" readonly></textarea>
                     </div>
                 </div>
                 <div class="botones row">
                     <button class="btn btn-editar" type="button">editar</button>
                     <button class="btn btn-aceptar" type="button">aceptar</button>
                     <button class="btn btn-cancelar" type="button">cancelar</button>
+                    <button class="btn btn-citas" type="button">consultar citas</button>
                 </div>
             </div>
         </div>

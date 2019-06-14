@@ -15,7 +15,7 @@
         resize: none;
     }
     
-    button.btn-nuevo, button.btn-editar {
+    button.btn-nuevo, button.btn-editar, button.btn-volver {
         min-width: 96px;
     }
     
@@ -69,7 +69,8 @@
     }
     
     #ventana div.jornadas div.detalles,
-    #ventana div.jornadas div.detalles div.botones {
+    #ventana div.jornadas div.detalles div.botones,
+    #ventana div.jornada div.agenda div.detalles {
         margin-top: 3%;
     }
     
@@ -77,15 +78,19 @@
         padding: 0px;
     }
     
-    /*
-    #ventana div.container-fluid div.row div {
-        border: black solid 1px;
-        padding-bottom: 1%;
-        padding-top: 1%;
+    #ventana div.jornada div.cabecera {
         margin-bottom: 1%;
-        margin-top: 1%;
     }
-    */
+    
+    #ventana div.jornada div.grupo,
+    #ventana div.jornada div.agenda {
+        margin-top: 3%;
+    }
+    
+    #ventana div.jornada div.botones {
+        margin-top: 6%;
+    }
+    
     @media only screen and (max-width: 1200px) {
         
     }
@@ -129,16 +134,41 @@
                     </div>
                 </div>
                 <div class="jornada container-fluid">
+                    <div class="cabecera row">
+                        <div class="container-fluid">
+                            <div class="row">
+                                <div class="col-12">
+                                    <h4 class="fecha"></h4>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-12">
+                                    <h5 class="gerente"></h5>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     <div class="seleccion row">
-                        seleccion
+                        <select name="grupo_actual" class="form-control custom-select"></select>
                     </div>
-                    <div class="grupo row">
-                        grupo
-                    </div>
+                    <div class="grupo row"></div>
                     <div class="agenda row">
                         <div class="col-12 container-fluid">
                             <div class="tabla row">
-                                tabla
+                                <div class="col-12">
+                                    <div class="table-responsive-md">
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>Cita</th>
+                                                    <th>Hora</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody></tbody>
+                                        </table>
+                                        <button class="btn btn-nuevo" type="button">nueva</button>
+                                    </div>
+                                </div>
                             </div>
                             <div class="detalles row">
                                 <div class="cita col-6">
@@ -154,6 +184,9 @@
                                 </div>
                             </div>
                         </div>
+                    </div>
+                    <div class="botones row">
+                        <button class="btn btn-volver">volver</button>
                     </div>
                 </div>
             </div>

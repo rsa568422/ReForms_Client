@@ -23,17 +23,18 @@ $(document).ready(function() {
                 var i;
                 trabajos = data;
                 for (i = 0; i < trabajos.length; i++) {
-                    var codigo = "<td>" + trabajos[i].codigo + "</td>",
-                        descripcion = "<td>" + trabajos[i].descripcion + "</td>",
-                        dificultad = "<td>";
+                    var j, dificultad = '', color;
                     switch (trabajos[i].dificultad) {
-                        case 0: dificultad += "facil</td>"; break;
-                        case 1: dificultad += "ayudante</td>"; break;
-                        case 2: dificultad += "profesional</td>"; break;
-                        case 3: dificultad += "experto</td>"; break;
-                        default: dificultad += "desconocida</td>"; break;
+                        case 0: color = 'green'; break;
+                        case 1: color = 'gold'; break;
+                        case 2: color = 'orange'; break;
+                        case 3: color = 'orangered'; break;
                     }
-                    $("#trabajos").find("tbody").append("<tr class='trabajo'>" + codigo + descripcion + dificultad + "</tr>");
+                    for (j = 0; j < trabajos[i].dificultad + 1; j++) {
+                        dificultad += '<i class="material-icons">stars</i>';
+                    }
+                    $("#trabajos").find("tbody").append('<tr class="trabajo"><td>' + trabajos[i].codigo + '</td><td>' + trabajos[i].descripcion + '</td><td>' + dificultad + '</td></tr>');
+                    $("#trabajos").find("tbody").children('tr.trabajo:last-child').children('td:last-child').children('i').css('color', color);
                 }
                 $(".trabajo").dblclick(function() {
                     var aux = trabajos[$(this).index()];

@@ -222,7 +222,7 @@ $(document).ready(function() {
         for (i = 0; i < aseguradoras.listaAseguradoras.length; i++) {
             logo = generarLogo(aseguradoras.listaAseguradoras[i]);
             if (aseguradoras.aseguradoraSeleccionada != null && aseguradoras.aseguradoraSeleccionada.id == aseguradoras.listaAseguradoras[i].id) {
-                div.children('.seleccionada').removeClass('seleccionada');
+                div.children('img.seleccionada').removeClass('seleccionada');
                 logo = logo.replace('class="logo"', 'class="logo seleccionada"');
             }
             div.append(logo);
@@ -288,7 +288,7 @@ $(document).ready(function() {
             pie += '<li class="page-item"><a class="pagina page-link" href="#"><span>></span></a></li></ul></td></tr>';
             tfoot.append(pie);
             tfoot.find('a.pagina').css({'border-color':colorBorde, 'background-color':colorFondo}).click(siniestros_pagina_click);
-            tfoot.find('a.pagina').eq(1).css('background-color', colorBorde);
+            tfoot.find('a.pagina').eq(1).css('background-color', colorBorde).parent('li').addClass('seleccionada');
             tfoot.find('span').css('color', 'black');
         }
     }
@@ -430,17 +430,21 @@ $(document).ready(function() {
     
     function siniestros_pagina_click() {
         var li = $(this).parent('li'),
-            lis = li.parent('ul').children('li'),
+            ul = li.parent('ul'),
+            lis = ul.children('li'),
+            seleccionada = ul.children('li.seleccionada').index(),
             tbody = li.parent('ul').parent('td').parent('tr').parent('tfoot').siblings('tbody');
-        li.siblings('li').children('a').css('background-color', colorFondo);
-        $(this).css('background-color', colorBorde);
-        if (li.index() == 0) {
-            lis.eq(1).children('a').click();
-        } else if (li.index() == lis.length - 1) {
-            lis.eq(lis.length - 2).children('a').click();
-        } else {
+        if (li.index() == 0 && seleccionada > 1) {
+            lis.eq(seleccionada - 1).children('a').click();
+        } else if (li.index() == lis.length - 1 && seleccionada < lis.length - 2) {
+            lis.eq(seleccionada + 1).children('a').click();
+        } else if (li.index() != 0 && li.index() != lis.length - 1) {
+            lis.removeClass('seleccionada');
+            li.addClass('seleccionada');
+            lis.not('li.seleccionada').children('a').css('background-color', colorFondo);
+            li.children('a').css('background-color', colorBorde);
             actualizar_tabla_siniestros(tbody, li.index() - 1);
-        }  
+        }
     }
     
     function siniestro_click() {
@@ -560,7 +564,7 @@ $(document).ready(function() {
         }
     }
     
-    // Funciones para cargar paginas y definir su comportamiento
+    // Funciones para cargar paginas y controlar respuestas del proveedor
     // ====================================================================== //
     function cargar_buscador(responseTxt, statusTxt) {
         if (statusTxt == 'success') {
@@ -635,15 +639,15 @@ $(document).ready(function() {
     $.get('http://localhost:8080/ReForms_Provider/wr/aseguradora/obtenerAseguradoras', function(data, status) {
         if (status == 'success') {
             aseguradoras.listaAseguradoras = data;
-            mostrar_aseguradoras(contenedor.children('.aseguradoras'));
+            mostrar_aseguradoras(contenedor.children('div.aseguradoras'));
         }
     }, 'json');
-    contenedor.children('.buscador').load('Html/buscador.html', cargar_buscador);
+    contenedor.children('div.buscador').load('Html/buscador.html', cargar_buscador);
     
     // Inicializacion de aspecto y colores
     // ====================================================================== //
     $('#ventana').css('border-color', colorBorde);
     $('#ventana').css('background-color', colorFondo);
-    contenedor.children('.aseguradoras').css('border-color', colorBorde);
-    contenedor.children('.buscador').css('border-color', colorBorde);
+    contenedor.children('div.aseguradoras').css('border-color', colorBorde);
+    contenedor.children('div.buscador').css('border-color', colorBorde);
 });

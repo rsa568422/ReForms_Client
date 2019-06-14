@@ -26,6 +26,15 @@ $(document).ready(function() {
                     'listaIntegrantes': [],
                     'conductor': null
                 }
+            },
+            'grupo': {
+                'listaIntegrantes': [],
+                'conductor': null
+            },
+            'agenda': {
+                'listaCitas': [],
+                'citaSeleccionada': null,
+                'posicionSeleccionada': -1
             }
         },
         seleccion_even = {
@@ -62,7 +71,9 @@ $(document).ready(function() {
                 'grupo': null,
                 'agenda': {
                     'tbody': null,
+                    'nueva': null,
                     'detalles': {
+                        'div': null,
                         'cita': null,
                         'evento': null,
                         'tareas': null
@@ -95,7 +106,7 @@ $(document).ready(function() {
         },
         espera_grupo = {
             'contador': 0,
-            'conductor': false,
+            'conductor': false
         },
         edicion = false,
         edicion_grupo = false;
@@ -231,6 +242,21 @@ $(document).ready(function() {
         tbody.children('tr.integrante').children('td.icono').children('i').click(icono_conductor_click);
     }
     
+    function actualizar_tabla_citas(listaCitas, tbody) {
+        tbody.children('tr.cita').remove();
+        if (listaCitas.length > 0) {
+            var i, cita;
+            for (i = 0; i < listaCitas.length; i++) {
+                cita = '<td>' + listaCitas[i].evento.descripcion + '</td>';
+                cita += '<td>' + (listaCitas[i].hora > 9 ? listaCitas[i].hora : '0' + listaCitas[i].hora) + ':' + (listaCitas[i].minuto > 9 ? listaCitas[i].minuto : '0' + listaCitas[i].minuto) + '</td>';
+                tbody.append('<tr class="cita">' + cita + '</tr>');
+            }
+            tbody.children('tr.cita').click(grupo_cita_click);
+        } else {
+            tbody.append('<tr class="cita"><td colspan="2"><h4>Sin citas registradas</h4></td></tr>');
+        }
+    }
+    
     function generar_msgFecha(fecha) {
         var f, y, m, d, msgFecha = 'Jornada del ';
         if (fecha.indexOf('T') > 0) {
@@ -304,7 +330,8 @@ $(document).ready(function() {
         componentes.jornadas.calendario.fecha.prop('disabled', true);
         card.children('div.card-body').children('div.container-fluid').children('div.row').children('div.col-12').children('textarea.observaciones').prop('readonly', false).focus();
         $(this).hide();
-        $(this).siblings('button.btn').show();
+        $(this).siblings('button.btn').not('button.btn-citas').show();
+        $(this).siblings('button.btn-citas').hide();
         card.children('div.card-footer').slideUp();
     }
     
@@ -348,6 +375,11 @@ $(document).ready(function() {
         card.children('div.card-body').children('div.container-fluid').children('div.botones').children('button.btn-editar').show();
         card.children('div.card-body').children('div.container-fluid').children('div.botones').children('button.btn-aceptar').hide();
         card.children('div.card-body').children('div.container-fluid').children('div.botones').children('button.btn-cancelar').hide();
+        if (seleccion_grup.grupos.listaGrupos.length > 0) {
+            card.children('div.card-body').children('div.container-fluid').children('div.botones').children('button.btn-citas').show();
+        } else {
+            card.children('div.card-body').children('div.container-fluid').children('div.botones').children('button.btn-citas').hide();
+        }
         card.children('div.card-footer').slideDown();
     }
     
@@ -422,16 +454,107 @@ $(document).ready(function() {
     }
     
     function grupo_editar_click() {
-        alert('grupo_editar_click()');
-        
+        var card = componentes.jornadas.detalles.children('div.col-12').children('div.contenedor').children('div.card'),
+            editar = card.children('div.card-body').children('div.container-fluid').children('div.botones').children('button.btn-editar'),
+            nuevo = card.children('div.card-footer').children('div.container-fluid').children('div.tabla').children('div.col-12').children('div.table-responsive-md').children('button.btn-nuevo'),
+            card_footer = card.children('div.card-footer').children('div.container-fluid').children('div.grupo').children('div.col-12').children('div.contenedor').children('div.card'),
+            activos = card_footer.children('div.card-body').children('div.container-fluid').children('div.activos'),
+            nuevo_operario = activos.children('div.integrantes').children('div.nuevo'),
+            select_vehiculo = activos.children('div.vehiculo').children('select[name="grupo_vehiculo"]'),
+            tbody = activos.children('div.integrantes').children('table').children('tbody'),
+            observaciones = card_footer.children('div.card-body').children('div.container-fluid').children('div.observaciones').children('div.col-12').children('textarea'),
+            botones = card_footer.children('div.card-body').children('div.container-fluid').children('div.botones');
+        edicion = true;
+        edicion_grupo = true;
+        componentes.jornadas.calendario.fecha.prop('disabled', true);
+        editar.prop('disabled', true);
+        nuevo.prop('disabled', true);
+        nuevo_operario.show();
+        select_vehiculo.prop('disabled', false);
+        observaciones.prop('readonly', false);
+        tbody.children('tr.integrante').children('td.icono').children('i').show();
+        botones.children('button.btn-editar').hide();
+        botones.children('button.btn-aceptar').show();
+        botones.children('button.btn-cancelar').show();
+        card.children('div.card-body').children('div.container-fluid').children('div.botones').children('button.btn-citas').hide();
     }
     
     function grupo_aceptar_click() {
-        alert('grupo_editar_click()');
+        alert('grupo_aceptar_click()');
+        $(this).siblings('button.btn-cancelar').click();
     }
     
     function grupo_cancelar_click() {
-        alert('grupo_editar_click()');
+        var card = componentes.jornadas.detalles.children('div.col-12').children('div.contenedor').children('div.card'),
+            editar = card.children('div.card-body').children('div.container-fluid').children('div.botones').children('button.btn-editar'),
+            nuevo = card.children('div.card-footer').children('div.container-fluid').children('div.tabla').children('div.col-12').children('div.table-responsive-md').children('button.btn-nuevo'),
+            card_footer = card.children('div.card-footer').children('div.container-fluid').children('div.grupo').children('div.col-12').children('div.contenedor').children('div.card'),
+            activos = card_footer.children('div.card-body').children('div.container-fluid').children('div.activos'),
+            nuevo_operario = activos.children('div.integrantes').children('div.nuevo'),
+            select_operario = nuevo_operario.children('div.input-group').children('select[name="grupo_operario"]'),
+            select_vehiculo = activos.children('div.vehiculo').children('select[name="grupo_vehiculo"]'),
+            tbody = activos.children('div.integrantes').children('table').children('tbody'),
+            observaciones = card_footer.children('div.card-body').children('div.container-fluid').children('div.observaciones').children('div.col-12').children('textarea'),
+            botones = card_footer.children('div.card-body').children('div.container-fluid').children('div.botones');
+        edicion = false;
+        edicion_grupo = false;
+        actualizar_tabla_integrantes(seleccion_grup.grupos.integrantes.listaIntegrantes, seleccion_grup.grupos.integrantes.conductor , tbody);
+        select_operario.children('option').remove();
+        if (seleccion_grup.jornadas.activosDisponibles.operarios.length > 0) {
+            select_operario.append('<option value=-1>Seleccione operario...</option>');
+            for (i = 0; i < seleccion_grup.jornadas.activosDisponibles.operarios.length; i++) {
+                opcion = seleccion_grup.jornadas.activosDisponibles.operarios[i].trabajador.nombre;
+                if (seleccion_grup.jornadas.activosDisponibles.operarios[i].trabajador.apellido1 && seleccion_grup.jornadas.activosDisponibles.operarios[i].trabajador.apellido1 != null && seleccion_grup.jornadas.activosDisponibles.operarios[i].trabajador.apellido1 != '') {
+                    opcion += ' ' + seleccion_grup.jornadas.activosDisponibles.operarios[i].trabajador.apellido1;
+                }
+                select_operario.append('<option value=' + i + '>' + opcion + '</option>');
+            }
+        } else {
+            select_operario.append('<option value=-1>Sin operarios disponibles...</option>');
+        }
+        componentes.jornadas.calendario.fecha.prop('disabled', false);
+        editar.prop('disabled', false);
+        nuevo.prop('disabled', false);
+        select_operario.val(-1);
+        select_vehiculo.prop('disabled', true).val(-1);
+        observaciones.prop('readonly', true);
+        if (seleccion_grup.grupos.grupoSeleccionado.observaciones && seleccion_grup.grupos.grupoSeleccionado.observaciones != null && seleccion_grup.grupos.grupoSeleccionado.observaciones != '') {
+            observaciones.val(seleccion_grup.grupos.grupoSeleccionado.observaciones);
+        } else {
+            observaciones.val('');
+        }
+        nuevo_operario.hide();
+        tbody.children('tr.integrante').children('td.icono').not('td.seleccionado').children('i').hide();
+        botones.children('button.btn-editar').show();
+        botones.children('button.btn-aceptar').hide();
+        botones.children('button.btn-cancelar').hide();
+        if (seleccion_grup.grupos.listaGrupos.length > 0) {
+            card.children('div.card-body').children('div.container-fluid').children('div.botones').children('button.btn-citas').show();
+        } else {
+            card.children('div.card-body').children('div.container-fluid').children('div.botones').children('button.btn-citas').hide();
+        }
+    }
+    
+    function grupo_citas_click() {
+        var cabecera = componentes.jornada.div.children('div.cabecera').children('div.container-fluid').children('div.row').children('div.col-12'),
+            i, opcion, msgGerente = 'Generada por: ';
+        cabecera.children('h4.fecha').text(generar_msgFecha(seleccion_grup.jornadas.jornadaSeleccionada.fecha));
+        msgGerente += seleccion_grup.jornadas.jornadaSeleccionada.gerente.trabajador.nombre + ' ' + seleccion_grup.jornadas.jornadaSeleccionada.gerente.trabajador.apellido1;
+        if (seleccion_grup.jornadas.jornadaSeleccionada.gerente.trabajador.apellido2) {
+            msgGerente += ' ' + seleccion_grup.jornadas.jornadaSeleccionada.gerente.trabajador.apellido2;
+        }
+        cabecera.children('h5.gerente').text(msgGerente);
+        componentes.jornada.select.children('option').remove();
+        for (i = 0; i < seleccion_grup.grupos.listaGrupos.length; i++) {
+            opcion = '<option value=' + i + '>' + seleccion_grup.grupos.infoGrupos[i].nombre + '</option>';
+            componentes.jornada.select.append(opcion);
+        }
+        if (seleccion_grup.grupos.grupoSeleccionado != null && seleccion_grup.grupos.posicionSeleccionada != -1) {
+            componentes.jornada.select.val(seleccion_grup.grupos.posicionSeleccionada);
+        }
+        componentes.jornada.select.change();
+        componentes.jornadas.div.hide();
+        componentes.jornada.div.show();
     }
     
     function grupo_nuevo_click() {
@@ -446,6 +569,7 @@ $(document).ready(function() {
         componentes.jornadas.calendario.fecha.prop('disabled', true);
         footer.children('div.container-fluid').children('div.tabla').children('div.col-12').children('div.table-responsive-md').children('button.btn-nuevo').prop('disabled', true);
         footer.siblings('div.card-body').children('div.container-fluid').children('div.botones').children('button.btn-editar').prop('disabled', true);
+        componentes.jornadas.detalles.children('div.col-12').children('div.contenedor').children('div.card').children('div.card-body').children('div.container-fluid').children('div.botones').children('button.btn-citas').hide();
         grupo.children('div.col-12').load('Html/grupo.html', cargar_grupo_nuevo);
         grupo.show();
     }
@@ -549,6 +673,11 @@ $(document).ready(function() {
         componentes.jornadas.calendario.fecha.prop('disabled', false);
         footer.children('div.container-fluid').children('div.tabla').children('div.col-12').children('div.table-responsive-md').children('button.btn-nuevo').prop('disabled', false);
         footer.siblings('div.card-body').children('div.container-fluid').children('div.botones').children('button.btn-editar').prop('disabled', false);
+        if (seleccion_grup.grupos.listaGrupos.length > 0) {
+            componentes.jornadas.detalles.children('div.col-12').children('div.contenedor').children('div.card').children('div.card-body').children('div.container-fluid').children('div.botones').children('button.btn-citas').show();
+        } else {
+            componentes.jornadas.detalles.children('div.col-12').children('div.contenedor').children('div.card').children('div.card-body').children('div.container-fluid').children('div.botones').children('button.btn-citas').hide();
+        }
         grupo.hide();
     }
     
@@ -568,11 +697,37 @@ $(document).ready(function() {
         }
     }
     
+    function grupo_operario_aceptar_click() {
+        var activos = componentes.jornadas.detalles.children('div.col-12').children('div.contenedor').children('div.card').children('div.card-footer').children('div.container-fluid').children('div.grupo').children('div.col-12').children('div.contenedor').children('div.card').children('div.card-body').children('div.container-fluid').children('div.activos'),
+            grupoOperario = activos.children('div.integrantes').children('div.nuevo').children('div.input-group').children('select[name="grupo_operario"]'),
+            tbody = activos.children('div.integrantes').children('table').children('tbody'),
+            icono, pos = grupoOperario.val();
+        if (seleccion_grup.jornadas.activosDisponibles.operarios[pos].carnet) {
+            icono = '<td class="icono"><i class="material-icons">airline_seat_recline_extra</i></td>';
+        } else {
+            icono = '<td></td>';
+        }
+        nombre = seleccion_grup.jornadas.activosDisponibles.operarios[pos].trabajador.nombre;
+        if (seleccion_grup.jornadas.activosDisponibles.operarios[pos].trabajador.apellido1 && seleccion_grup.jornadas.activosDisponibles.operarios[pos].trabajador.apellido1 != null && seleccion_grup.jornadas.activosDisponibles.operarios[pos].trabajador.apellido1 != '') {
+            nombre += ' ' + seleccion_grup.jornadas.activosDisponibles.operarios[pos].trabajador.apellido1;
+        }
+        nombre = '<td class="nombre">' + nombre + '<span class="pos">' + pos + '</span></td>';
+        tbody.append('<tr class="integrante nuevo">' + icono + nombre + '</tr>');
+        tbody.children('tr.nuevo:last-child').children('td.icono').css('color', colorJornada).children('i').click(icono_conductor_click);
+        tbody.children('tr.nuevo:last-child').children('td.nombre').children('span.pos').hide();
+        grupoOperario.children('option[value="' + pos + '"]').remove();
+        if (grupoOperario.children('option').length == 1) {
+            grupoOperario.children('option').remove();
+            grupoOperario.append('<option value=-1>Sin operarios disponibles...</option>');
+        }
+        grupoOperario.val(-1).change();
+    }
+    
     function grupo_nuevo_operario_aceptar_click() {
         var activos = componentes.jornadas.detalles.children('div.col-12').children('div.contenedor').children('div.card').children('div.card-footer').children('div.container-fluid').children('div.grupo').children('div.col-12').children('div.contenedor').children('div.card').children('div.card-body').children('div.container-fluid').children('div.activos'),
             grupoOperario = activos.children('div.integrantes').children('div.nuevo').children('div.input-group').children('select[name="grupo_operario"]'),
             tbody = activos.children('div.integrantes').children('table').children('tbody'),
-            pos = grupoOperario.val();
+            icono, pos = grupoOperario.val();
         if (seleccion_grup.jornadas.activosDisponibles.operarios[pos].carnet) {
             icono = '<td class="icono"><i class="material-icons">airline_seat_recline_extra</i></td>';
         } else {
@@ -592,6 +747,38 @@ $(document).ready(function() {
             grupoOperario.append('<option value=-1>Sin operarios disponibles...</option>');
         }
         grupoOperario.val(-1).change();
+    }
+    
+    function grupo_cita_click() {
+        if (!edicion) {
+            componentes.jornada.agenda.tbody.children('tr.cita').css('background-color', sinColor).removeClass('seleccionada');
+            if ($(this).index() != seleccion_grup.agenda.posicionSeleccionada) {
+                seleccion_grup.agenda.posicionSeleccionada = $(this).index();
+                seleccion_grup.agenda.citaSeleccionada = seleccion_grup.agenda.listaCitas[seleccion_grup.agenda.posicionSeleccionada];
+                $(this).css('background-color', colorFondo).addClass('seleccionada');
+                alert('grupo_cita_click()\n\nFalta mostcitarar detalles de la cita');
+                componentes.jornada.agenda.detalles.div.show();
+                componentes.jornada.agenda.detalles.cita.show();
+                componentes.jornada.agenda.detalles.evento.hide();
+                componentes.jornada.agenda.detalles.tareas.hide();
+            } else {
+                seleccion_grup.agenda.posicionSeleccionada = -1;
+                seleccion_grup.agenda.citaSeleccionada = null;
+                componentes.jornada.agenda.detalles.div.hide();
+            }
+        }
+    }
+    
+    function grupo_cita_nueva_click() {
+        alert('grupo_cita_nueva_click()');
+    }
+    
+    function jornada_volver_click() {
+        if (seleccion_grup.grupos.posicionSeleccionada != componentes.jornada.select.val()) {
+            componentes.jornadas.detalles.children('div.col-12').children('div.contenedor').children('div.card').children('div.card-footer').children('div.container-fluid').children('div.tabla').children('div.col-12').children('div.table-responsive-md').children('table.table').children('tbody').children('tr.grupo').eq(componentes.jornada.select.val()).click();
+        }
+        componentes.jornadas.div.show();
+        componentes.jornada.div.hide();
     }
     
     function fecha_change() {
@@ -614,11 +801,16 @@ $(document).ready(function() {
         aceptar.prop('disabled', !(testConductor && $(this).val() != -1));
     }
     
+    function jornada_grupo_change() {
+        componentes.jornada.grupo.load('Html/grupo.html', cargar_grupo_resumen);
+    }
+    
     // Funciones para cargar paginas y definir su comportamiento
     // ====================================================================== //
     function cargar_grupo(responseTxt, statusTxt) {
         if (statusTxt == 'success') {
-            var card = componentes.jornadas.detalles.children('div.col-12').children('div.contenedor').children('div.card').children('div.card-footer').children('div.container-fluid').children('div.grupo').children('div.col-12').children('div.contenedor').children('div.card');
+            var card = componentes.jornadas.detalles.children('div.col-12').children('div.contenedor').children('div.card').children('div.card-footer').children('div.container-fluid').children('div.grupo').children('div.col-12').children('div.contenedor').children('div.card'),
+                nuevo = card.children('div.card-body').children('div.container-fluid').children('div.activos').children('div.integrantes').children('div.nuevo').children('div.input-group').children('div.input-group-append').children('button.btn-aceptar-sm');
             card.children('div.card-header').children('div.container-fluid').children('div.row').children('div.col-12').children('h4').html(seleccion_grup.grupos.infoGrupos[seleccion_grup.grupos.posicionSeleccionada].nombre);
             if (seleccion_grup.grupos.grupoSeleccionado.observaciones && seleccion_grup.grupos.grupoSeleccionado.observaciones != null && seleccion_grup.grupos.grupoSeleccionado.observaciones != '') {
                 card.children('div.card-body').children('div.container-fluid').children('div.observaciones').children('div.col-12').children('textarea').val(seleccion_grup.grupos.grupoSeleccionado.observaciones);
@@ -626,12 +818,13 @@ $(document).ready(function() {
             card.children('div.card-body').children('div.container-fluid').children('div.botones').children('button.btn-editar').css({'border-color':colorBorde, 'background-color':colorFondo}).click(grupo_editar_click);
             card.children('div.card-body').children('div.container-fluid').children('div.botones').children('button.btn-aceptar').hide().click(grupo_aceptar_click);
             card.children('div.card-body').children('div.container-fluid').children('div.botones').children('button.btn-cancelar').hide().click(grupo_cancelar_click);
+            nuevo.prop('disabled', true).click(grupo_operario_aceptar_click);
             card.css('border-color', colorBorde);
             card.children('div.card-header').css('background-color', colorBorde);
             card.children('div.card-body').css('background-color', colorFondo);
             $.get('http://localhost:8080/ReForms_Provider/wr/integrante/obtenerIntegrantePorGrupo/' + seleccion_grup.grupos.grupoSeleccionado.id, respuesta_obtenerIntegrantePorGrupo, 'json');
         } else {
-            alert('error');
+            alerta('Error 404', 'no se pudo cargar grupo.html');
         }
     }
     
@@ -651,7 +844,6 @@ $(document).ready(function() {
             card.children('div.card-header').css('background-color', colorBorde);
             card.children('div.card-body').css('background-color', colorFondo);
             select.children('option').remove();
-            nuevo.children('div.input-group-append').children('button.btn-aceptar-sm').prop('disabled', true);
             if (seleccion_grup.jornadas.activosDisponibles.operarios.length > 0) {
                 nuevo.children('select[name="grupo_operario"]').append('<option value=-1>Seleccione operario...</option>');
                 for (i = 0; i < seleccion_grup.jornadas.activosDisponibles.operarios.length; i++) {
@@ -683,7 +875,27 @@ $(document).ready(function() {
             }
             select.change(grupo_vehiculo_change);
         } else {
-            alert('error');
+            alerta('Error 404', 'no se pudo cargar grupo.html');
+        }
+    }
+    
+    function cargar_grupo_resumen(responseTxt, statusTxt) {
+        if (statusTxt == 'success') {
+            var card = componentes.jornada.grupo.children('div.contenedor').children('div.card');
+            card.children('div.card-body').children('div.container-fluid').children('div.activos').children('div.integrantes').children('div.nuevo').remove();
+            card.children('div.card-body').children('div.container-fluid').children('div.botones').remove();
+            card.children('div.card-header').children('div.container-fluid').children('div.row').children('div.col-12').children('h4').html(seleccion_grup.grupos.infoGrupos[componentes.jornada.select.val()].nombre);
+            if (seleccion_grup.grupos.listaGrupos[componentes.jornada.select.val()].observaciones && seleccion_grup.grupos.listaGrupos[componentes.jornada.select.val()].observaciones != null && seleccion_grup.grupos.listaGrupos[componentes.jornada.select.val()].observaciones != '') {
+                card.children('div.card-body').children('div.container-fluid').children('div.observaciones').children('div.col-12').children('textarea').val(seleccion_grup.grupos.listaGrupos[componentes.jornada.select.val()].observaciones);
+            }
+            $.get('http://localhost:8080/ReForms_Provider/wr/integrante/obtenerIntegrantePorGrupo/' + seleccion_grup.grupos.listaGrupos[componentes.jornada.select.val()].id, respuesta_obtenerIntegrantePorGrupo_resumen, 'json');
+            $.get('http://localhost:8080/ReForms_Provider/wr/cita/obtenerCitaPorGrupo/' + seleccion_grup.grupos.listaGrupos[componentes.jornada.select.val()].id, respuesta_obtenerCitaPorGrupo_resumen, 'json');
+            componentes.jornada.agenda.detalles.div.hide();
+            card.css('border-color', colorBorde);
+            card.children('div.card-header').css('background-color', colorBorde);
+            card.children('div.card-body').css('background-color', colorFondo);
+        } else {
+            alerta('Error 404', 'no se pudo cargar grupo.html');
         }
     }
         
@@ -704,6 +916,7 @@ $(document).ready(function() {
             card.children('div.card-body').children('div.container-fluid').children('div.botones').children('button.btn-editar').css({'border-color':colorBorde, 'background-color':colorFondo}).click(jornada_editar_click);
             card.children('div.card-body').children('div.container-fluid').children('div.botones').children('button.btn-aceptar').hide().click(jornada_aceptar_click);
             card.children('div.card-body').children('div.container-fluid').children('div.botones').children('button.btn-cancelar').hide().click(jornada_cancelar_click);
+            card.children('div.card-body').children('div.container-fluid').children('div.botones').children('button.btn-citas').css({'border-color':colorBorde, 'background-color':colorFondo}).click(grupo_citas_click);
             table.siblings('button.btn-nuevo').css({'border-color':colorBorde, 'background-color':colorFondo}).click(grupo_nuevo_click);
             card.css('border-color', colorBorde);
             card.children('div').css('border-color', colorBorde);
@@ -741,6 +954,7 @@ $(document).ready(function() {
             card.children('div.card-body').children('div.container-fluid').children('div.botones').children('button.btn-aceptar').click(jornada_nueva_aceptar_click);
             card.children('div.card-body').children('div.container-fluid').children('div.botones').children('button.btn-cancelar').click(jornada_nueva_cancelar_click);
             card.children('div.card-body').children('div.container-fluid').children('div.botones').children('button.btn-editar').remove();
+            card.children('div.card-body').children('div.container-fluid').children('div.botones').children('button.btn-citas').remove();
             card.children('div.card-footer').remove();
             card.css('border-color', colorBorde);
             card.children('div').css('border-color', colorBorde);
@@ -764,6 +978,11 @@ $(document).ready(function() {
             seleccion_grup.grupos.posicionSeleccionada = -1;
             seleccion_grup.grupos.integrantes.listaIntegrantes = [];
             seleccion_grup.grupos.integrantes.conductor = null;
+            if (seleccion_grup.grupos.listaGrupos.length > 0) {
+                componentes.jornadas.detalles.children('div.col-12').children('div.contenedor').children('div.card').children('div.card-body').children('div.container-fluid').children('div.botones').children('button.btn-citas').show();
+            } else {
+                componentes.jornadas.detalles.children('div.col-12').children('div.contenedor').children('div.card').children('div.card-body').children('div.container-fluid').children('div.botones').children('button.btn-citas').hide();
+            }
             $.get('http://localhost:8080/ReForms_Provider/wr/grupo/obtenerInfoGrupoPorJornada/' + seleccion_grup.jornadas.jornadaSeleccionada.id, respuesta_obtenerInfoGrupoPorJornada, 'text');
         } else {
             alert('fallo en el proveedor');
@@ -802,13 +1021,29 @@ $(document).ready(function() {
             $.get('http://localhost:8080/ReForms_Provider/wr/conductor/obtenerConductorPorGrupo/' + seleccion_grup.grupos.grupoSeleccionado.id, function(data2, status) {
                 if (status == 'success') {
                     var card = componentes.jornadas.detalles.children('div.col-12').children('div.contenedor').children('div.card').children('div.card-footer').children('div.container-fluid').children('div.grupo').children('div.col-12').children('div.contenedor').children('div.card'),
-                        select = card.children('div.card-body').children('div.container-fluid').children('div.activos').children('div.vehiculo').children('select[name="grupo_vehiculo"]'),
                         table = card.children('div.card-body').children('div.container-fluid').children('div.activos').children('div.integrantes').children('table'),
                         nuevo = card.children('div.card-body').children('div.container-fluid').children('div.activos').children('div.integrantes').children('div.nuevo'),
-                        opcion;
+                        select_operario = nuevo.children('div.input-group').children('select[name="grupo_operario"]'),
+                        select_vehiculo = card.children('div.card-body').children('div.container-fluid').children('div.activos').children('div.vehiculo').children('select[name="grupo_vehiculo"]'),
+                        i, opcion;
                     seleccion_grup.grupos.integrantes.conductor = data2[0];
-                    actualizar_tabla_integrantes(seleccion_grup.grupos.integrantes.listaIntegrantes, seleccion_grup.grupos.integrantes.conductor ,table.children('tbody'));
-                    nuevo.hide();
+                    actualizar_tabla_integrantes(seleccion_grup.grupos.integrantes.listaIntegrantes, seleccion_grup.grupos.integrantes.conductor , table.children('tbody'));
+                    select_operario.children('option').remove();
+                    if (seleccion_grup.jornadas.activosDisponibles.operarios.length > 0) {
+                        select_operario.append('<option value=-1>Seleccione operario...</option>');
+                        for (i = 0; i < seleccion_grup.jornadas.activosDisponibles.operarios.length; i++) {
+                            opcion = seleccion_grup.jornadas.activosDisponibles.operarios[i].trabajador.nombre;
+                            if (seleccion_grup.jornadas.activosDisponibles.operarios[i].trabajador.apellido1 && seleccion_grup.jornadas.activosDisponibles.operarios[i].trabajador.apellido1 != null && seleccion_grup.jornadas.activosDisponibles.operarios[i].trabajador.apellido1 != '') {
+                                opcion += ' ' + seleccion_grup.jornadas.activosDisponibles.operarios[i].trabajador.apellido1;
+                            }
+                            select_operario.append('<option value=' + i + '>' + opcion + '</option>');
+                        }
+                    } else {
+                        select_operario.append('<option value=-1>Sin operarios disponibles...</option>');
+                    }
+                    nuevo.children('div.input-group').children('div.input-group-append').children('button.btn-aceptar-sm').prop('disabled', true);
+                    select_operario.change(grupo_operario_change);
+                    select_vehiculo.children('option').remove();
                     opcion = '[' + seleccion_grup.grupos.integrantes.conductor.vehiculo.matricula + ']';
                     if (seleccion_grup.grupos.integrantes.conductor.vehiculo.marca && seleccion_grup.grupos.integrantes.conductor.vehiculo.marca != null && seleccion_grup.grupos.integrantes.conductor.vehiculo.marca != '') {
                         opcion += ' ' + seleccion_grup.grupos.integrantes.conductor.vehiculo.marca;
@@ -816,12 +1051,65 @@ $(document).ready(function() {
                     if (seleccion_grup.grupos.integrantes.conductor.vehiculo.modelo && seleccion_grup.grupos.integrantes.conductor.vehiculo.modelo != null && seleccion_grup.grupos.integrantes.conductor.vehiculo.modelo != '') {
                         opcion += ' ' + seleccion_grup.grupos.integrantes.conductor.vehiculo.modelo;
                     }
-                    select.children('option').remove();
-                    select.append('<option val=0>' + opcion + '</option>');
+                    select_vehiculo.append('<option value=-1>' + opcion + '</option>');
+                    if (seleccion_grup.jornadas.activosDisponibles.vehiculos.length > 0) {
+                        for (i = 0; i < seleccion_grup.jornadas.activosDisponibles.vehiculos.length; i++) {
+                            opcion = '[' + seleccion_grup.jornadas.activosDisponibles.vehiculos[i].matricula + ']';
+                            if (seleccion_grup.jornadas.activosDisponibles.vehiculos[i].marca && seleccion_grup.jornadas.activosDisponibles.vehiculos[i].marca != null && seleccion_grup.jornadas.activosDisponibles.vehiculos[i].marca != '') {
+                                opcion += ' ' + seleccion_grup.jornadas.activosDisponibles.vehiculos[i].marca;
+                            }
+                            if (seleccion_grup.jornadas.activosDisponibles.vehiculos[i].modelo && seleccion_grup.jornadas.activosDisponibles.vehiculos[i].modelo != null && seleccion_grup.jornadas.activosDisponibles.vehiculos[i].modelo != '') {
+                                opcion += ' ' + seleccion_grup.jornadas.activosDisponibles.vehiculos[i].modelo;
+                            }
+                            select_vehiculo.append('<option value=' + i + '>' + opcion + '</option>');
+                        }
+                    } else {
+                        select_vehiculo.append('<option value=-2>Sin vehiculos disponibles...</option>');
+                    }
+                    nuevo.hide();
                 } else {
                     alert('fallo en el proveedor');
                 }
             }, 'json');
+        } else {
+            alert('fallo en el proveedor');
+        }
+    }
+    
+    function respuesta_obtenerIntegrantePorGrupo_resumen(data, status) {
+        if (status == 'success') {
+            seleccion_grup.grupo.listaIntegrantes = data;
+            $.get('http://localhost:8080/ReForms_Provider/wr/conductor/obtenerConductorPorGrupo/' + seleccion_grup.grupos.listaGrupos[componentes.jornada.select.val()].id, function(data2, status) {
+                if (status == 'success') {
+                    var activos = componentes.jornada.grupo.children('div.contenedor').children('div.card').children('div.card-body').children('div.container-fluid').children('div.activos'),
+                        tbody = activos.children('div.integrantes').children('table').children('tbody'),
+                        select_vehiculo = activos.children('div.vehiculo').children('select[name="grupo_vehiculo"]'),
+                        opcion;
+                    seleccion_grup.grupo.conductor = data2[0];
+                    actualizar_tabla_integrantes(seleccion_grup.grupo.listaIntegrantes, seleccion_grup.grupo.conductor , tbody);
+                    opcion = '[' + seleccion_grup.grupo.conductor.vehiculo.matricula + ']';
+                    if (seleccion_grup.grupo.conductor.vehiculo.marca && seleccion_grup.grupo.conductor.vehiculo.marca != null && seleccion_grup.grupo.conductor.vehiculo.marca != '') {
+                        opcion += ' ' + seleccion_grup.grupo.conductor.vehiculo.marca;
+                    }
+                    if (seleccion_grup.grupo.conductor.vehiculo.modelo && seleccion_grup.grupo.conductor.vehiculo.modelo != null && seleccion_grup.grupo.conductor.vehiculo.modelo != '') {
+                        opcion += ' ' + seleccion_grup.grupo.conductor.vehiculo.modelo;
+                    }
+                    select_vehiculo.append('<option value=-1>' + opcion + '</option>');
+                } else {
+                    alert('fallo en el proveedor');
+                }
+            }, 'json');
+        } else {
+            alert('fallo en el proveedor');
+        }
+    }
+    
+    function respuesta_obtenerCitaPorGrupo_resumen(data, status) {
+        if (status == 'success') {
+            seleccion_grup.agenda.listaCitas = data;
+            seleccion_grup.agenda.posicionSeleccionada = -1;
+            seleccion_grup.agenda.citaSeleccionada = null;
+            actualizar_tabla_citas(seleccion_grup.agenda.listaCitas, componentes.jornada.agenda.tbody);
         } else {
             alert('fallo en el proveedor');
         }
@@ -833,13 +1121,14 @@ $(document).ready(function() {
     componentes.jornadas.calendario.tbody = componentes.jornadas.div.children('div.calendario').children('div.col-12').children('table').children('tbody');
     componentes.jornadas.calendario.nueva = componentes.jornadas.div.children('div.calendario').children('div.col-12').children('button.btn-nuevo');
     componentes.jornadas.detalles = componentes.jornadas.div.children('div.detalles');
-    componentes.jornada.select = componentes.jornada.div.children('div.seleccion');
+    componentes.jornada.select = componentes.jornada.div.children('div.seleccion').children('select[name="grupo_actual"]');
     componentes.jornada.grupo = componentes.jornada.div.children('div.grupo');
-    componentes.jornada.agenda.tbody = componentes.jornada.div.children('div.agenda').children('div.col-12').children('div.tabla');
-    componentes.jornada.agenda.tbody = componentes.jornada.div.children('div.agenda').children('div.col-12').children('div.tabla');
-    componentes.jornada.agenda.detalles.cita = componentes.jornada.div.children('div.agenda').children('div.col-12').children('div.detalles').children('div.cita');
-    componentes.jornada.agenda.detalles.evento = componentes.jornada.div.children('div.agenda').children('div.col-12').children('div.detalles').children('div.extra').children('div.evento');
-    componentes.jornada.agenda.detalles.tareas = componentes.jornada.div.children('div.agenda').children('div.col-12').children('div.detalles').children('div.extra').children('div.tareas');
+    componentes.jornada.agenda.tbody = componentes.jornada.div.children('div.agenda').children('div.col-12').children('div.tabla').children('div.col-12').children('div.table-responsive-md').children('table.table').children('tbody');
+    componentes.jornada.agenda.nueva = componentes.jornada.div.children('div.agenda').children('div.col-12').children('div.tabla').children('div.col-12').children('div.table-responsive-md').children('button.btn-nuevo');
+    componentes.jornada.agenda.detalles.div = componentes.jornada.div.children('div.agenda').children('div.col-12').children('div.detalles');
+    componentes.jornada.agenda.detalles.cita = componentes.jornada.agenda.detalles.div.children('div.cita');
+    componentes.jornada.agenda.detalles.evento = componentes.jornada.agenda.detalles.div.children('div.extra').children('div.evento');
+    componentes.jornada.agenda.detalles.tareas = componentes.jornada.agenda.detalles.div.children('div.extra').children('div.tareas');
     componentes.siniestros.mapa = componentes.siniestros.div.children('div.mapa');
     componentes.siniestros.tabla.tbody = componentes.siniestros.div.children('div.tabla');
     componentes.siniestros.tabla.detalles = componentes.siniestros.div.children('div.tabla');
@@ -860,6 +1149,8 @@ $(document).ready(function() {
     componentes.jornadas.calendario.fecha.val(y + (m < 10 ? '-0' + m : '-' + m) + '-01');
     componentes.jornadas.calendario.fecha.change(fecha_change);
     componentes.jornadas.calendario.nueva.click(jornada_nueva_click);
+    componentes.jornada.agenda.nueva.click(grupo_cita_nueva_click);
+    componentes.jornada.div.children('div.botones').children('button.btn-volver').click(jornada_volver_click);
     actualizar_calendario(y, m, null);
     
     // Inicializacion de aspecto y colores
@@ -867,6 +1158,11 @@ $(document).ready(function() {
     $("#ventana").css({'border-color':colorBorde, 'background-color':colorFondo});
     componentes.jornadas.calendario.tbody.siblings('thead').children('tr').css("background-color", colorBorde);
     componentes.jornadas.calendario.nueva.css({'border-color':colorBorde, 'background-color':colorFondo});
+    componentes.jornada.agenda.tbody.siblings('thead').children('tr').css("background-color", colorBorde);
+    componentes.jornada.agenda.nueva.css({'border-color':colorBorde, 'background-color':colorFondo});
+    componentes.jornada.div.children('div.cabecera').css('background-color', colorBorde);
+    componentes.jornada.div.children('div.botones').children('button.btn-volver').css({'border-color':colorBorde, 'background-color':colorFondo});
+    componentes.jornada.select.change(jornada_grupo_change);
     componentes.jornadas.detalles.hide();
     componentes.jornada.div.hide();
     if (seleccion_even.evento == null) {

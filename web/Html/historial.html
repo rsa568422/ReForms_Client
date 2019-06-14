@@ -38,6 +38,10 @@
         width: 96px;
         height: 72px;
     }
+    
+    button.btn-volver[name="volver"] {
+        min-width: 96px;
+    }
 </style>
 
 <script src="Controlador/ControladorHistorial.js"></script>
@@ -55,7 +59,7 @@
                         </div>
                     </div>
                     <div class="col-xl-1 col-2">
-                        <button name="volver" class="btn" type="button">volver</button>
+                        <button name="volver" class="btn btn-volver" type="button">volver</button>
                     </div>
                 </div>
                 <div class="informacion row">
@@ -93,7 +97,7 @@
                             <div class="col-12">
                                 <div class="form-group">
                                     <label for="poliza_cliente_observaciones">Observaciones</label>
-                                    <textarea name="poliza_cliente_observaciones" class="form-control" rows="4" maxlength="250" readonly/>
+                                    <textarea name="poliza_cliente_observaciones" class="form-control" rows="4" maxlength="250" readonly></textarea>
                                 </div>
                             </div>
                         </div>
@@ -132,7 +136,7 @@
                             <div class="col-12">
                                 <div class="form-group">
                                     <label for="poliza_propiedad_observaciones">Observaciones</label>
-                                    <textarea name="poliza_propiedad_observaciones" class="form-control" rows="4" maxlength="250" readonly/>
+                                    <textarea name="poliza_propiedad_observaciones" class="form-control" rows="4" maxlength="250" readonly></textarea>
                                 </div>
                             </div>
                         </div>

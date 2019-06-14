@@ -23,9 +23,9 @@ $(document).ready(function() {
             'trabajos': []
         },
         eventos = {
-            'listaEventos': [],
-            'eventoSeleccionado': null,
-            'posicionSeleccionado': -1
+            'listaLlamadas': [],
+            'llamadaSeleccionada': null,
+            'posicionSeleccionada': -1
         },
         adicional = {
             'participantes': {
@@ -79,7 +79,9 @@ $(document).ready(function() {
                 }
             },
             'eventos': {
-                
+                'tbody': $('#ventana').children('div.container-fluid').children('div.eventos').children('div.ocultable-contenido').children('div.row').children('div.tabla').children('div.table-responsive-md').children('table.table').children('tbody'),
+                'nuevo': $('#ventana').children('div.container-fluid').children('div.eventos').children('div.ocultable-contenido').children('div.row').children('div.tabla').children('div.table-responsive-md').children('button.btn-nuevo'),
+                'detalles': $('#ventana').children('div.container-fluid').children('div.eventos').children('div.ocultable-contenido').children('div.row').children('div.detalles')
             },
             'adicional': {
                 'participantes': {
@@ -150,6 +152,17 @@ $(document).ready(function() {
             importe = trabajo.precioMed + (direfencia * trabajo.precioExtra);
         }
         return importe;
+    }
+    
+    function generar_icono_llamada(tipo) {
+        var salida;
+        switch (tipo) {
+            case 0: salida = '<i class="material-icons llamada-saliente">call_made</i>'; break;
+            case 1: salida = '<i class="material-icons llamada-entrante">call_received</i>'; break;
+            case 2: salida = '<i class="material-icons llamada-saliente-perdida">call_missed_outgoing</i>'; break;
+            case 3: salida = '<i class="material-icons llamada-entrante-perdida">call_missed</i>'; break;
+        }
+        return salida;
     }
     
     function mostrar_contactos(listaContactos, tbody) {
@@ -276,6 +289,81 @@ $(document).ready(function() {
         }
     }
     
+    function mostrar_llamadas(listaLlamadas, tbody) {
+        tbody.children('tr.llamada').remove();
+        if (listaLlamadas.length > 0) {
+            var i, fecha, descripcion, tipo;
+            for (i = 0; i < listaLlamadas.length; i++) {
+                if (listaLlamadas[i].id > -1) {
+                    if (listaLlamadas[i].evento.fecha && listaLlamadas[i].evento.fecha != null) {
+                        fecha = '<td>' +
+                                (listaLlamadas[i].evento.fecha.getDate() > 9 ? listaLlamadas[i].evento.fecha.getDate() : '0' + listaLlamadas[i].evento.fecha.getDate()) + '/' +
+                                (listaLlamadas[i].evento.fecha.getMonth() > 8 ? (listaLlamadas[i].evento.fecha.getMonth() + 1) : '0' + (listaLlamadas[i].evento.fecha.getMonth() + 1)) + '/' +
+                                listaLlamadas[i].evento.fecha.getFullYear() + '</td>';
+                    } else {
+                        fecha = '<td></td>';
+                    }
+                    if (listaLlamadas[i].cliente && listaLlamadas[i].cliente != null) {
+                        descripcion = listaLlamadas[i].cliente.nombre + ' ' + listaLlamadas[i].cliente.apellido1 + ' (' + listaLlamadas[i].cliente.telefono1;
+                        if (listaLlamadas[i].cliente.telefono2 && listaLlamadas[i].cliente.telefono2 != null && listaLlamadas[i].cliente.telefono2 != '') {
+                            descripcion += '/' + listaLlamadas[i].cliente.telefono2;
+                        }
+                        descripcion += ')';
+                    } else if (listaLlamadas[i].contacto && listaLlamadas[i].contacto != null) {
+                        descripcion = '';
+                        if (listaLlamadas[i].contacto.nombre && listaLlamadas[i].contacto.nombre != null && listaLlamadas[i].contacto.nombre != '') {
+                            descripcion += listaLlamadas[i].contacto.nombre + ' ';
+                        }
+                        if (listaLlamadas[i].contacto.apellido1 && listaLlamadas[i].contacto.apellido1 != null && listaLlamadas[i].contacto.apellido1 != '') {
+                            descripcion += listaLlamadas[i].contacto.apellido1 + ' ';
+                        }
+                        if (listaLlamadas[i].contacto.apellido2 && listaLlamadas[i].contacto.apellido2 != null && listaLlamadas[i].contacto.apellido2 != '') {
+                            descripcion += listaLlamadas[i].contacto.apellido2 + ' ';
+                        }
+                        descripcion += '(' + listaLlamadas[i].contacto.telefono1;
+                        if (listaLlamadas[i].contacto.telefono2 && listaLlamadas[i].contacto.telefono2 != null && listaLlamadas[i].contacto.telefono2 != '') {
+                            descripcion += '/' + listaLlamadas[i].contacto.telefono2;
+                        }
+                        descripcion += ')';
+                    } else if (listaLlamadas[i].perito && listaLlamadas[i].perito != null) {
+                        descripcion = listaLlamadas[i].perito.nombre + ' ' + listaLlamadas[i].perito.apellido1 + ' (' + listaLlamadas[i].perito.telefono1;
+                        if (listaLlamadas[i].perito.telefono2 && listaLlamadas[i].perito.telefono2 != null && listaLlamadas[i].perito.telefono2 != '') {
+                            descripcion += '/' + listaLlamadas[i].perito.telefono2;
+                        }
+                        descripcion += ')';
+                    } else if (listaLlamadas[i].grupo && listaLlamadas[i].grupo != null) {
+                        var f = listaLlamadas[i].grupo.observaciones.slice(1, listaLlamadas[i].grupo.observaciones.indexOf(']')),
+                            textoNombre, textoFecha;
+                        f = new Date (new Number(f));
+                        textoFecha = '[Jor. ' + (f.getDate() > 9 ? f.getDate() : '0' + f.getDate()) + '/' + (f.getMonth() > 8 ? f.getMonth() + 1 : '0' + (f.getMonth() + 1)) + '/' + f.getFullYear() + ']';
+                        textoNombre = listaLlamadas[i].grupo.observaciones.slice(listaLlamadas[i].grupo.observaciones.indexOf(']') + 2, listaLlamadas[i].grupo.observaciones.length);
+                        descripcion = textoFecha + ' ' + textoNombre;
+                    } else {
+                        descripcion = '';
+                    }
+                    descripcion = '<td>' + descripcion + '</td>';
+                    tipo = '<td>' + generar_icono_llamada(listaLlamadas[i].tipo) + '</td>';
+                    tbody.append('<tr class="llamada">' + fecha + descripcion + tipo + '</tr>');
+                } else {
+                    if (listaLlamadas[i].evento.fecha && listaLlamadas[i].evento.fecha != null) {
+                        fecha = '<td>' +
+                                (listaLlamadas[i].evento.fecha.getDate() > 9 ? listaLlamadas[i].evento.fecha.getDate() : '0' + listaLlamadas[i].evento.fecha.getDate()) + '/' +
+                                (listaLlamadas[i].evento.fecha.getMonth() > 8 ? (listaLlamadas[i].evento.fecha.getMonth() + 1) : '0' + (listaLlamadas[i].evento.fecha.getMonth() + 1)) + '/' +
+                                listaLlamadas[i].evento.fecha.getFullYear() + '</td>';
+                    } else {
+                        fecha = '<td></td>';
+                    }
+                    descripcion = '<td>' + listaLlamadas[i].evento.descripcion + '</td>';
+                    tipo = '<td></td>';
+                    tbody.append('<tr class="llamada">' + fecha + descripcion + tipo + '</tr>');
+                }
+            }
+            tbody.children('tr.llamada').click(llamada_click);
+        } else {
+            tbody.append('<tr class="llamada sin-resultados"><td colspan="3"><h4>Sin eventos registrados</h4></td></tr>');
+        }
+    }
+    
     function actualizar_estado_siniestro(estado) {
         var strAux;
         switch (estado) {
@@ -295,7 +383,7 @@ $(document).ready(function() {
             componentes.tareas.botones.show();
             componentes.botonera.botones.children('button[name="replanificar"]').show();
             componentes.botonera.botones.children('button[name="reasignar"]').show();
-            if (estado == 0 && tareas.listaTareas.length == 0 && eventos.listaEventos.length == 0) {
+            if (estado == 0 && tareas.listaTareas.length == 0 && eventos.listaLlamadas.length == 0) {
                 componentes.botonera.botones.children('button[name="borrar"]').show();
             } else {
                 componentes.botonera.botones.children('button[name="borrar"]').hide();
@@ -396,7 +484,7 @@ $(document).ready(function() {
     
     function actualizar_detalles_recurso() {
         var salidas = componentes.adicional.recursos.recurso.children('div.contenedor').children('div.archivo').children('div.tipo').children('div.form-group').children('div.salida'),
-            icono = salidas.children('div.input-group-append').children('div[name="recurso_tipo_icono"]');
+            icono = salidas.children('div.input-group-append').children('div.recurso_tipo_icono');
         if (adicional.recursos.recursoSeleccionado != null) {
             if (adicional.recursos.recursoSeleccionado.id == null) {
                 adicional.recursos.recursoSeleccionado.tipo = 1;
@@ -1382,6 +1470,34 @@ $(document).ready(function() {
         }
     }
     
+    function llamada_click() {
+        if (!edicion) {
+            componentes.eventos.tbody.children('tr.llamada').css('background-color', sinColor).removeClass('seleccionada');
+            if (eventos.posicionSeleccionada != $(this).index()) {
+                eventos.posicionSeleccionada = $(this).index();
+                eventos.llamadaSeleccionada = eventos.listaLlamadas[eventos.posicionSeleccionada];
+                $(this).css('background-color', colorFondo).addClass('seleccionada');
+                componentes.eventos.detalles.load('Html/evento.html', cargar_evento);
+                componentes.eventos.detalles.show();
+            } else {
+                eventos.posicionSeleccionada = -1;
+                eventos.llamadaSeleccionada = null;
+                componentes.eventos.detalles.hide();
+            }
+            
+        }
+    }
+    
+    function llamada_nueva_click() {
+        edicion = true;
+        eventos.posicionSeleccionada = -1;
+        eventos.llamadaSeleccionada = null;
+        componentes.eventos.tbody.children('tr.llamada').css('background-color', sinColor).removeClass('seleccionada');
+        componentes.eventos.nuevo.prop('disabled', true);
+        componentes.eventos.detalles.load('Html/evento.html', cargar_evento_nuevo);
+        componentes.eventos.detalles.show();
+    }
+    
     function accion_fecha_nueva_change() {
         var aceptar = componentes.botonera.acciones.children('div.contenedor').children('div.accion').children('div.container-fluid').children('div.row').children('div.botones').children('button.btn-accion-aceptar');
         if ($(this).val() != '') {
@@ -1596,7 +1712,7 @@ $(document).ready(function() {
         }
     }
     
-    // Funciones para cargar paginas y definir su comportamiento
+    // Funciones para cargar paginas y controlar respuestas del proveedor
     // ====================================================================== //
     function cargar_poliza(responseTxt, statusTxt) {
         if (statusTxt != 'success') {
@@ -1808,6 +1924,97 @@ $(document).ready(function() {
         }
     }
     
+    function cargar_evento(responseTxt, statusTxt) {
+        if (statusTxt == 'success') {
+            var card = componentes.eventos.detalles.children('div.contenedor').children('div.card'),
+                detalles_llamada = card.children('div.card-body').children('div.container-fluid').children('div.llamada').children('div.col-12').children('div.detalles'),
+                textoTelefono = '', textoNombre = '';
+            if (eventos.llamadaSeleccionada.id == -1) {
+                detalles_llamada.hide();
+            } else {
+                if (eventos.llamadaSeleccionada.cliente && eventos.llamadaSeleccionada.cliente != null) {
+                    textoNombre = eventos.llamadaSeleccionada.cliente.nombre + ' ' + eventos.llamadaSeleccionada.cliente.apellido1;
+                    if (eventos.llamadaSeleccionada.cliente.apellido2 && eventos.llamadaSeleccionada.cliente.apellido2 != null && eventos.llamadaSeleccionada.cliente.apellido2 != '') {
+                        textoNombre += ' ' + eventos.llamadaSeleccionada.cliente.apellido2;
+                    }
+                    textoTelefono = eventos.llamadaSeleccionada.cliente.telefono1;
+                    if (eventos.llamadaSeleccionada.cliente.telefono2 && eventos.llamadaSeleccionada.cliente.telefono2 != null && eventos.llamadaSeleccionada.cliente.telefono2 != '') {
+                        textoTelefono += ' / ' + eventos.llamadaSeleccionada.cliente.telefono2
+                    }
+                } else if (eventos.llamadaSeleccionada.contacto && eventos.llamadaSeleccionada.contacto != null) {
+                    if (eventos.llamadaSeleccionada.contacto.nombre && eventos.llamadaSeleccionada.contacto.nombre != null && eventos.llamadaSeleccionada.contacto.nombre != '') {
+                        textoNombre += eventos.llamadaSeleccionada.contacto.nombre + ' ';
+                    }
+                    if (eventos.llamadaSeleccionada.contacto.apellido1 && eventos.llamadaSeleccionada.contacto.apellido1 != null && eventos.llamadaSeleccionada.contacto.apellido1 != '') {
+                        textoNombre += eventos.llamadaSeleccionada.contacto.apellido1 + ' ';
+                    }
+                    if (eventos.llamadaSeleccionada.contacto.apellido2 && eventos.llamadaSeleccionada.contacto.apellido2 != null && eventos.llamadaSeleccionada.contacto.apellido2 != '') {
+                        textoNombre += eventos.llamadaSeleccionada.contacto.apellido2;
+                    }
+                    textoTelefono = eventos.llamadaSeleccionada.contacto.telefono1;
+                    if (eventos.llamadaSeleccionada.contacto.telefono2 && eventos.llamadaSeleccionada.contacto.telefono2 != null && eventos.llamadaSeleccionada.contacto.telefono2 != '') {
+                        textoTelefono += ' / ' + eventos.llamadaSeleccionada.contacto.telefono2
+                    }
+                } else if (eventos.llamadaSeleccionada.perito && eventos.llamadaSeleccionada.perito != null) {
+                    textoNombre = eventos.llamadaSeleccionada.perito.nombre + ' ' + eventos.llamadaSeleccionada.perito.apellido1;
+                    textoTelefono = eventos.llamadaSeleccionada.perito.telefono1;
+                    if (eventos.llamadaSeleccionada.perito.telefono2 && eventos.llamadaSeleccionada.perito.telefono2 != null && eventos.llamadaSeleccionada.perito.telefono2 != '') {
+                        textoTelefono += ' / ' + eventos.llamadaSeleccionada.perito.telefono2;
+                    }
+                } else if (eventos.llamadaSeleccionada.grupo && eventos.llamadaSeleccionada.grupo != null) {
+                    if (eventos.llamadaSeleccionada.grupo.observaciones && eventos.llamadaSeleccionada.grupo.observaciones != null && eventos.llamadaSeleccionada.grupo.observaciones != '') {
+                        var fecha = eventos.llamadaSeleccionada.grupo.observaciones.slice(1, eventos.llamadaSeleccionada.grupo.observaciones.indexOf(']'));
+                        fecha = new Date (new Number(fecha));
+                        textoNombre = eventos.llamadaSeleccionada.grupo.observaciones.slice(eventos.llamadaSeleccionada.grupo.observaciones.indexOf(']') + 2, eventos.llamadaSeleccionada.grupo.observaciones.length);
+                        textoTelefono = '[Jor. ' + (fecha.getDate() > 9 ? fecha.getDate() : '0' + fecha.getDate()) + '/' + (fecha.getMonth() > 8 ? fecha.getMonth() + 1 : '0' + (fecha.getMonth() + 1)) + '/' + fecha.getFullYear() + ']';
+                    }
+                } else {
+                    alert('falta informacion de la llamada');
+                }
+                detalles_llamada.children('div.input-group').children('div.input-group-prepend').children('span.numero').html(textoTelefono);
+                detalles_llamada.children('div.input-group').children('span.nombre').html(textoNombre);
+                detalles_llamada.children('div.input-group').children('div.input-group-append').children('span.tipo').html(generar_icono_llamada(eventos.llamadaSeleccionada.tipo));
+            }
+            textoNombre = eventos.llamadaSeleccionada.evento.operador.trabajador.nombre;
+            if (eventos.llamadaSeleccionada.evento.operador.trabajador.apellido1 && eventos.llamadaSeleccionada.evento.operador.trabajador.apellido1 != null && eventos.llamadaSeleccionada.evento.operador.trabajador.apellido1 != '') {
+                textoNombre += ' ' + eventos.llamadaSeleccionada.evento.operador.trabajador.apellido1;
+            }
+            card.children('div.card-header').children('h4.nombre').html('Registrado por: ' + textoNombre);
+            if (eventos.llamadaSeleccionada.evento.descripcion && eventos.llamadaSeleccionada.evento.descripcion != null && eventos.llamadaSeleccionada.evento.descripcion != '') {
+                card.children('div.card-body').children('div.container-fluid').children('div.descripcion').children('div.col-12').children('textarea').val(eventos.llamadaSeleccionada.evento.descripcion);
+            }
+            $.get('http://localhost:8080/ReForms_Provider/wr/cita/obtenerCitaPorEvento/' + eventos.llamadaSeleccionada.evento.id, respuesta_obtenerCitaPorEvento, 'json');
+            card.css('border-color', colorBorde);
+            card.children('div.card-header').css({'background-color': colorBorde, 'border-color': colorBorde});
+            card.children('div.card-header').children('div.fecha').css('background-color', 'white');
+            fecha = eventos.llamadaSeleccionada.evento.fecha.getFullYear() + '-' + (eventos.llamadaSeleccionada.evento.fecha.getMonth() > 8 ? (eventos.llamadaSeleccionada.evento.fecha.getMonth() + 1) : '0' + (eventos.llamadaSeleccionada.evento.fecha.getMonth() + 1)) + '-' + (eventos.llamadaSeleccionada.evento.fecha.getDate() > 9 ? eventos.llamadaSeleccionada.evento.fecha.getDate() : ('0' + eventos.llamadaSeleccionada.evento.fecha.getDate()));
+            card.children('div.card-header').children('div.fecha').children('input').css({'background-color': colorFondo, 'border-color': colorFondo, 'color': colorTextoNeutro}).prop('disabled', true).val(fecha);
+            card.children('div.card-body').css({'background-color': colorFondo, 'border-color': colorBorde});
+            detalles_llamada.children('div.input-group').children('div.input-group-prepend').children('span.numero').css({'background-color': colorFondo, 'border-color': colorBorde});
+            detalles_llamada.children('div.input-group').children('span.nombre').css({'background-color': colorFondo, 'border-color': colorBorde});
+            detalles_llamada.children('div.input-group').children('div.input-group-append').children('span.tipo').css({'background-color': colorFondo, 'border-color': colorBorde});
+            card.children('div.card-body').children('div.container-fluid').children('div.llamada, div.cita').children('div.col-12').children('div.boton').hide();
+            card.children('div.card-footer').remove();
+        } else {
+            alerta('Error 404', 'no se pudo cargar evento.html');
+        }
+    }
+    
+    function cargar_evento_nuevo(responseTxt, statusTxt) {
+        if (statusTxt == 'success') {
+            alert('cargar_evento_nuevo(responseTxt, statusTxt)');
+            var card = componentes.eventos.detalles.children('div.contenedor').children('div.card');
+            card.css('border-color', colorBorde);
+            card.children('div.card-header').css({'background-color': colorBorde, 'border-color': colorBorde});
+            card.children('div.card-header').children('div.fecha').css('background-color', 'white');
+            card.children('div.card-header').children('div.fecha').children('input').css({'background-color': colorFondo, 'border-color': colorFondo, 'color': colorTextoNeutro});
+            card.children('div.card-body, div.card-footer').css({'background-color': colorFondo, 'border-color': colorBorde});
+            card.children('div.card-body').children('div.container-fluid').children('div.llamada, div.cita').children('div.col-12').children('div.detalles').hide();
+        } else {
+            alerta('Error 404', 'no se pudo cargar evento.html');
+        }
+    }
+    
     function respuesta_obtenerUltimaReasignacion (data, status) {
         var nombre;
         if (status == 'success') {
@@ -1831,6 +2038,21 @@ $(document).ready(function() {
         if (status == 'success') {
             contactos.listaContactos = data;
             mostrar_contactos(contactos.listaContactos, tbody);
+        } else {
+            alert('fallo en el proveedor');
+        }
+    }
+    
+    function respuesta_obtenerEventos(data, status) {
+        if (status == 'success') {
+            var i;
+            eventos.listaLlamadas = data;
+            eventos.llamadaSeleccionada = null;
+            eventos.posicionSeleccionada = -1;
+            for (i = 0; i < eventos.listaLlamadas.length; i++) {
+                eventos.listaLlamadas[i].evento.fecha = new Date(eventos.listaLlamadas[i].evento.fecha.slice(0, eventos.listaLlamadas[i].evento.fecha.indexOf('T')));
+            }
+            mostrar_llamadas(eventos.listaLlamadas, componentes.eventos.tbody);
         } else {
             alert('fallo en el proveedor');
         }
@@ -1891,6 +2113,47 @@ $(document).ready(function() {
             tareas.listaTareas = data;
             mostrar_tareas(tareas.listaTareas, componentes.tareas.lista);
             $.get('http://localhost:8080/ReForms_Provider/wr/siniestro/consultarEstado/' + siniestro.id, respuesta_consultarEstado, 'text');
+        } else {
+            alert('fallo en el proveedor');
+        }
+    }
+    
+    function respuesta_obtenerCitaPorEvento(data, status) {
+        if (status == 'success') {
+            var card = componentes.eventos.detalles.children('div.contenedor').children('div.card'),
+                detalles_cita = card.children('div.card-body').children('div.container-fluid').children('div.cita').children('div.col-12').children('div.detalles');
+            if (data.length > 0) {
+                var texto = data[0].grupo.observaciones,
+                    fecha = new Date(new Number(texto.slice(1, texto.indexOf(']')))),
+                    nombre = texto.slice(texto.indexOf(']') + 2, texto.length);
+                texto = (fecha.getDate() > 9 ? fecha.getDate() : ('0' + fecha.getDate())) + '/' + (fecha.getMonth() > 8 ? (fecha.getMonth() + 1) : ('0' + (fecha.getMonth() + 1))) + '/' + fecha.getFullYear();
+                detalles_cita.children('div.resumen').children('div.input-group').children('div.input-group-prepend').children('span.dia').html(texto);
+                texto = (data[0].hora > 9 ? data[0].hora : ('0' + data[0].hora)) + ':' + (data[0].minuto > 9 ? data[0].minuto : ('0' + data[0].minuto));
+                detalles_cita.children('div.resumen').children('div.input-group').children('div.input-group-prepend').children('span.hora').html(texto);
+                detalles_cita.children('div.resumen').children('div.input-group').children('span.grupo').html(nombre);
+                $.get('http://localhost:8080/ReForms_Provider/wr/tareascita/obtenerTareasPorCita/' + data[0].id, respuesta_obtenerTareasPorCita, 'json');
+                detalles_cita.children('div.resumen').children('div.input-group').children('div.input-group-prepend').children('span.dia, span.hora').css({'background-color': colorFondo, 'border-color': colorBorde});
+                detalles_cita.children('div.resumen').children('div.input-group').children('span.grupo').css({'background-color': colorFondo, 'border-color': colorBorde});
+                detalles_cita.children('div.tabla').children('table.table').children('thead').children('tr').css('background-color', colorBorde);
+            } else {
+                detalles_cita.hide(); 
+            }
+        } else {
+            alert('fallo en el proveedor');
+        }
+    }
+    
+    function respuesta_obtenerTareasPorCita(data, status) {
+        if (status == 'success') {
+            var i, tbody = componentes.eventos.detalles.children('div.contenedor').children('div.card').children('div.card-body').children('div.container-fluid').children('div.cita').children('div.col-12').children('div.detalles').children('div.tabla').children('table.table').children('tbody');
+            tbody.children('tr.tarea').remove();
+            if (data.length > 0) {
+                for (i = 0; i < data.length; i++) {
+                    tbody.append('<tr class="tarea"><td>' + data[i].tarea.trabajo.codigo + '</td><td>' + data[i].tarea.trabajo.descripcion + '</td></tr>');
+                }
+            } else {
+                tbody.append('<tr class="sin-resultados tarea"><td colspan="2"><h4>Sin tareas asignadas</h4></td></tr>');
+            }
         } else {
             alert('fallo en el proveedor');
         }
@@ -1967,6 +2230,7 @@ $(document).ready(function() {
     componentes.tareas.botones.children('button[name="tarea_actualizar"]').click(tarea_actualizar_click);
     componentes.tareas.botones.children('button[name="tarea_ampliar"]').click(tarea_ampliar_click);
     componentes.tareas.botones.children('button[name="tarea_borrar"]').click(tarea_borrar_click);
+    componentes.eventos.nuevo.click(llamada_nueva_click);
     componentes.adicional.participantes.nuevo.click(participante_agregar_click);
     componentes.adicional.participantes.botones.children('button[name="adicional_participante_aceptar"]').click(adicional_participante_aceptar_click);
     componentes.adicional.participantes.botones.children('button[name="adicional_participante_cancelar"]').click(adicional_participante_cancelar_click);
@@ -1978,6 +2242,7 @@ $(document).ready(function() {
     componentes.adicional.recursos.entrada_fichero.children('input[name="recurso_fichero"]').change(recurso_fichero_change);
     componentes.adicional.recursos.entrada_tipo.children('select[name="recurso_tipo"]').change(recurso_tipo_change);
     $.get('http://localhost:8080/ReForms_Provider/wr/contacto/obtenerContactos/' + siniestro.id, respuesta_obtenerContactos, 'json');
+    $.get('http://localhost:8080/ReForms_Provider/wr/llamada/obtenerEventos/' + siniestro.id, respuesta_obtenerEventos, 'json');
     $.get('http://localhost:8080/ReForms_Provider/wr/participante/obtenerParticipantes/' + siniestro.id, respuesta_obtenerParticipantes, 'json');
     $.get('http://localhost:8080/ReForms_Provider/wr/replanificacion/obtenerReplanificaciones/' + siniestro.id, respuesta_obtenerReplanificaciones, 'json');
     $.get('http://localhost:8080/ReForms_Provider/wr/reasignacion/obtenerReasignaciones/' + siniestro.id, respuesta_obtenerReasignaciones, 'json');
@@ -2007,10 +2272,11 @@ $(document).ready(function() {
     componentes.contactos.tabla.children('table').children('thead').children('tr').css('background-color', colorBorde);
     componentes.contactos.detalles.children('div.contenedor').css('border-color', colorBorde);
     componentes.tareas.botones.children('button').not('button.btn-borrar').css({'border-color':colorBorde, 'background-color':colorFondo});
+    componentes.eventos.tbody.siblings('thead').children('tr').css('background-color', colorBorde);
     componentes.adicional.recursos.recurso.children('div.contenedor').css('border-color', colorBorde);
     componentes.adicional.participantes.participante.children('div.contenedor').css('border-color', colorBorde);
     componentes.adicional.recursos.previsualizacion.children('div.contenedor').css('border-color', colorBorde);
-    componentes.adicional.recursos.recurso.children('div.contenedor').children('div.archivo').children('div.tipo').children('div.form-group').children('div.salida').children('div.input-group-append').children('div[name="recurso_tipo_icono"]').css({'border-color':colorBordeNeutro, 'background-color':colorFondoNeutro});
+    componentes.adicional.recursos.recurso.children('div.contenedor').children('div.archivo').children('div.tipo').children('div.form-group').children('div.salida').children('div.input-group-append').children('div.recurso_tipo_icono').css({'border-color':colorBordeNeutro, 'background-color':colorFondoNeutro});
     componentes.adicional.recursos.descarga_fichero.css({'border-color':colorBordeNeutro, 'background-color':colorFondoNeutro, 'color':colorTextoNeutro});
     componentes.botonera.acciones.hide();
     componentes.contactos.detalles.hide();
@@ -2018,10 +2284,10 @@ $(document).ready(function() {
         componentes.tareas.botones.children('button[name="tarea_nueva"]').hide();
     }
     componentes.tareas.botones.children('button').not('button[name="tarea_nueva"]').hide();
+    componentes.eventos.detalles.hide();
     componentes.adicional.participantes.participante.hide();
     componentes.adicional.recursos.entrada_tipo.hide();
     componentes.adicional.recursos.entrada_fichero.hide();
     componentes.adicional.recursos.recurso.hide();
     componentes.adicional.recursos.previsualizacion.hide();
 });
-

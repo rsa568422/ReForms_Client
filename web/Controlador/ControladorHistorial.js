@@ -116,7 +116,7 @@ $(document).ready(function() {
         }  
     }
     
-    // Funciones para cargar paginas y definir su comportamiento
+    // Funciones para cargar paginas y controlar respuestas del proveedor
     // ====================================================================== //
     function cargar_siniestro(responseTxt, statusTxt) {
         if (statusTxt != 'success') {

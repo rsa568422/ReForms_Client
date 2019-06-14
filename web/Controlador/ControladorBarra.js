@@ -52,7 +52,7 @@ $(document).ready(function() {
         $('#contenido').load('Html/login.html', cargar_login);
     }
     
-    // Funciones para cargar paginas y definir su comportamiento
+    // Funciones para cargar paginas y controlar respuestas del proveedor
     // ====================================================================== //
     function cargar_siniestros(responseTxt, statusTxt) {
         if(statusTxt !== 'success') {

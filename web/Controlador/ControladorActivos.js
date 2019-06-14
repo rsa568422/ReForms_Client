@@ -1518,7 +1518,7 @@ $(document).ready(function() {
         vista.load('Html/vehiculo.html', cargar_vehiculo);
     }
     
-    // Funciones para cargar paginas y definir su comportamiento
+    // Funciones para cargar paginas y controlar respuestas del proveedor
     // ====================================================================== //
     function cargar_trabajadores(responseTxt, statusTxt) {
         if (statusTxt == 'success') {

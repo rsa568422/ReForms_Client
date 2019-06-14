@@ -5,7 +5,7 @@
 </script>
 
 <style>
-    div[name="recurso_tipo_icono"] {
+    div.recurso_tipo_icono {
         text-align: center;
         border: solid 1px;
         border-radius: 0 5px 5px 0;
@@ -84,10 +84,6 @@
         margin-right: 3%;
     }
     
-    #ventana div.container-fluid div.siniestro div.ocultable-titulo div.form-inline div.estado input[name="estado"] {
-        text-align: center;
-    }
-    
     a[name="siniestro_original_descargar"] {
         border: 2px solid;
     }
@@ -135,7 +131,8 @@
     #ventana div.container-fluid div.tareas div.ocultable-contenido div.row div.col-12 div.lista div.tarea div.contenedor div.row select.tarea-estado,
     #ventana div.container-fluid div.tareas div.ocultable-contenido div.row div.col-12 div.lista div.tarea-nueva div.contenedor div.row input,
     #ventana div.container-fluid div.tareas div.ocultable-contenido div.row div.col-12 div.lista div.tarea-nueva div.contenedor div.row select.tarea-gremio,
-    #ventana div.container-fluid div.tareas div.ocultable-contenido div.row div.col-12 div.lista div.tarea-nueva div.contenedor div.row select.tarea-codigo {
+    #ventana div.container-fluid div.tareas div.ocultable-contenido div.row div.col-12 div.lista div.tarea-nueva div.contenedor div.row select.tarea-codigo,
+    #ventana div.container-fluid div.siniestro div.ocultable-titulo div.form-inline div.estado input[name="estado"] {
         text-align: center;
     }
     
@@ -245,8 +242,34 @@
         margin-bottom: 0px;
     }
     
+    #ventana div.container-fluid div.eventos div.ocultable-contenido div.row div.tabla div.table-responsive-md table.table tbody tr.llamada td:not(td.sin-resultados) {
+        width: 80%;
+        text-align: left;
+    }
+    
+    #ventana div.container-fluid div.eventos div.ocultable-contenido div.row div.tabla div.table-responsive-md table.table tbody tr.llamada td:first-child {
+        width: 15%;
+    }
+    
+    #ventana div.container-fluid div.eventos div.ocultable-contenido div.row div.tabla div.table-responsive-md table.table tbody tr.llamada td:last-child {
+        width: 5%;
+    }
+    
     tr.sin-resultados {
         text-align: center;
+    }
+    
+    i.llamada-saliente {
+        color: green;
+    }
+    
+    i.llamada-entrante {
+        color: blue;
+    }
+    
+    i.llamada-saliente-perdida,
+    i.llamada-entrante-perdida {
+        color: red;
     }
     
     @media only screen and (max-width: 1200px) {
@@ -260,7 +283,8 @@
             margin-right: 5%;
         }
         
-        #ventana div.container-fluid div.siniestro div.ocultable-contenido div.contactos div.detalles div.contenedor {
+        #ventana div.container-fluid div.siniestro div.ocultable-contenido div.contactos div.detalles div.contenedor,
+        #ventana div.container-fluid div.eventos div.ocultable-contenido div.row div.detalles {
             margin-top: 1%;
         }
     
@@ -379,7 +403,7 @@
                     <div class="col-12">
                         <h5>Afectado</h5>
                         <input name="siniestro_afectado" class="form-control" type="text" maxlength="300" readonly/>
-                        <textarea name="siniestro_afectado_observaciones" class="form-control" rows="4" maxlength="250" readonly/>
+                        <textarea name="siniestro_afectado_observaciones" class="form-control" rows="4" maxlength="250" readonly></textarea>
                     </div>
                 </div>
                 <div class="poliza row">
@@ -431,7 +455,7 @@
                                 <div class="col-12">
                                     <div class="form-group">
                                         <h6>Observaciones</h6>
-                                        <textarea name="siniestro_contacto_observaciones" class="form-control" rows="4" maxlength="250" readonly/>
+                                        <textarea name="siniestro_contacto_observaciones" class="form-control" rows="4" maxlength="250" readonly></textarea>
                                     </div>
                                 </div>
                             </div>
@@ -449,7 +473,7 @@
                 <div class="observaciones row">
                     <div class="col-xl-6 col-12">
                         <h5>Observaciones sobre el siniestro</h5>
-                        <textarea name="siniestro_observaciones" class="form-control" rows="4" maxlength="250" readonly/>
+                        <textarea name="siniestro_observaciones" class="form-control" rows="4" maxlength="250" readonly></textarea>
                     </div>
                 </div>
             </div>
@@ -478,7 +502,22 @@
             </div>
             <div class="ocultable-contenido">
                 <div class="row">
-                    <div class="col-12"><p style="margin: 1%"><h1>en construccion</h1></p></div>
+                    <div class="tabla col-xl-6 col-12">
+                        <div class="table-responsive-md">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th colspan="3">Eventos</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                            <button class="btn btn-nuevo">nuevo</button>
+                        </div>
+                    </div>
+                    <div class="detalles col-xl-6 col-12">
+                        detalles
+                    </div>
                 </div>
             </div>
         </div>
@@ -579,7 +618,7 @@
                                         <div class="salida input-group mb-3">
                                             <input name="recurso_tipo_texto" class="form-control form-control-lg" type="text" readonly/>
                                             <div class="input-group-append">
-                                                <div name="recurso_tipo_icono"></div>
+                                                <div class="recurso_tipo_icono"></div>
                                             </div>
                                         </div>
                                         <div class="entrada">
@@ -609,7 +648,7 @@
                             </div>
                             <div class="descripcion row">
                                 <div class="texto col-4">
-                                    <textarea name="recurso_descripcion" class="form-control" rows="12" maxlength="250" readonly/>
+                                    <textarea name="recurso_descripcion" class="form-control" rows="12" maxlength="250" readonly></textarea>
                                 </div>
                                 <div class="previsualizacion col-8">
                                     <div class="contenedor"></div>

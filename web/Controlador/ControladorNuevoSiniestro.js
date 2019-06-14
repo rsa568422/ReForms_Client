@@ -955,7 +955,10 @@ $(document).ready(function() {
                                     }
                                     p.geolat = data.results[i].geometry.location.lat;
                                     p.geolong = data.results[i].geometry.location.lng;
-                                    if (p.direccion != null && p.direccion != '' && p.numero != null && p.numero != '' && p.localidad.nombre != null && p.localidad.nombre != '' && p.localidad.cp != null && p.localidad.cp != '') {
+                                    if (p.direccion != null && p.direccion != '' && p.numero != null && p.numero != '' && p.localidad.nombre != null && p.localidad.nombre != '') {
+                                        if (p.localidad.cp == null || p.localidad.cp == '') {
+                                            p.localidad.cp = cp.val();
+                                        }
                                         pasos.paso2.listaCoincidencias.push(p); 
                                     }
                                 }
@@ -1033,7 +1036,10 @@ $(document).ready(function() {
                                     }
                                     p.geolat = data.results[i].geometry.location.lat;
                                     p.geolong = data.results[i].geometry.location.lng;
-                                    if (p.direccion != null && p.direccion != '' && p.numero != null && p.numero != '' && p.localidad.nombre != null && p.localidad.nombre != '' && p.localidad.cp != null && p.localidad.cp != '') {
+                                    if (p.direccion != null && p.direccion != '' && p.numero != null && p.numero != '' && p.localidad.nombre != null && p.localidad.nombre != '') {
+                                        if (p.localidad.cp == null || p.localidad.cp == '') {
+                                            p.localidad.cp = cp.val();
+                                        }
                                         pasos.paso3.listaCoincidencias.push(p); 
                                     }
                                 }
@@ -1110,7 +1116,7 @@ $(document).ready(function() {
         lector.readAsDataURL(entradas[0]);
     }
     
-    // Funciones para cargar paginas y definir su comportamiento
+    // Funciones para cargar paginas y controlar respuestas del proveedor
     // ====================================================================== //
     function cargar_siniestro(responseTxt, statusTxt) {
         if (statusTxt != 'success') {
@@ -1134,7 +1140,7 @@ $(document).ready(function() {
             componentes.pasos.paso2.poliza.propiedad.children('div.localidad').children('div.col-12').children('div.form-group').children('div.input-group').children('input.nombre').prop('readonly', true).val(pasos.paso2.poliza.propiedad.localidad.nombre);
             componentes.pasos.paso2.poliza.propiedad.children('div.direccion').children('div.col-12').children('div.form-group').children('div.input-group').children('input.direccion').prop('readonly', true).val(pasos.paso2.poliza.propiedad.direccion);
             componentes.pasos.paso2.poliza.propiedad.children('div.direccion').children('div.col-12').children('div.form-group').children('div.input-group').children('input.numero').prop('readonly', true).val(pasos.paso2.poliza.propiedad.numero);
-            componentes.pasos.paso2.poliza.propiedad.children('div.piso').children('div.col-12').children('div.form-group').children('input.piso').prop('readonly', true).val(pasos.paso2.poliza.cliente.telefono2);
+            componentes.pasos.paso2.poliza.propiedad.children('div.piso').children('div.col-12').children('div.form-group').children('input.piso').prop('readonly', true).val(pasos.paso2.poliza.propiedad.piso);
             componentes.pasos.paso2.poliza.propiedad.children('div.observaciones').children('div.col-12').children('div.form-group').children('textarea.observaciones-propiedad').prop('readonly', true).val(pasos.paso2.poliza.propiedad.observaciones);
             componentes.pasos.paso2.poliza.asegurado.children('div.sugerencias').children('div.col-12').children('div.table-responsive-md').children('table').children('thead').css('background-color', colorBorde);
             componentes.pasos.paso2.poliza.propiedad.children('div.sugerencias').children('div.col-12').children('div.table-responsive-md').children('table').children('thead').css('background-color', colorBorde);

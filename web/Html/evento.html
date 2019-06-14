@@ -1,0 +1,128 @@
+<script>
+    if (!sessionStorage.usuario) {
+        window.location.href = "http://localhost:8080/ReForms_Client/";
+    }
+</script>
+
+<style>
+    div.contenedor div.card div.card-header div.fecha {
+        position: absolute;
+        top: 0.45rem;
+        right: 1.25rem;
+        display: block;
+        border-radius: 0.3rem;
+    }
+    
+    div.contenedor div.card div.card-body div.container-fluid div.row:not(:last-child) {
+        margin-bottom: 1.25rem;
+    }
+    
+    div.contenedor div.card div.card-body div.container-fluid div.cita div.col-12 div.detalles div.tabla thead tr th:first-child,
+    div.contenedor div.card div.card-body div.container-fluid div.cita div.col-12 div.detalles div.tabla tbody tr td:first-child {
+        text-align: center;
+        width: 20%;
+    }
+    
+    div.contenedor div.card div.card-body div.container-fluid div.cita div.col-12 div.detalles div.tabla thead tr th:last-child,
+    div.contenedor div.card div.card-body div.container-fluid div.cita div.col-12 div.detalles div.tabla tbody tr td:last-child {
+        text-align: left;
+        width: 80%;
+    }
+    
+    div.contenedor div.card div.card-body div.container-fluid div.cita div.col-12 div.detalles div.tabla tbody tr.sin-resultados td {
+        text-align: center;
+    }
+    
+    div.contenedor div.card div.card-body div.container-fluid div.llamada div.col-12 div.detalles label,
+    div.contenedor div.card div.card-body div.container-fluid div.cita div.col-12 div.detalles label {
+        text-decoration: underline;
+    }
+</style>
+
+<div class="contenedor container-fluid">
+    <div class="card">
+        <div class="card-header">
+            <h4 class="nombre"></h4><div class="fecha"><input class="form-control-lg" type="date"/></div>
+        </div>
+        <div class="card-body">
+            <div class="container-fluid">
+                <div class="descripcion row">
+                    <div class="col-12">
+                        <textarea class="form-control" rows="4" maxlength="250" readonly></textarea>
+                    </div>
+                </div>
+                <div class="llamada row">
+                    <div class="col-12">
+                        <div class="boton">
+                            <div class="input-group mb-3">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text"><i class="material-icons">add_box</i></span>
+                                </div>
+                                <button class="btn btn-nuevo">llamada</button>
+                            </div>
+                        </div>
+                        <div class="detalles">
+                            <label>Llamada:</label>
+                            <div class="input-group mb-3">
+                                <div class="input-group-prepend">
+                                    <span class="numero input-group-text"></span>
+                                </div>
+                                <span class="nombre form-control"></span>
+                                <div class="input-group-append">
+                                    <span class="tipo input-group-text"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="cita row">
+                    <div class="col-12">
+                        <div class="boton">
+                            <div class="input-group mb-3">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text"><i class="material-icons">add_box</i></span>
+                                </div>
+                                <button class="btn btn-nuevo">cita</button>
+                            </div>
+                        </div>
+                        <div class="detalles">
+                            <div class="resumen">
+                                <label>Cita:</label>
+                                <div class="input-group mb-3">
+                                    <div class="input-group-prepend">
+                                        <span class="dia input-group-text">dd/mm/aaaa</span>
+                                    </div>
+                                    <div class="input-group-prepend">
+                                        <span class="hora input-group-text">hh:mm</span>
+                                    </div>
+                                    <span class="grupo form-control">grupo</span>
+                                </div>
+                            </div>
+                            <div class="tabla table-responsive-md">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Codigo</th>
+                                            <th>Descripcion</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer">
+            <div class="container-fluid">
+                <div class="botones row">
+                    <div class="col-12">
+                        <button class="btn btn-aceptar">aceptar</button>
+                        <button class="btn btn-cancelar">cancelar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
