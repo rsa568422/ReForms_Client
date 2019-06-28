@@ -32,7 +32,7 @@ $(document).ready(function() {
     $("#perfil").css("border-color", color);
     $("#aseguradora").css("border-color", color);
     $("#apariencia").css("border-color", color);
-    color = color.substring(0, color.length - 1) + ", 0.1)";
+    color = color.substring(0, color.length - 1) + ", 0.2)";
     $("#ventana").css("background-color", color);
     
     $("#cSiniestros").val(rgb2hex($("#btn-siniestros").css("background-color")));

@@ -3,7 +3,7 @@ $(document).ready(function() {
     // Variables
     // ====================================================================== //
     var colorBorde = $('#btn-siniestros').css('background-color'),
-        colorFondo = colorBorde.substring(0, colorBorde.length - 1) + ', 0.1)',
+        colorFondo = colorBorde.substring(0, colorBorde.length - 1) + ', 0.2)',
         sinColor = 'rgb(0, 0, 0, 0)',
         contenedor = $('#ventana').children('div[class="container-fluid"]'),
         tabla = contenedor.find('.tabla').children('table.table'),

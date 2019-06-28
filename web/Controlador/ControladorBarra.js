@@ -31,7 +31,6 @@ $(document).ready(function() {
     
     function btn_jornadas_click() {
         $('#contenido').load('Html/jornadas.html',cargar_jornadas);
-        //$('#contenido').load('Html/jornadas2.html',cargar_jornadas);
     }
     
     function btn_aseguradoras_click() {

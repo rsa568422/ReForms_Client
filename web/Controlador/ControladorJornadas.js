@@ -4,8 +4,11 @@ $(document).ready(function() {
     // ====================================================================== //
     var googleKey = sessionStorage.googleKey,
         colorBorde = $('#btn-jornadas').css('background-color'),
-        colorFondo = colorBorde.substring(0, colorBorde.length - 1) + ', 0.1)',
+        colorFondo = colorBorde.substring(0, colorBorde.length - 1) + ', 0.2)',
         colorJornada = colorBorde.substring(0, colorBorde.length - 1) + ', 0.5)',
+        colorBordeSiniestro = $('#btn-siniestros').css('background-color'),
+        colorFondoSiniestro = colorBordeSiniestro.substring(0, colorBordeSiniestro.length - 1) + ', 0.2)',
+        colorTextoNeutro = 'rgb(33, 37, 41)',
         sinColor = 'rgb(0, 0, 0, 0)',
         seleccion_grup = {
             'jornadas': {
@@ -38,11 +41,16 @@ $(document).ready(function() {
             }
         },
         seleccion_even = {
-            'evento': null,
             'siniestros': {
                 'listaSiniestros': [],
                 'siniestroSeleccionado': null,
-                'posicionSeleccionada': -1
+                'posicionSeleccionada': -1,
+                'agenda': {
+                    'cliente': null,
+                    'contactos': [],
+                    'peritos': [],
+                    'grupos': []
+                }
             },
             'tareas': {
                 'listaTareas': [],
@@ -55,9 +63,18 @@ $(document).ready(function() {
                 'posicionSeleccionada': -1
             }
         },
+        relacionar = {
+            'llamada': null,
+            'agenda': {
+                'cliente': null,
+                'contactos': [],
+                'peritos': [],
+                'grupos': []
+            }
+        },
         componentes = {
             'jornadas': {
-                'div': $('#ventana').children('div.container-fluid').children('div.row').children('div.seleccion-grupo').children('div.jornadas'),
+                'div': $('#ventana').children('div.container-fluid').children('div.seleccion').children('div.seleccion-grupo').children('div.jornadas'),
                 'calendario': {
                     'fecha': null,
                     'tbody': null,
@@ -66,22 +83,16 @@ $(document).ready(function() {
                 'detalles': null
             },
             'jornada': {
-                'div': $('#ventana').children('div.container-fluid').children('div.row').children('div.seleccion-grupo').children('div.jornada'),
+                'div': $('#ventana').children('div.container-fluid').children('div.seleccion').children('div.seleccion-grupo').children('div.jornada'),
                 'select': null,
                 'grupo': null,
                 'agenda': {
                     'tbody': null,
-                    'nueva': null,
-                    'detalles': {
-                        'div': null,
-                        'cita': null,
-                        'evento': null,
-                        'tareas': null
-                    }
+                    'detalles': null
                 }
             },
             'siniestros': {
-                'div': $('#ventana').children('div.container-fluid').children('div.row').children('div.seleccion-evento').children('div.siniestros'),
+                'div': $('#ventana').children('div.container-fluid').children('div.seleccion').children('div.seleccion-evento').children('div.siniestros'),
                 'mapa': null,
                 'tabla': {
                     'tbody': null,
@@ -89,27 +100,43 @@ $(document).ready(function() {
                 }
             },
             'siniestro': {
-                'div': $('#ventana').children('div.container-fluid').children('div.row').children('div.seleccion-evento').children('div.siniestro'),
+                'div': $('#ventana').children('div.container-fluid').children('div.seleccion').children('div.seleccion-evento').children('div.siniestro'),
                 'resumen': {
+                    'cabecera': {
+                        'siniestro': null,
+                        'poliza': null,
+                        'fecha': null,
+                        'estado': null,
+                        'consultar': null
+                    },
                     'contactos': null,
                     'direccion': null
                 },
                 'tareas': {
                     'tbody': null,
-                    'detalles': null
+                    'tarea': null
                 },
                 'citas': {
                     'tbody': null,
-                    'detalles': null
-                }
-            }
+                    'cita': null
+                },
+                'botones': null
+            },
+            'relacionar': {
+                'div': $('#ventana').children('div.container-fluid').children('div.relacionar'),
+                'iconoGrupo': null,
+                'iconoEvento': null,
+                'cita': null
+            },
+            'cardActual': null
         },
         espera_grupo = {
             'contador': 0,
             'conductor': false
         },
         edicion = false,
-        edicion_grupo = false;
+        edicion_grupo = false,
+        edicion_llamada = false;
         
     // Funciones auxiliares
     // ====================================================================== //
@@ -117,6 +144,66 @@ $(document).ready(function() {
         $('#alerta').children('div.modal-dialog').children('div.modal-content').children('div.modal-header').children('.modal-title').html(titulo);
         $('#alerta').children('div.modal-dialog').children('div.modal-content').children('div.modal-body').html(mensaje);
         $('#activador-alerta').click();
+    }
+    
+    function telefono_valido(telefonoStr) {
+        return /^[69]\d{8}$/.test(telefonoStr);
+    }
+    
+    function generarMapaSiniestro(lat, long) {
+        var funcion = '<script>function cargarMapaSiniestro() { var propiedades = { center: new google.maps.LatLng(' + lat + ', ' + long + '), zoom: 18 }, mapa = new google.maps.Map(document.getElementById("googleMapSiniestro"), propiedades), marcador = new google.maps.Marker({position: propiedades.center}); marcador.setMap(mapa); }</script>',
+            script = '<script src="https://maps.googleapis.com/maps/api/js?key=' + googleKey + '&callback=cargarMapaSiniestro"></script>',
+            mapa  = '<div id="googleMapSiniestro" style="width:100%;height:400px;"></div>';
+        return '<div class="mapaGoogle">' + funcion + script + mapa + '</div>';
+    }
+    
+    function generar_msgFecha(fecha) {
+        var f, y, m, d, msgFecha = 'Jornada del ';
+        if (fecha.indexOf('T') > 0) {
+            f = fecha.slice(0, fecha.indexOf('T'));
+        } else {
+            f = fecha;
+        }
+        y = f.slice(0, f.indexOf('-'));
+        m = f.slice(f.indexOf('-') + 1, fecha.lastIndexOf('-'));
+        d = f.slice(fecha.lastIndexOf('-') + 1, fecha.length);
+        f = new Date(y, m - 1, d);
+        switch (f.getDay()) {
+            case 0: msgFecha += 'Domingo '; break;
+            case 1: msgFecha += 'Lunes '; break;
+            case 2: msgFecha += 'Martes '; break;
+            case 3: msgFecha += 'Miercoles '; break;
+            case 4: msgFecha += 'Jueves '; break;
+            case 5: msgFecha += 'Viernes '; break;
+            case 6: msgFecha += 'Sabado '; break;
+        }
+        msgFecha += f.getDate() + ' de ';
+        switch (f.getMonth()) {
+            case 0: msgFecha += 'Enero de '; break;
+            case 1: msgFecha += 'Febrero de '; break;
+            case 2: msgFecha += 'Marzo de '; break;
+            case 3: msgFecha += 'Abril de '; break;
+            case 4: msgFecha += 'Mayo de '; break;
+            case 5: msgFecha += 'Junio de '; break;
+            case 6: msgFecha += 'Julio de '; break;
+            case 7: msgFecha += 'Agosto de '; break;
+            case 8: msgFecha += 'Septiembre de '; break;
+            case 9: msgFecha += 'Octubre de '; break;
+            case 10: msgFecha += 'Noviembre de '; break;
+            case 11: msgFecha += 'Diciembre de '; break;
+        }
+        return msgFecha + f.getFullYear();
+    }
+    
+    function generar_icono_llamada(tipo) {
+        var salida;
+        switch (tipo) {
+            case 0: salida = '<i class="material-icons llamada-saliente">call_made</i>'; break;
+            case 1: salida = '<i class="material-icons llamada-entrante">call_received</i>'; break;
+            case 2: salida = '<i class="material-icons llamada-saliente-perdida">call_missed_outgoing</i>'; break;
+            case 3: salida = '<i class="material-icons llamada-entrante-perdida">call_missed</i>'; break;
+        }
+        return salida;
     }
     
     function mostrar_calendario(primero, maximo) {
@@ -162,6 +249,135 @@ $(document).ready(function() {
                 dia = (new Date(seleccion_grup.jornadas.listaJornadas[i].fecha)).getDate();
                 componentes.jornadas.calendario.tbody.children('tr').children('td').children('div[name="' + dia + '"]').css('background-color', colorJornada).prop('i', i);
             }
+        }
+    }
+    
+    function mostrar_siniestro(siniestro) {
+        var aux = new Date (siniestro.fechaRegistro.slice(0, siniestro.fechaRegistro.indexOf('T')));
+        componentes.siniestro.resumen.cabecera.siniestro.html(siniestro.numero);
+        componentes.siniestro.resumen.cabecera.poliza.html(siniestro.poliza.numero);
+        aux = (aux.getDate() > 9 ? aux.getDate() : '0' + aux.getDate()) + '/' + (aux.getMonth() > 8 ? (aux.getMonth() + 1) : '0' + (aux.getMonth() + 1)) + '/' + aux.getFullYear();
+        componentes.siniestro.resumen.cabecera.fecha.html(aux);
+        switch (siniestro.estado) {
+            case 0: componentes.siniestro.resumen.cabecera.estado.html('pendiente'); break;
+            case 1: componentes.siniestro.resumen.cabecera.estado.html('en proceso'); break;
+            case 2: componentes.siniestro.resumen.cabecera.estado.html('finalizado'); break;
+            case 3: componentes.siniestro.resumen.cabecera.estado.html('parcialmente finalizado'); break;
+            case 4: componentes.siniestro.resumen.cabecera.estado.html('cerrado'); break;
+            case 5: componentes.siniestro.resumen.cabecera.estado.html('devuleto'); break;
+            case 6: componentes.siniestro.resumen.cabecera.estado.html('facturado'); break;
+            case 7: componentes.siniestro.resumen.cabecera.estado.html('cobrado'); break;
+        }
+        aux = siniestro.poliza.cliente.nombre + ' ' + siniestro.poliza.cliente.apellido1;
+        if (siniestro.poliza.cliente.apellido2 && siniestro.poliza.cliente.apellido2 != null && siniestro.poliza.cliente.apellido2 != '') {
+            aux += ' ' + siniestro.poliza.cliente.apellido2;
+        }
+        aux += ' (' + siniestro.poliza.cliente.telefono1;
+        if (siniestro.poliza.cliente.telefono2 && siniestro.poliza.cliente.telefono2 != null && siniestro.poliza.cliente.telefono2 != '') {
+            aux += '/' + siniestro.poliza.cliente.telefono2;
+        }
+        aux += ')';
+        componentes.siniestro.resumen.contactos.children('div.cliente').children('ul').children('li').remove();
+        componentes.siniestro.resumen.contactos.children('div.cliente').children('ul').append('<li>' + aux + '</li>');
+        $.get('http://localhost:8080/ReForms_Provider/wr/contacto/obtenerContactos/' + siniestro.id, respuesta_obtenerContactos, 'json');
+        $.get('http://localhost:8080/ReForms_Provider/wr/cita/obtenerCitas/' + siniestro.id, respuesta_obtenerCitas, 'json');
+        $.get('http://localhost:8080/ReForms_Provider/wr/tarea/obtenerTareas/' + siniestro.id, respuesta_obtenerTareas, 'json');
+        aux = siniestro.poliza.propiedad.direccion + ' ' + siniestro.poliza.propiedad.numero + ', ';
+        if (siniestro.poliza.propiedad.piso && siniestro.poliza.propiedad.piso != null && siniestro.poliza.propiedad.piso != '') {
+            aux += siniestro.poliza.propiedad.piso + ', ';
+        }
+        aux += siniestro.poliza.propiedad.localidad.nombre + ' [' + siniestro.poliza.propiedad.localidad.cp + ']';
+        componentes.siniestro.resumen.direccion.children('p').html(aux);
+        componentes.siniestro.resumen.direccion.children('div.mapa').children('div.mapaGoogle').remove();
+        componentes.siniestro.resumen.direccion.children('div.mapa').append(generarMapaSiniestro(siniestro.poliza.propiedad.geolat, siniestro.poliza.propiedad.geolong));
+        componentes.siniestro.tareas.tarea.hide();
+        componentes.siniestro.citas.cita.hide();
+    }
+    
+    function mostrar_agenda(agenda, select) {
+        var i, texto;
+        select.children('option').remove();
+        if (agenda != null) {
+            select.append('<option value="-2">Cliente:</option>');
+            texto = '[' + agenda.cliente.telefono1;
+            if (agenda.cliente.telefono2 && agenda.cliente.telefono2 != null && agenda.cliente.telefono2 != '') {
+                texto += '/' + agenda.cliente.telefono2;
+            }
+            texto += '] ' + agenda.cliente.nombre + agenda.cliente.apellido1;
+            select.append('<option value="cliente" selected>' + texto + '</option>');
+            select.append('<option value="-2"></option>');
+            if (agenda.contactos.length > 0) {
+                select.append('<option value="-2">Contactos:</option>');
+                for (i = 0; i < agenda.contactos.length; i++) {
+                    texto = '[' + agenda.contactos[i].telefono1;
+                    if (agenda.contactos[i].telefono2 && agenda.contactos[i].telefono2 != null && agenda.contactos[i].telefono2 != '') {
+                        texto += '/' + agenda.contactos[i].telefono2;
+                    }
+                    texto += ']';
+                    if (agenda.contactos[i].nombre && agenda.contactos[i].nombre != null && agenda.contactos[i].nombre != '') {
+                        texto += ' ' + agenda.contactos[i].nombre;
+                    }
+                    if (agenda.contactos[i].apellido1 && agenda.contactos[i].apellido1 != null && agenda.contactos[i].apellido1 != '') {
+                        texto += ' ' + agenda.contactos[i].apellido1;
+                    }
+                    select.append('<option value="contacto[' + i + ']">' + texto + '</option>');
+                }
+                select.append('<option value="-2"></option>');
+            }
+            select.append('<option value="-2">Peritos:</option>');
+            for (i = 0; i < agenda.peritos.length; i++) {
+                texto = '[' + agenda.peritos[i].telefono1;
+                if (agenda.peritos[i].telefono2 && agenda.peritos[i].telefono2 != null && agenda.peritos[i].telefono2 != '') {
+                    texto += '/' + agenda.peritos[i].telefono2;
+                }
+                texto += '] ' + agenda.peritos[i].nombre + ' ' + agenda.peritos[i].apellido1;
+                select.append('<option value="perito[' + i + ']">' + texto + '</option>');
+            }
+            select.append('<option value="-2"></option>');
+            if (agenda.grupos.length > 0) {
+                select.append('<option value="-2">Grupos:</option>');
+                var fecha, nombre;
+                for (i = 0; i < agenda.grupos.length; i++) {
+                    fecha = agenda.grupos[i].observaciones.slice(1, agenda.grupos[i].observaciones.indexOf(']'));
+                    fecha = new Date (new Number(fecha));
+                    nombre = agenda.grupos[i].observaciones.slice(agenda.grupos[i].observaciones.indexOf(']') + 2, agenda.grupos[i].observaciones.length);
+                    texto = '[Jor. ' + (fecha.getDate() > 9 ? fecha.getDate() : '0' + fecha.getDate()) + '/' + (fecha.getMonth() > 8 ? fecha.getMonth() + 1 : '0' + (fecha.getMonth() + 1)) + '/' + fecha.getFullYear() + '] ' + nombre;
+                    select.append('<option value="grupo[' + i + ']">' + texto + '</option>');
+                }
+                select.append('<option value="-2"></option>');
+            }
+            select.append('<option value="-1">Nuevo contacto...</option>');
+        } else {
+            select.append('<option value="-2">ERROR!!!</option>');
+        }
+    }
+    
+    function mostrar_cita(cita, card, origen) {
+        var siniestro = cita.evento.descripcion.slice(1, cita.evento.descripcion.indexOf(']')),
+            direccion = cita.evento.descripcion.slice(cita.evento.descripcion.indexOf(']') + 1, cita.evento.descripcion.length),
+            jornada = cita.grupo.observaciones.slice(1, cita.grupo.observaciones.indexOf(']')),
+            grupo = cita.grupo.observaciones.slice(cita.grupo.observaciones.indexOf(']') + 1, cita.grupo.observaciones.length),
+            hora = (cita.hora > 9 ? cita.hora : '0' + cita.hora) + ':' + (cita.minuto > 9 ? cita.minuto : '0' + cita.minuto);
+        componentes.cardActual = card;
+        jornada = new Date(new Number(jornada));
+        jornada = (jornada.getDate() > 9 ? jornada.getDate() : '0' + jornada.getDate()) + '/' + (jornada.getMonth() > 8 ? (jornada.getMonth() + 1) : '0' + (jornada.getMonth() + 1)) + '/' + jornada.getFullYear();
+        card.children('div.card-header').children('div.row').children('div.siniestro').children('h4').children('span').html(siniestro);
+        card.children('div.card-header').children('div.row').children('div.fecha').children('h4').children('span').html(jornada);
+        card.children('div.card-body').children('div.direccion').children('div.col-12').children('span').html(direccion);
+        card.children('div.card-body').children('div.grupo').children('div.col-12').children('div.input-group').children('div.input-group-prepend').children('span.dia').html(jornada);
+        card.children('div.card-body').children('div.grupo').children('div.col-12').children('div.input-group').children('div.input-group-prepend').children('span.hora').html(hora);
+        card.children('div.card-body').children('div.grupo').children('div.col-12').children('div.input-group').children('span.nombre').html(grupo);
+        $.get('http://localhost:8080/ReForms_Provider/wr/tareascita/obtenerTareasPorCita/' + cita.id, respuesta_obtenerTareasPorCita, 'json');
+        if (origen === 'grupo') {
+            card.css({'background-color':sinColor, 'border-color':colorBorde});
+            card.children('div.card-header').css({'background-color':colorBorde, 'border-color':colorBorde});
+            card.children('div.card-body').css({'background-color':sinColor, 'border-color':colorBorde});
+            card.children('div.card-body').children('div.row').children('div.col-12').children('div.tabla').children('table.table').children('thead').children('tr').children('th').css('background-color', colorBorde);
+        } else if (origen === 'siniestro') {
+            card.css({'background-color':sinColor, 'border-color':colorBordeSiniestro});
+            card.children('div.card-header').css({'background-color':colorBordeSiniestro, 'border-color':colorBordeSiniestro});
+            card.children('div.card-body').css({'background-color':sinColor, 'border-color':colorBordeSiniestro});
+            card.children('div.card-body').children('div.row').children('div.col-12').children('div.tabla').children('table.table').children('thead').children('tr').children('th').css('background-color', colorBordeSiniestro);
         }
     }
     
@@ -242,7 +458,7 @@ $(document).ready(function() {
         tbody.children('tr.integrante').children('td.icono').children('i').click(icono_conductor_click);
     }
     
-    function actualizar_tabla_citas(listaCitas, tbody) {
+    function actualizar_tabla_agenda(listaCitas, tbody) {
         tbody.children('tr.cita').remove();
         if (listaCitas.length > 0) {
             var i, cita;
@@ -253,46 +469,51 @@ $(document).ready(function() {
             }
             tbody.children('tr.cita').click(grupo_cita_click);
         } else {
-            tbody.append('<tr class="cita"><td colspan="2"><h4>Sin citas registradas</h4></td></tr>');
+            tbody.append('<tr class="sin-resultados cita"><td colspan="2"><h4>Sin citas registradas</h4></td></tr>');
         }
     }
     
-    function generar_msgFecha(fecha) {
-        var f, y, m, d, msgFecha = 'Jornada del ';
-        if (fecha.indexOf('T') > 0) {
-            f = fecha.slice(0, fecha.indexOf('T'));
+    function actualizar_tabla_tareas(listaTareas, tbody) {
+        tbody.children('tr.tarea').remove();
+        if (listaTareas.length > 0) {
+            var i, tarea, und;
+            for (i = 0; i < listaTareas.length; i++) {
+                alert(JSON.stringify(listaTareas[i]));
+                switch (listaTareas[i].trabajo.medida) {
+                    case 0: und = ' uds.'; break;
+                    case 1: und = ' m'; break;
+                    case 2: und = ' m<sup>2</sup>'; break;
+                    case 3: und = ' m<sup>3</sup>'; break;
+                    case 4: und = ' h'; break;
+                    case 5: und = ' km'; break;
+                    default: und = ''; break;
+                }
+                tarea = '<td>' + listaTareas[i].trabajo.codigo + '</td><td>' + listaTareas[i].trabajo.descripcion + '</td><td>' + listaTareas[i].cantidad + und + '</td>';
+                tbody.append('<tr class="tarea">' + tarea + '</tr>');
+            }
+            tbody.children('tr.tarea').click(siniestro_tarea_click);
         } else {
-            f = fecha;
+            tbody.append('<tr class="sin-resultados tarea"><td colspan="3"><h4>Sin tareas registradas</h4></td></tr>');
         }
-        y = f.slice(0, f.indexOf('-'));
-        m = f.slice(f.indexOf('-') + 1, fecha.lastIndexOf('-'));
-        d = f.slice(fecha.lastIndexOf('-') + 1, fecha.length);
-        f = new Date(y, m - 1, d);
-        switch (f.getDay()) {
-            case 0: msgFecha += 'Domingo '; break;
-            case 1: msgFecha += 'Lunes '; break;
-            case 2: msgFecha += 'Martes '; break;
-            case 3: msgFecha += 'Miercoles '; break;
-            case 4: msgFecha += 'Jueves '; break;
-            case 5: msgFecha += 'Viernes '; break;
-            case 6: msgFecha += 'Sabado '; break;
+    }
+    
+    function actualizar_tabla_citas(listaCitas, tbody) {
+        tbody.children('tr.cita').remove();
+        if (listaCitas.length > 0) {
+            var i, cita, jornada, grupo;
+            for (i = 0; i < listaCitas.length; i++) {
+                jornada = listaCitas[i].grupo.observaciones.slice(1, listaCitas[i].grupo.observaciones.indexOf(']'));
+                jornada = new Date(new Number(jornada));
+                jornada = 'Jor. ' + (jornada.getDate() > 9 ? jornada.getDate() : '0' + jornada.getDate()) + '/' + (jornada.getMonth() > 8 ? (jornada.getMonth() + 1) : '0' + (jornada.getMonth() + 1)) + '/' + jornada.getFullYear();
+                grupo = listaCitas[i].grupo.observaciones.slice(listaCitas[i].grupo.observaciones.indexOf(']') + 1, listaCitas[i].grupo.observaciones.length);
+                cita = '<td>' + jornada + '</td><td>' + grupo + '</td>';
+                cita += '<td>' + (listaCitas[i].hora > 9 ? listaCitas[i].hora : '0' + listaCitas[i].hora) + ':' + (listaCitas[i].minuto > 9 ? listaCitas[i].minuto : '0' + listaCitas[i].minuto) + '</td>';
+                tbody.append('<tr class="cita">' + cita + '</tr>');
+            }
+            tbody.children('tr.cita').click(siniestro_cita_click);
+        } else {
+            tbody.append('<tr class="sin-resultados cita"><td colspan="3"><h4>Sin citas registradas</h4></td></tr>');
         }
-        msgFecha += f.getDate() + ' de ';
-        switch (f.getMonth()) {
-            case 0: msgFecha += 'Enero de '; break;
-            case 1: msgFecha += 'Febrero de '; break;
-            case 2: msgFecha += 'Marzo de '; break;
-            case 3: msgFecha += 'Abril de '; break;
-            case 4: msgFecha += 'Mayo de '; break;
-            case 5: msgFecha += 'Junio de '; break;
-            case 6: msgFecha += 'Julio de '; break;
-            case 7: msgFecha += 'Agosto de '; break;
-            case 8: msgFecha += 'Septiembre de '; break;
-            case 9: msgFecha += 'Octubre de '; break;
-            case 10: msgFecha += 'Noviembre de '; break;
-            case 11: msgFecha += 'Diciembre de '; break;
-        }
-        return msgFecha + f.getFullYear();
     }
     
     // Funciones controladoras para componentes
@@ -553,6 +774,10 @@ $(document).ready(function() {
             componentes.jornada.select.val(seleccion_grup.grupos.posicionSeleccionada);
         }
         componentes.jornada.select.change();
+        componentes.relacionar.iconoGrupo.html('check_circle');
+        if (relacionar.llamada != null) {
+            componentes.relacionar.cita.children('div.contenedor').children('div.card').children('div.card-body').children('div.container-fluid').children('div.cita').children('div.col-12').children('div.boton').children('div.input-group').children('button.btn-nuevo').prop('disabled', false);
+        }
         componentes.jornadas.div.hide();
         componentes.jornada.div.show();
     }
@@ -756,29 +981,211 @@ $(document).ready(function() {
                 seleccion_grup.agenda.posicionSeleccionada = $(this).index();
                 seleccion_grup.agenda.citaSeleccionada = seleccion_grup.agenda.listaCitas[seleccion_grup.agenda.posicionSeleccionada];
                 $(this).css('background-color', colorFondo).addClass('seleccionada');
-                alert('grupo_cita_click()\n\nFalta mostcitarar detalles de la cita');
-                componentes.jornada.agenda.detalles.div.show();
-                componentes.jornada.agenda.detalles.cita.show();
-                componentes.jornada.agenda.detalles.evento.hide();
-                componentes.jornada.agenda.detalles.tareas.hide();
+                componentes.jornada.agenda.detalles.load('Html/cita.html', cargar_cita_grupo);
+                componentes.jornada.agenda.detalles.show();
             } else {
                 seleccion_grup.agenda.posicionSeleccionada = -1;
                 seleccion_grup.agenda.citaSeleccionada = null;
-                componentes.jornada.agenda.detalles.div.hide();
+                componentes.jornada.agenda.detalles.hide();
+                componentes.cardActual = null;
             }
         }
-    }
-    
-    function grupo_cita_nueva_click() {
-        alert('grupo_cita_nueva_click()');
     }
     
     function jornada_volver_click() {
         if (seleccion_grup.grupos.posicionSeleccionada != componentes.jornada.select.val()) {
             componentes.jornadas.detalles.children('div.col-12').children('div.contenedor').children('div.card').children('div.card-footer').children('div.container-fluid').children('div.tabla').children('div.col-12').children('div.table-responsive-md').children('table.table').children('tbody').children('tr.grupo').eq(componentes.jornada.select.val()).click();
         }
+        componentes.relacionar.iconoGrupo.html('help');
+        if (relacionar.llamada != null) {
+            componentes.relacionar.cita.children('div.contenedor').children('div.card').children('div.card-body').children('div.container-fluid').children('div.cita').children('div.col-12').children('div.boton').children('div.input-group').children('button.btn-nuevo').prop('disabled', true);
+        }
         componentes.jornadas.div.show();
         componentes.jornada.div.hide();
+    }
+    
+    function siniestro_consultar_click() {
+        sessionStorage.setItem('siniestro', JSON.stringify(seleccion_even.siniestros.siniestroSeleccionado));
+        $('#contenido').load('Html/siniestro.html', function(responseTxt, statusTxt) {
+            if (statusTxt != 'success') {
+                alerta('Error 404', 'no se pudo cargar siniestro.html');
+                sessionStorage.removeItem('siniestro');
+            }
+        });
+    }
+    
+    function siniestro_volver_click() {
+        alert('siniestro_volver_siniestros_click()');
+        componentes.siniestro.div.hide();
+        componentes.siniestros.div.show();
+    }
+    
+    function siniestro_tarea_click() {
+        if (!edicion) {
+            if (seleccion_even.tareas.posicionSeleccionada == $(this).index()) {
+                seleccion_even.tareas.tareaSeleccionada = null;
+                seleccion_even.tareas.posicionSeleccionada = -1;
+                $(this).css('background-color', sinColor);
+                componentes.siniestro.tareas.tarea.hide();
+            } else {
+                seleccion_even.tareas.posicionSeleccionada = $(this).index();
+                seleccion_even.tareas.tareaSeleccionada = seleccion_even.tareas.listaTareas[seleccion_even.tareas.posicionSeleccionada];
+                componentes.siniestro.tareas.tbody.children('tr.tarea').css('background-color', sinColor);
+                $(this).css('background-color', colorFondoSiniestro);
+                componentes.siniestro.tareas.tarea.load('Html/tarea.html', cargar_tarea_siniestro);
+                componentes.siniestro.tareas.tarea.show();
+            }
+        }
+    }
+    
+    function siniestro_cita_click() {
+        if (!edicion) {
+            if (seleccion_even.citas.posicionSeleccionada == $(this).index()) {
+                seleccion_even.citas.citaSeleccionada = null;
+                seleccion_even.citas.posicionSeleccionada = -1;
+                $(this).css('background-color', sinColor);
+                componentes.siniestro.citas.cita.hide();
+                componentes.cardActual = null;
+            } else {
+                seleccion_even.citas.posicionSeleccionada = $(this).index();
+                seleccion_even.citas.citaSeleccionada = seleccion_even.citas.listaCitas[seleccion_even.citas.posicionSeleccionada];
+                componentes.siniestro.citas.tbody.children('tr.cita').css('background-color', sinColor);
+                $(this).css('background-color', colorFondoSiniestro);
+                componentes.siniestro.citas.cita.load('Html/cita.html', cargar_cita_siniestro);
+                componentes.siniestro.citas.cita.show();
+            }
+        }
+    }
+    
+    function llamada_agregar_click() {
+        var card = componentes.relacionar.cita.children('div.contenedor').children('div.card'),
+            select = card.children('div.card-body').children('div.container-fluid').children('div.llamada').children('div.col-12').children('div.nueva').children('div.seleccion').children('div.col-6').children('select.telefonos');
+        edicion_llamada = true;
+        mostrar_agenda(relacionar.agenda, select);
+        card.children('div.card-header').children('div.fecha').children('input').prop('disabled', true);
+        card.children('div.card-body').children('div.container-fluid').children('div.descripcion').children('div.col-12').children('textarea').prop('disabled', true);
+        card.children('div.card-body').children('div.container-fluid').children('div.llamada').children('div.col-12').children('div.boton, div.detalles').hide();
+        card.children('div.card-body').children('div.container-fluid').children('div.llamada').children('div.col-12').children('div.nueva').show();
+        card.children('div.card-footer').children('div.container-fluid').children('div.botones').children('div.col-12').children('button').prop('disabled', true);
+    }
+    
+    function cita_agregar_click() {
+        alert('cita_agregar_click()');
+        // copiar de ControladorSiniestro.js
+    }
+    
+    function icono_agregar_click() {
+        if (!$(this).parent('div.input-group-prepend').siblings('button.btn-nuevo').prop('disabled')) {
+            $(this).parent('div.input-group-prepend').siblings('button.btn-nuevo').click();
+        }
+    }
+    
+    function evento_aceptar_click(){
+        alert('evento_aceptar_click()');
+    }
+    
+    function llamada_aceptar_click() {
+        var card = componentes.relacionar.cita.children('div.contenedor').children('div.card'),
+            llamada = card.children('div.card-body').children('div.container-fluid').children('div.llamada'),
+            telefonos = llamada.children('div.col-12').children('div.nueva').children('div.seleccion').children('div.col-6').children('select.telefonos'),
+            tipo = llamada.children('div.col-12').children('div.nueva').children('div.seleccion').children('div.col-6').children('div.input-group').children('select.tipos'),
+            detalles = llamada.children('div.col-12').children('div.detalles'),
+            textoTelefono = '', textoNombre = '';
+        relacionar.llamada.id = null;
+        relacionar.llamada.tipo = Number.parseInt(tipo.val());
+        relacionar.llamada.cliente = null;
+        relacionar.llamada.contacto = null;
+        relacionar.llamada.perito = null;
+        relacionar.llamada.grupo = null;
+        if (telefonos.val() == 'cliente') {
+            relacionar.llamada.cliente = relacionar.agenda.cliente;
+        } else if (telefonos.val() == -1) {
+            var conacto = card.children('div.card-body').children('div.container-fluid').children('div.llamada').children('div.col-12').children('div.nueva').children('div.contacto').children('div.col-12'),
+                nombre = conacto.children('div.nombre').children('div.col-12').children('div.form-group').children('input[name="llamada_contacto_nombre"]'),
+                apellido1 = conacto.children('div.apellidos').children('div.col-12').children('div.form-group').children('div.input-group').children('input[name="llamada_contacto_apellido1"]'),
+                apellido2 = conacto.children('div.apellidos').children('div.col-12').children('div.form-group').children('div.input-group').children('input[name="llamada_contacto_apellido2"]'),
+                telefono1 = conacto.children('div.telefonos').children('div.col-12').children('div.form-group').children('div.input-group').children('input[name="llamada_contacto_telefono1"]'),
+                telefono2 = conacto.children('div.telefonos').children('div.col-12').children('div.form-group').children('div.input-group').children('input[name="llamada_contacto_telefono2"]');
+            relacionar.llamada.contacto = new Contacto();
+            relacionar.llamada.contacto.telefono1 = telefono1.val();
+            if (nombre.val() != '') {
+                relacionar.llamada.contacto.nombre = nombre.val();
+            }
+            if (apellido1.val() != '') {
+                relacionar.llamada.contacto.apellido1 = apellido1.val();
+            }
+            if (nombre.val() != '') {
+                relacionar.llamada.contacto.apellido2 = apellido2.val();
+            }
+            if (nombre.val() != '') {
+                relacionar.llamada.contacto.telefono2 = telefono2.val();
+            }
+        } else {
+            var t = telefonos.val().slice(0, telefonos.val().indexOf('[')),
+                i = Number.parseInt(telefonos.val().slice(telefonos.val().indexOf('[') + 1, telefonos.val().length - 1));
+            switch (t) {
+                case 'contacto': relacionar.llamada.contacto = relacionar.agenda.contactos[i]; break;
+                case 'perito': relacionar.llamada.perito = relacionar.agenda.peritos[i]; break;
+                case 'grupo': relacionar.llamada.grupo = relacionar.agenda.grupos[i]; break;
+            }
+        }
+        if (relacionar.llamada.cliente && relacionar.llamada.cliente != null) {
+            textoNombre = relacionar.llamada.cliente.nombre + ' ' + relacionar.llamada.cliente.apellido1;
+            if (relacionar.llamada.cliente.apellido2 && relacionar.llamada.cliente.apellido2 != null && relacionar.llamada.cliente.apellido2 != '') {
+                textoNombre += ' ' + relacionar.llamada.cliente.apellido2;
+            }
+            textoTelefono = relacionar.llamada.cliente.telefono1;
+            if (relacionar.llamada.cliente.telefono2 && relacionar.llamada.cliente.telefono2 != null && relacionar.llamada.cliente.telefono2 != '') {
+                textoTelefono += ' / ' + relacionar.llamada.cliente.telefono2
+            }
+        } else if (relacionar.llamada.contacto && relacionar.llamada.contacto != null) {
+            if (relacionar.llamada.contacto.nombre && relacionar.llamada.contacto.nombre != null && relacionar.llamada.contacto.nombre != '') {
+                textoNombre += relacionar.llamada.contacto.nombre + ' ';
+            }
+            if (relacionar.llamada.contacto.apellido1 && relacionar.llamada.contacto.apellido1 != null && relacionar.llamada.contacto.apellido1 != '') {
+                textoNombre += relacionar.llamada.contacto.apellido1 + ' ';
+            }
+            if (relacionar.llamada.contacto.apellido2 && relacionar.llamada.contacto.apellido2 != null && relacionar.llamada.contacto.apellido2 != '') {
+                textoNombre += relacionar.llamada.contacto.apellido2;
+            }
+            textoTelefono = relacionar.llamada.contacto.telefono1;
+            if (relacionar.llamada.contacto.telefono2 && relacionar.llamada.contacto.telefono2 != null && relacionar.llamada.contacto.telefono2 != '') {
+                textoTelefono += ' / ' + relacionar.llamada.contacto.telefono2
+            }
+        } else if (relacionar.llamada.perito && relacionar.llamada.perito != null) {
+            textoNombre = relacionar.llamada.perito.nombre + ' ' + relacionar.llamada.perito.apellido1;
+            textoTelefono = relacionar.llamada.perito.telefono1;
+            if (relacionar.llamada.perito.telefono2 && relacionar.llamada.perito.telefono2 != null && relacionar.llamada.perito.telefono2 != '') {
+                textoTelefono += ' / ' + relacionar.llamada.perito.telefono2;
+            }
+        } else if (relacionar.llamada.grupo && relacionar.llamada.grupo != null) {
+            if (relacionar.llamada.grupo.observaciones && relacionar.llamada.grupo.observaciones != null && relacionar.llamada.grupo.observaciones != '') {
+                var fecha = relacionar.llamada.grupo.observaciones.slice(1, relacionar.llamada.grupo.observaciones.indexOf(']'));
+                fecha = new Date (new Number(fecha));
+                textoNombre = relacionar.llamada.grupo.observaciones.slice(relacionar.llamada.grupo.observaciones.indexOf(']') + 2, relacionar.llamada.grupo.observaciones.length);
+                textoTelefono = '[Jor. ' + (fecha.getDate() > 9 ? fecha.getDate() : '0' + fecha.getDate()) + '/' + (fecha.getMonth() > 8 ? fecha.getMonth() + 1 : '0' + (fecha.getMonth() + 1)) + '/' + fecha.getFullYear() + ']';
+            }
+        }
+        detalles.children('div.input-group').children('div.input-group-prepend').children('span.numero').html(textoTelefono);
+        detalles.children('div.input-group').children('span.nombre').html(textoNombre);
+        detalles.children('div.input-group').children('div.input-group-append').children('span.tipo').html(generar_icono_llamada(relacionar.llamada.tipo));
+        edicion_llamada = false;
+        card.children('div.card-header').children('div.fecha').children('input').prop('disabled', false);
+        card.children('div.card-body').children('div.container-fluid').children('div.descripcion').children('div.col-12').children('textarea').prop('disabled', false);
+        card.children('div.card-footer').children('div.container-fluid').children('div.botones').children('div.col-12').children('button').prop('disabled', false);
+        detalles.children('div.input-group').children('div.input-group-append').children('span.tipo').html(generar_icono_llamada(relacionar.llamada.tipo));
+        card.children('div.card-body').children('div.container-fluid').children('div.llamada').children('div.col-12').children('div.boton, div.nueva').hide();
+        detalles.show();
+    }
+    
+    function llamada_cancelar_click() {
+        var card = componentes.relacionar.cita.children('div.contenedor').children('div.card');
+        edicion_llamada = false;
+        card.children('div.card-header').children('div.fecha').children('input').prop('disabled', false);
+        card.children('div.card-body').children('div.container-fluid').children('div.descripcion').children('div.col-12').children('textarea').prop('disabled', false);
+        card.children('div.card-footer').children('div.container-fluid').children('div.botones').children('div.col-12').children('button').prop('disabled', false);
+        card.children('div.card-body').children('div.container-fluid').children('div.llamada').children('div.col-12').children('div.nueva, div.detalles').hide();
+        card.children('div.card-body').children('div.container-fluid').children('div.llamada').children('div.col-12').children('div.boton').show();
     }
     
     function fecha_change() {
@@ -803,6 +1210,27 @@ $(document).ready(function() {
     
     function jornada_grupo_change() {
         componentes.jornada.grupo.load('Html/grupo.html', cargar_grupo_resumen);
+    }
+    
+    function llamada_telefonos_change() {
+        var nueva = componentes.relacionar.cita.children('div.contenedor').children('div.card').children('div.card-body').children('div.container-fluid').children('div.llamada').children('div.col-12').children('div.nueva');
+        if ($(this).val() == -1) {
+            nueva.children('div.botones').children('div.col-12').children('button.btn-aceptar').prop('disabled', true);
+            nueva.children('div.contacto').children('div.col-12').children('div.telefonos').children('div.col-12').children('div.form-group').children('div.input-group').children('input[name="llamada_contacto_telefono1"]').val('');
+            nueva.children('div.contacto').show();
+        } else {
+            nueva.children('div.botones').children('div.col-12').children('button.btn-aceptar').prop('disabled', $(this).val() < 0);
+            nueva.children('div.contacto').hide();
+        }
+    }
+    
+    function llamada_tipo_change() {
+        $(this).siblings('div.input-group-append').children('span.tipo').html(generar_icono_llamada(Number.parseInt($(this).val())));
+    }
+    
+    function siniestro_llamada_telefono1_keyup() {
+        var aceptar = componentes.relacionar.cita.children('div.contenedor').children('div.card').children('div.card-body').children('div.container-fluid').children('div.llamada').children('div.col-12').children('div.nueva').children('div.botones').children('div.col-12').children('button.btn-aceptar');
+        aceptar.prop('disabled', !($(this).val() != '' && telefono_valido($(this).val())));
     }
     
     // Funciones para cargar paginas y definir su comportamiento
@@ -890,7 +1318,7 @@ $(document).ready(function() {
             }
             $.get('http://localhost:8080/ReForms_Provider/wr/integrante/obtenerIntegrantePorGrupo/' + seleccion_grup.grupos.listaGrupos[componentes.jornada.select.val()].id, respuesta_obtenerIntegrantePorGrupo_resumen, 'json');
             $.get('http://localhost:8080/ReForms_Provider/wr/cita/obtenerCitaPorGrupo/' + seleccion_grup.grupos.listaGrupos[componentes.jornada.select.val()].id, respuesta_obtenerCitaPorGrupo_resumen, 'json');
-            componentes.jornada.agenda.detalles.div.hide();
+            componentes.jornada.agenda.detalles.hide();
             card.css('border-color', colorBorde);
             card.children('div.card-header').css('background-color', colorBorde);
             card.children('div.card-body').css('background-color', colorFondo);
@@ -968,6 +1396,191 @@ $(document).ready(function() {
             componentes.jornadas.calendario.fecha.prop('disabled', false);
             componentes.jornadas.calendario.nueva.prop('disabled', false);
             componentes.jornadas.detalles.hide();
+        }
+    }
+    
+    function cargar_evento(responseTxt, statusTxt) {
+        if (statusTxt == 'success') {
+            var card = componentes.relacionar.cita.children('div.contenedor').children('div.card'),
+                detalles_llamada = card.children('div.card-body').children('div.container-fluid').children('div.llamada').children('div.col-12').children('div.detalles'),
+                nueva_llamada = card.children('div.card-body').children('div.container-fluid').children('div.llamada').children('div.col-12').children('div.nueva'),
+                textoNombre, textoTelefono, fecha = relacionar.llamada.evento.fecha, operador = relacionar.llamada.evento.operador;
+            fecha = new Date(fecha.slice(0, fecha.indexOf('T')));
+            textoNombre = operador.trabajador.nombre + ' ' + operador.trabajador.apellido1;
+            card.children('div.card-header').children('h4.nombre').html('<ins>Registrado por:</ins> ' + textoNombre);
+            fecha = fecha.getFullYear() + '-' + (fecha.getMonth() > 8 ? (fecha.getMonth() + 1) : '0' + (fecha.getMonth() + 1)) + '-' + (fecha.getDate() > 9 ? fecha.getDate() : ('0' + fecha.getDate()));
+            card.children('div.card-header').children('div.fecha').children('input').val(fecha);
+            card.children('div.card-body').children('div.container-fluid').children('div.descripcion').children('div.col-12').children('textarea').prop('readonly', false);
+            if (relacionar.llamada.evento.descripcion && relacionar.llamada.evento.descripcion != null) {
+                card.children('div.card-body').children('div.container-fluid').children('div.descripcion').children('div.col-12').children('textarea').val(relacionar.llamada.evento.descripcion);
+            }
+            if (relacionar.llamada.id == null) {
+                if (relacionar.llamada.cliente && relacionar.llamada.cliente != null) {
+                    textoNombre = relacionar.llamada.cliente.nombre + ' ' + relacionar.llamada.cliente.apellido1;
+                    if (relacionar.llamada.cliente.apellido2 && relacionar.llamada.cliente.apellido2 != null && relacionar.llamada.cliente.apellido2 != '') {
+                        textoNombre += ' ' + relacionar.llamada.cliente.apellido2;
+                    }
+                    textoTelefono = relacionar.llamada.cliente.telefono1;
+                    if (relacionar.llamada.cliente.telefono2 && relacionar.llamada.cliente.telefono2 != null && relacionar.llamada.cliente.telefono2 != '') {
+                        textoTelefono += ' / ' + relacionar.llamada.cliente.telefono2
+                    }
+                } else if (relacionar.llamada.contacto && relacionar.llamada.contacto != null) {
+                    textoNombre = '';
+                    if (relacionar.llamada.contacto.nombre && relacionar.llamada.contacto.nombre != null && relacionar.llamada.contacto.nombre != '') {
+                        textoNombre += relacionar.llamada.contacto.nombre + ' ';
+                    }
+                    if (relacionar.llamada.contacto.apellido1 && relacionar.llamada.contacto.apellido1 != null && relacionar.llamada.contacto.apellido1 != '') {
+                        textoNombre += relacionar.llamada.contacto.apellido1 + ' ';
+                    }
+                    if (relacionar.llamada.contacto.apellido2 && relacionar.llamada.contacto.apellido2 != null && relacionar.llamada.contacto.apellido2 != '') {
+                        textoNombre += relacionar.llamada.contacto.apellido2;
+                    }
+                    textoTelefono = relacionar.llamada.contacto.telefono1;
+                    if (relacionar.llamada.contacto.telefono2 && relacionar.llamada.contacto.telefono2 != null && relacionar.llamada.contacto.telefono2 != '') {
+                        textoTelefono += ' / ' + relacionar.llamada.contacto.telefono2
+                    }
+                } else if (relacionar.llamada.perito && relacionar.llamada.perito != null) {
+                    textoNombre = relacionar.llamada.perito.nombre + ' ' + relacionar.llamada.perito.apellido1;
+                    textoTelefono = relacionar.llamada.perito.telefono1;
+                    if (relacionar.llamada.perito.telefono2 && relacionar.llamada.perito.telefono2 != null && relacionar.llamada.perito.telefono2 != '') {
+                        textoTelefono += ' / ' + relacionar.llamada.perito.telefono2;
+                    }
+                } else if (relacionar.llamada.grupo && relacionar.llamada.grupo != null) {
+                    if (relacionar.llamada.grupo.observaciones && relacionar.llamada.grupo.observaciones != null && relacionar.llamada.grupo.observaciones != '') {
+                        fecha = relacionar.llamada.grupo.observaciones.slice(1, relacionar.llamada.grupo.observaciones.indexOf(']'));
+                        fecha = new Date (new Number(fecha));
+                        textoNombre = relacionar.llamada.grupo.observaciones.slice(relacionar.llamada.grupo.observaciones.indexOf(']') + 2, relacionar.llamada.grupo.observaciones.length);
+                        textoTelefono = '[Jor. ' + (fecha.getDate() > 9 ? fecha.getDate() : '0' + fecha.getDate()) + '/' + (fecha.getMonth() > 8 ? fecha.getMonth() + 1 : '0' + (fecha.getMonth() + 1)) + '/' + fecha.getFullYear() + ']';
+                    }
+                } else {
+                    alert('falta informacion de la llamada');
+                }
+                detalles_llamada.children('div.input-group').children('div.input-group-prepend').children('span.numero').html(textoTelefono);
+                detalles_llamada.children('div.input-group').children('span.nombre').html(textoNombre);
+                detalles_llamada.children('div.input-group').children('div.input-group-append').children('span.tipo').html(generar_icono_llamada(relacionar.llamada.tipo));
+                card.children('div.card-body').children('div.container-fluid').children('div.llamada').children('div.col-12').children('div.boton').hide();
+            } else {
+                detalles_llamada.hide();
+            }
+            nueva_llamada.children('div.seleccion').children('div.col-6').children('select.telefonos').change(llamada_telefonos_change);
+            nueva_llamada.children('div.seleccion').children('div.col-6').children('div.input-group').children('select.tipos').change(llamada_tipo_change);
+            nueva_llamada.children('div.seleccion').children('div.col-6').children('select.telefonos').change();
+            nueva_llamada.children('div.seleccion').children('div.col-6').children('div.input-group').children('select.tipos').change();
+            nueva_llamada.children('div.botones').children('div.col-12').children('button.btn-aceptar').click(llamada_aceptar_click);
+            nueva_llamada.children('div.botones').children('div.col-12').children('button.btn-cancelar').click(llamada_cancelar_click);
+            nueva_llamada.children('div.contacto').children('div.col-12').children('div.telefonos').children('div.col-12').children('div.form-group').children('div.input-group').children('input[name="llamada_contacto_telefono1"]').keyup(siniestro_llamada_telefono1_keyup);
+            card.children('div.card-footer').children('div.container-fluid').children('div.botones').children('div.col-12').children('button.btn-aceptar').click(evento_aceptar_click);
+            card.children('div.card-footer').children('div.container-fluid').children('div.botones').children('div.col-12').children('button.btn-cancelar').click(siniestro_consultar_click);
+            card.children('div.card-body').children('div.container-fluid').children('div.llamada').children('div.col-12').children('div.boton').children('div.input-group').children('button.btn-nuevo').click(llamada_agregar_click);
+            card.children('div.card-body').children('div.container-fluid').children('div.cita').children('div.col-12').children('div.boton').children('div.input-group').children('button.btn-nuevo').prop('disabled', true).click(cita_agregar_click);
+            card.children('div.card-body').children('div.container-fluid').children('div.row').children('div.col-12').children('div.boton').children('div.input-group').children('div.input-group-prepend').children('span.input-group-text').click(icono_agregar_click);
+            card.css({'border-color':colorBordeSiniestro, 'background-color':'rgb(255, 255, 255)'});
+            card.children('div.card-header').css({'border-color':colorBordeSiniestro, 'background-color':colorBordeSiniestro});
+            card.children('div.card-header').children('div.fecha').css('background-color', 'white');
+            card.children('div.card-header').children('div.fecha').children('input').css({'background-color': colorFondoSiniestro, 'border-color': colorFondoSiniestro, 'color': colorTextoNeutro});
+            card.children('div.card-body, div.card-footer').css({'border-color':colorBordeSiniestro, 'background-color':colorFondoSiniestro});
+            detalles_llamada.children('div.input-group').children('div.input-group-prepend').children('span.numero').css({'background-color': colorFondoSiniestro, 'border-color': colorBordeSiniestro});
+            detalles_llamada.children('div.input-group').children('span.nombre').css({'background-color': colorFondoSiniestro, 'border-color': colorBordeSiniestro});
+            detalles_llamada.children('div.input-group').children('div.input-group-append').children('span.tipo').css({'background-color': colorFondoSiniestro, 'border-color': colorBordeSiniestro});
+            card.children('div.card-body').children('div.container-fluid').children('div.row').children('div.col-12').children('div.boton').css({'background-color': colorFondoSiniestro, 'border-color': colorBordeSiniestro});
+            card.children('div.card-body').children('div.container-fluid').children('div.row').children('div.col-12').children('div.boton').children('div.input-group').children('div.input-group-prepend').children('span.input-group-text').css({'background-color': colorBordeSiniestro, 'border-color': colorBordeSiniestro, 'color': 'rgb(255, 255, 255, 0.7)'});
+            card.children('div.card-body').children('div.container-fluid').children('div.row').children('div.col-12').children('div.boton').children('div.input-group').children('button.btn-nuevo').css({'background-color': colorFondoSiniestro, 'border-color': colorBordeSiniestro});
+            card.children('div.card-body').children('div.container-fluid').children('div.llamada').children('div.col-12').children('div.nueva').css({'background-color': colorFondoSiniestro, 'border-color': colorBordeSiniestro}).hide();
+            card.children('div.card-body').children('div.container-fluid').children('div.cita').children('div.col-12').children('div.detalles').hide();
+            componentes.relacionar.cita.show();
+        } else {
+            alerta('Error 404', 'no se pudo cargar evento.html');
+            componentes.relacionar.cita.hide();
+        }
+    }
+    
+    function cargar_cita_grupo(responseTxt, statusTxt) {
+        if (statusTxt == 'success') {
+            var cita = seleccion_grup.agenda.citaSeleccionada,
+                card = $(this).children('div.contenedor').children('div.card-cita');
+            mostrar_cita(cita, card, 'grupo');
+        } else {
+            alerta('Error 404', 'no se pudo cargar cita.html');
+        }
+    }
+    
+    function cargar_tarea_siniestro(responseTxt, statusTxt) {
+        if (statusTxt == 'success') {
+            var header = $(this).children('div.contenedor').children('div.card').children('div.card-header'),
+                body = $(this).children('div.contenedor').children('div.card').children('div.card-body'),
+                footer = $(this).children('div.contenedor').children('div.card').children('div.card-footer'),
+                gremio = header.children('div.container-fluid').children('div.row').children('div.col-4').children('input.tarea-gremio'),
+                descripcion = body.children('div.container-fluid').children('div.row').children('div.col-8').children('input.tarea-descripcion'),
+                codigo = header.children('div.container-fluid').children('div.row').children('div.col-4').children('input.tarea-codigo'),
+                estado = header.children('div.container-fluid').children('div.row').children('div.col-4').children('input.tarea-estado'),
+                cantidad = body.children('div.container-fluid').children('div.row').children('div.col-4').children('div.tarea-cantidad'),
+                cantidad_valor = cantidad.children('input[type="number"]'),
+                cantidad_unidad = cantidad.children('div.input-group-append').children('span.input-group-text'),
+                observaciones = body.children('div.container-fluid').children('div.row').children('div.col-8').children('textarea.tarea-observaciones'),
+                importe = body.children('div.container-fluid').children('div.row').children('div.col-4').children('div').children('div.tarea-importe').children('input[type="text"]');
+            if (seleccion_even.tareas.tareaSeleccionada.trabajo.gremio.nombre && seleccion_even.tareas.tareaSeleccionada.trabajo.gremio.nombre != null && seleccion_even.tareas.tareaSeleccionada.trabajo.gremio.nombre != '') {
+                gremio.val(seleccion_even.tareas.tareaSeleccionada.trabajo.gremio.nombre);
+            } else {
+                gremio.val('');
+            }
+            if (seleccion_even.tareas.tareaSeleccionada.trabajo.descripcion && seleccion_even.tareas.tareaSeleccionada.trabajo.descripcion != null && seleccion_even.tareas.tareaSeleccionada.trabajo.descripcion != '') {
+                descripcion.val(seleccion_even.tareas.tareaSeleccionada.trabajo.descripcion);
+            } else {
+                descripcion.val('');
+            }
+            if (seleccion_even.tareas.tareaSeleccionada.trabajo.codigo && seleccion_even.tareas.tareaSeleccionada.trabajo.codigo != null && seleccion_even.tareas.tareaSeleccionada.trabajo.codigo != '') {
+                codigo.val(seleccion_even.tareas.tareaSeleccionada.trabajo.codigo);
+            } else {
+                codigo.val('');
+            }
+            switch (seleccion_even.tareas.tareaSeleccionada.estado) {
+                case 0: estado.val('pendiente'); break;
+                case 1: estado.val('en proceso'); break;
+                case 2: estado.val('finalizada'); break;
+                case 3: estado.val('anulada'); break;
+                default: estado.val('');
+            }
+            if (seleccion_even.tareas.tareaSeleccionada.cantidad != null) {
+                cantidad_valor.val(seleccion_even.tareas.tareaSeleccionada.cantidad);
+                switch (seleccion_even.tareas.tareaSeleccionada.trabajo.medida) {
+                    case 0: cantidad_unidad.html('uds.'); break;
+                    case 1: cantidad_unidad.html('m'); break;
+                    case 2: cantidad_unidad.html('m<sup>2</sup>'); break;
+                    case 3: cantidad_unidad.html('m<sup>3</sup>'); break;
+                    case 4: cantidad_unidad.html('h'); break;
+                    case 5: cantidad_unidad.html('km'); break;
+                    default: cantidad_unidad.html('');
+                }
+            } else {
+                cantidad_valor.val('');
+                cantidad_unidad.html('');
+            }
+            if (seleccion_even.tareas.tareaSeleccionada.observaciones && seleccion_even.tareas.tareaSeleccionada.observaciones != null && seleccion_even.tareas.tareaSeleccionada.observacionese != '') {
+                observaciones.val(seleccion_even.tareas.tareaSeleccionada.observaciones);
+            } else {
+                observaciones.val('');
+            }
+            if (seleccion_even.tareas.tareaSeleccionada.importe && seleccion_even.tareas.tareaSeleccionada.importe != null) {
+                importe.val(seleccion_even.tareas.tareaSeleccionada.importe.toFixed(2));
+            } else {
+                importe.val('0.00');
+            }
+            $(this).children('div.contenedor').children('div.card').css('border-color', colorBordeSiniestro);
+            header.css({'background-color':colorBordeSiniestro, 'border-color':colorBordeSiniestro});
+            footer.css({'background-color':colorFondoSiniestro, 'border-color':colorBordeSiniestro});
+            body.children('div.container-fluid').children('div.row').children('div.col-4').children('div.botones').remove();
+        } else {
+            alerta('Error 404', 'no se pudo cargar tarea.html');
+        }
+    }
+    
+    function cargar_cita_siniestro(responseTxt, statusTxt) {
+        if (statusTxt == 'success') {
+            var cita = seleccion_even.citas.citaSeleccionada,
+                card = $(this).children('div.contenedor').children('div.card-cita');
+            mostrar_cita(cita, card, 'siniestro');
+        } else {
+            alerta('Error 404', 'no se pudo cargar cita.html');
         }
     }
     
@@ -1109,9 +1722,123 @@ $(document).ready(function() {
             seleccion_grup.agenda.listaCitas = data;
             seleccion_grup.agenda.posicionSeleccionada = -1;
             seleccion_grup.agenda.citaSeleccionada = null;
-            actualizar_tabla_citas(seleccion_grup.agenda.listaCitas, componentes.jornada.agenda.tbody);
+            actualizar_tabla_agenda(seleccion_grup.agenda.listaCitas, componentes.jornada.agenda.tbody);
         } else {
             alert('fallo en el proveedor');
+        }
+    }
+    
+    function respuesta_obtenerSiniestro(data, status) {
+        if (status == 'success') {
+            seleccion_even.siniestros.siniestroSeleccionado = data;
+            relacionar.agenda.cliente = seleccion_even.siniestros.siniestroSeleccionado.poliza.cliente;
+            $.get('http://localhost:8080/ReForms_Provider/wr/perito/buscarPeritoPorAseguradora/' + seleccion_even.siniestros.siniestroSeleccionado.poliza.cliente.aseguradora.id, function(data, status) {
+                if (status == 'success') {
+                    var i;
+                    relacionar.agenda.peritos = [];
+                    for (i = 0; i < data.length; i++) {
+                        relacionar.agenda.peritos.push(data[i]);
+                    }
+                    $.get('http://localhost:8080/ReForms_Provider/wr/grupo/obtenerGruposPorSiniestro/' + seleccion_even.siniestros.siniestroSeleccionado.id, function(data, status) {
+                        if (status == 'success') {
+                            var i;
+                            relacionar.agenda.grupos = [];
+                            for (i = 0; i < data.length; i++) {
+                                relacionar.agenda.grupos.push(data[i]);
+                            }
+                        } else {
+                            relacionar.agenda.cliente = null;
+                            relacionar.agenda.contactos = [];
+                            relacionar.agenda.peritos = [];
+                            relacionar.agenda.grupos = [];
+                            alert('fallo en el proveedor');
+                        }
+                    }, 'json');
+                } else {
+                    relacionar.agenda.cliente = null;
+                    relacionar.agenda.contactos = [];
+                    relacionar.agenda.peritos = [];
+                    relacionar.agenda.grupos = [];
+                    alert('fallo en el proveedor');
+                }
+            }, 'json');
+            mostrar_siniestro(seleccion_even.siniestros.siniestroSeleccionado);
+        } else {
+            alert('fallo en proveedor');
+        }
+    }
+    
+    function respuesta_obtenerContactos(data, status) {
+        if (status == 'success') {
+            relacionar.agenda.contactos = data;
+            if (data.length > 0) {
+                var i, aux;
+                componentes.siniestro.resumen.contactos.children('div.contactos').children('ul').children('li').remove();
+                for (i = 0; i < data.length; i++) {
+                    aux = '';
+                    if (data[i].nombre && data[i].nombre != null && data[i].nombre != '') {
+                        aux += data[i].nombre + ' ';
+                    }
+                    if (data[i].apellido1 && data[i].apellido1 != null && data[i].apellido1 != '') {
+                        aux += data[i].apellido1 + ' ';
+                    }
+                    if (data[i].apellido2 && data[i].apellido2 != null && data[i].apellido2 != '') {
+                        aux += data[i].apellido2 + ' ';
+                    }
+                    aux += '(' + data[i].telefono1;
+                    if (data[i].telefono2 && data[i].telefono2 != null && data[i].telefono2 != '') {
+                        aux += '/' + data[i].telefono2;
+                    }
+                    aux += ')';
+                    componentes.siniestro.resumen.contactos.children('div.contactos').children('ul').append('<li>' + aux + '</li>');
+                }
+                componentes.siniestro.resumen.contactos.children('div.contactos').show();
+            } else {
+                componentes.siniestro.resumen.contactos.children('div.contactos').hide();
+            }
+        } else {
+            relacionar.agenda.cliente = null;
+            relacionar.agenda.contactos = [];
+            relacionar.agenda.peritos = [];
+            relacionar.agenda.grupos = [];
+            alert('fallo en proveedor');
+        }
+    }
+    
+    function respuesta_obtenerCitas(data, status) {
+        seleccion_even.citas.posicionSeleccionada = -1;
+        seleccion_even.citas.citaSeleccionada = null;
+        if (status == 'success') {
+            seleccion_even.citas.listaCitas = data;
+            actualizar_tabla_citas(seleccion_even.citas.listaCitas, componentes.siniestro.citas.tbody);
+        } else {
+            seleccion_even.tareas.listaTareas = [];
+            alert('fallo en proveedor');
+        }
+    }
+    
+    function respuesta_obtenerTareas(data, status) {
+        seleccion_even.tareas.posicionSeleccionada = -1;
+        seleccion_even.tareas.tareaSeleccionada = null;
+        if (status == 'success') {
+            var i;
+            seleccion_even.tareas.listaTareas = [];
+            for (i = 0; i < data.length; i++) {
+                seleccion_even.tareas.listaTareas.push(data[i].tarea);
+            }
+            actualizar_tabla_tareas(seleccion_even.tareas.listaTareas, componentes.siniestro.tareas.tbody);
+        } else {
+            seleccion_even.tareas.listaTareas = [];
+            alert('fallo en proveedor');
+        }
+    }
+    
+    function respuesta_obtenerTareasPorCita(data, status) {
+        if (status == 'success') {
+            var tbody = componentes.cardActual.children('div.card-body').children('div.tareas').children('div.col-12').children('div.tabla').children('table.table').children('tbody');
+            actualizar_tabla_tareas(data, tbody);
+        } else {
+            alert('fallo en proveedor');
         }
     }
     
@@ -1124,50 +1851,69 @@ $(document).ready(function() {
     componentes.jornada.select = componentes.jornada.div.children('div.seleccion').children('select[name="grupo_actual"]');
     componentes.jornada.grupo = componentes.jornada.div.children('div.grupo');
     componentes.jornada.agenda.tbody = componentes.jornada.div.children('div.agenda').children('div.col-12').children('div.tabla').children('div.col-12').children('div.table-responsive-md').children('table.table').children('tbody');
-    componentes.jornada.agenda.nueva = componentes.jornada.div.children('div.agenda').children('div.col-12').children('div.tabla').children('div.col-12').children('div.table-responsive-md').children('button.btn-nuevo');
-    componentes.jornada.agenda.detalles.div = componentes.jornada.div.children('div.agenda').children('div.col-12').children('div.detalles');
-    componentes.jornada.agenda.detalles.cita = componentes.jornada.agenda.detalles.div.children('div.cita');
-    componentes.jornada.agenda.detalles.evento = componentes.jornada.agenda.detalles.div.children('div.extra').children('div.evento');
-    componentes.jornada.agenda.detalles.tareas = componentes.jornada.agenda.detalles.div.children('div.extra').children('div.tareas');
+    componentes.jornada.agenda.detalles = componentes.jornada.div.children('div.agenda').children('div.col-12').children('div.detalles');
     componentes.siniestros.mapa = componentes.siniestros.div.children('div.mapa');
     componentes.siniestros.tabla.tbody = componentes.siniestros.div.children('div.tabla');
     componentes.siniestros.tabla.detalles = componentes.siniestros.div.children('div.tabla');
-    componentes.siniestro.resumen.contactos = componentes.siniestro.div.children('div.resumen').children('div.contactos');
-    componentes.siniestro.resumen.direccion = componentes.siniestro.div.children('div.resumen').children('div.direccion');
-    componentes.siniestro.tareas.tbody = componentes.siniestro.div.children('div.tareas').children('div.tabla');
-    componentes.siniestro.tareas.detalles = componentes.siniestro.div.children('div.tareas').children('div.detalles');
-    componentes.siniestro.citas.tbody = componentes.siniestro.div.children('div.citas').children('div.tabla');
-    componentes.siniestro.citas.detalles = componentes.siniestro.div.children('div.citas').children('div.detalles');
-    if (sessionStorage.evento && sessionStorage.evento != null && sessionStorage.evento != '') {
+    componentes.siniestro.resumen.cabecera.siniestro = componentes.siniestro.div.children('div.container-fluid').children('div.cabecera').children('div.num-siniestro').children('h5').children('span');
+    componentes.siniestro.resumen.cabecera.poliza = componentes.siniestro.div.children('div.container-fluid').children('div.cabecera').children('div.num-poliza').children('h5').children('span');
+    componentes.siniestro.resumen.cabecera.fecha = componentes.siniestro.div.children('div.container-fluid').children('div.cabecera').children('div.fecha').children('h6').children('span');
+    componentes.siniestro.resumen.cabecera.estado = componentes.siniestro.div.children('div.container-fluid').children('div.cabecera').children('div.estado').children('h6').children('span');
+    componentes.siniestro.resumen.cabecera.consultar = componentes.siniestro.div.children('div.container-fluid').children('div.cabecera').children('div.detalles').children('button.btn-consultar');
+    componentes.siniestro.resumen.contactos = componentes.siniestro.div.children('div.container-fluid').children('div.resumen').children('div.contactos');
+    componentes.siniestro.resumen.direccion = componentes.siniestro.div.children('div.container-fluid').children('div.resumen').children('div.direccion');
+    componentes.siniestro.tareas.tbody = componentes.siniestro.div.children('div.container-fluid').children('div.tareas').children('div.tabla').children('table.table').children('tbody');
+    componentes.siniestro.tareas.tarea = componentes.siniestro.div.children('div.container-fluid').children('div.tarea');
+    componentes.siniestro.citas.tbody = componentes.siniestro.div.children('div.container-fluid').children('div.citas').children('div.tabla').children('table.table').children('tbody');
+    componentes.siniestro.citas.cita = componentes.siniestro.div.children('div.container-fluid').children('div.cita');
+    componentes.siniestro.botones = componentes.siniestro.div.children('div.container-fluid').children('div.botones').children('div.col-12');
+    componentes.relacionar.iconoGrupo = componentes.relacionar.div.children('div.col-2:first-child').children('i.relaccion');
+    componentes.relacionar.iconoEvento = componentes.relacionar.div.children('div.col-2:last-child').children('i.relaccion');
+    componentes.relacionar.cita = componentes.relacionar.div.children('div.col-8').children('div.cita');
+    if (sessionStorage.llamada && sessionStorage.llamada != null && sessionStorage.llamada != '') {
         // parte en la que entramos desde el siniestro
-        seleccion_even.evento = JSON.parse(sessionStorage.evento);
-        sessionStorage.removeItem('evento');
+        relacionar.llamada = JSON.parse(sessionStorage.llamada);
+        sessionStorage.removeItem('llamada');
+        componentes.siniestro.botones.children('button.btn-volver').click(siniestro_consultar_click);
+        componentes.relacionar.cita.load('Html/evento.html', cargar_evento);
+        $.get('http://localhost:8080/ReForms_Provider/wr/siniestro/obtenerSiniestro/' + relacionar.llamada.evento.siniestro.id, respuesta_obtenerSiniestro, 'json');
     } else {
         // parte en la que entramos desde la pestaña jornadas
+        componentes.siniestro.botones.children('button.btn-volver').click(siniestro_volver_click);
     }
+    componentes.siniestro.resumen.cabecera.consultar.click(siniestro_consultar_click);
     var f = new Date(), y = f.getFullYear(), m = f.getMonth() + 1;
     componentes.jornadas.calendario.fecha.val(y + (m < 10 ? '-0' + m : '-' + m) + '-01');
     componentes.jornadas.calendario.fecha.change(fecha_change);
     componentes.jornadas.calendario.nueva.click(jornada_nueva_click);
-    componentes.jornada.agenda.nueva.click(grupo_cita_nueva_click);
     componentes.jornada.div.children('div.botones').children('button.btn-volver').click(jornada_volver_click);
+    componentes.jornada.select.change(jornada_grupo_change);
     actualizar_calendario(y, m, null);
-    
+
     // Inicializacion de aspecto y colores
     // ====================================================================== //
     $("#ventana").css({'border-color':colorBorde, 'background-color':colorFondo});
     componentes.jornadas.calendario.tbody.siblings('thead').children('tr').css("background-color", colorBorde);
     componentes.jornadas.calendario.nueva.css({'border-color':colorBorde, 'background-color':colorFondo});
     componentes.jornada.agenda.tbody.siblings('thead').children('tr').css("background-color", colorBorde);
-    componentes.jornada.agenda.nueva.css({'border-color':colorBorde, 'background-color':colorFondo});
     componentes.jornada.div.children('div.cabecera').css('background-color', colorBorde);
     componentes.jornada.div.children('div.botones').children('button.btn-volver').css({'border-color':colorBorde, 'background-color':colorFondo});
-    componentes.jornada.select.change(jornada_grupo_change);
+    componentes.siniestro.div.css('border-color', colorBordeSiniestro);
+    componentes.siniestro.div.children('div.container-fluid').css('background-color', colorFondoSiniestro);
+    componentes.siniestro.resumen.cabecera.consultar.css({'border-color':sinColor, 'background-color':sinColor});
+    componentes.siniestro.tareas.tbody.siblings('thead').children('tr').children('th').css('background-color', colorBordeSiniestro);
+    componentes.siniestro.citas.tbody.siblings('thead').children('tr').children('th').css('background-color', colorBordeSiniestro);
+    componentes.siniestro.botones.children('button.btn-volver').css({'border-color':colorBordeSiniestro, 'background-color':colorFondoSiniestro});
+    componentes.relacionar.div.css('background-image', 'linear-gradient(to right, ' + colorBorde + ' , ' + colorBordeSiniestro + ')');
     componentes.jornadas.detalles.hide();
     componentes.jornada.div.hide();
-    if (seleccion_even.evento == null) {
+    if (relacionar.llamada == null) {
+        componentes.relacionar.iconoGrupo.html('help');
+        componentes.relacionar.iconoEvento.html('help');
         componentes.siniestro.div.hide();
     } else {
+        componentes.relacionar.iconoGrupo.html('help');
+        componentes.relacionar.iconoEvento.html('check_circle');
         componentes.siniestros.div.hide();
     }
 });

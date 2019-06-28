@@ -5,6 +5,19 @@
 </script>
 
 <style>
+    i.llamada-saliente {
+        color: green;
+    }
+    
+    i.llamada-entrante {
+        color: blue;
+    }
+    
+    i.llamada-saliente-perdida,
+    i.llamada-entrante-perdida {
+        color: red;
+    }
+    
     #ventana {
         border: 15px solid;
         border-radius: 20px;
@@ -40,7 +53,10 @@
         margin-bottom: 3%;
     }
     
-    #ventana div.jornadas div.calendario table thead th h4 {
+    #ventana div.jornadas div.calendario table thead th h4,
+    #ventana div.container-fluid div.row div.seleccion-grupo div.jornada div.agenda div.container-fluid div.tabla div.col-12 div.table-responsive-md table.table thead tr,
+    #ventana div.container-fluid div.row div.seleccion-evento div.siniestro div.container-fluid div.citas div.tabla table.table thead tr,
+    #ventana div.container-fluid div.row div.seleccion-evento div.siniestro div.container-fluid div.tareas div.tabla table.table thead tr {
         text-align: center;
     }
     
@@ -70,7 +86,12 @@
     
     #ventana div.jornadas div.detalles,
     #ventana div.jornadas div.detalles div.botones,
-    #ventana div.jornada div.agenda div.detalles {
+    #ventana div.jornada div.agenda div.detalles,
+    #ventana div.container-fluid div.row div.seleccion-evento div.siniestro div.container-fluid div.resumen,
+    #ventana div.container-fluid div.row div.seleccion-evento div.siniestro div.container-fluid div.tareas,
+    #ventana div.container-fluid div.row div.seleccion-evento div.siniestro div.container-fluid div.citas,
+    #ventana div.jornada div.grupo,
+    #ventana div.jornada div.agenda {
         margin-top: 3%;
     }
     
@@ -82,13 +103,77 @@
         margin-bottom: 1%;
     }
     
-    #ventana div.jornada div.grupo,
-    #ventana div.jornada div.agenda {
-        margin-top: 3%;
-    }
-    
     #ventana div.jornada div.botones {
         margin-top: 6%;
+    }
+    
+    #ventana div.container-fluid div.row div.seleccion-evento div.siniestro {
+        border: 5px solid;
+        border-radius: 10px;
+        margin-bottom: 1%;
+        background-color: rgb(255, 255, 255);
+    }
+    
+    #ventana div.container-fluid div.row div.seleccion-evento div.siniestro div.container-fluid {
+        padding: 3%;
+    }
+    
+    #ventana div.container-fluid div.row div.seleccion-evento div.siniestro div.container-fluid div.botones {
+        margin-top: 3%;
+        text-align: right;
+    }
+    
+    #ventana div.container-fluid div.row div.seleccion-grupo div.jornada div.agenda div.container-fluid div.tabla div.col-12 div.table-responsive-md table.table tbody tr td:first-child {
+        text-align: left;
+        width: 80%;
+    }
+    
+    #ventana div.container-fluid div.row div.seleccion-grupo div.jornada div.agenda div.container-fluid div.tabla div.col-12 div.table-responsive-md table.table tbody tr td:last-child  {
+        text-align: center;
+        width: 20%;
+    }
+    
+    #ventana div.container-fluid div.row div.seleccion-evento div.siniestro div.container-fluid div.tareas div.tabla table.table tbody tr td,
+    #ventana div.container-fluid div.row div.seleccion-evento div.siniestro div.container-fluid div.citas div.tabla table.table tbody tr td {
+        text-align: left;
+        width: 60%;
+    }
+    
+    #ventana div.container-fluid div.row div.seleccion-evento div.siniestro div.container-fluid div.tareas div.tabla table.table tbody tr td:first-child,
+    #ventana div.container-fluid div.row div.seleccion-evento div.siniestro div.container-fluid div.citas div.tabla table.table tbody tr td:first-child {
+        text-align: center;
+        width: 25%;
+    }
+    
+    #ventana div.container-fluid div.row div.seleccion-evento div.siniestro div.container-fluid div.tareas div.tabla table.table tbody tr td:last-child,
+    #ventana div.container-fluid div.row div.seleccion-evento div.siniestro div.container-fluid div.citas div.tabla table.table tbody tr td:last-child {
+        text-align: center;
+        width: 15%;
+    }
+    
+    tr.sin-resultados td {
+        text-align: center;
+    }
+    
+    #ventana div.container-fluid div.relacionar {
+        margin-top: 1%;
+        padding-top: 1%;
+        padding-bottom: 1%;
+        border-top-left-radius: 0px;
+        border-top-right-radius: 0px;
+        border-bottom-left-radius: 25px;
+        border-bottom-right-radius: 25px;
+        border: solid black 0px;
+        background-color: rgb(0, 0, 0);
+    }
+    
+    #ventana div.container-fluid div.relacionar div.col-2 i.relaccion {
+        font-size: 48px;
+        color: rgb(255, 255, 255);
+    }
+    
+    #ventana div.container-fluid div.relacionar div.col-2 {
+        text-align: center;
     }
     
     @media only screen and (max-width: 1200px) {
@@ -106,7 +191,7 @@
 
 <div id="ventana">
     <div class="container-fluid">
-        <div class="row">
+        <div class="seleccion row">
             <div class="seleccion-grupo col-xl-6">
                 <div class="jornadas container-fluid">
                     <div class="calendario row">
@@ -160,29 +245,15 @@
                                         <table class="table table-hover">
                                             <thead>
                                                 <tr>
-                                                    <th>Cita</th>
-                                                    <th>Hora</th>
+                                                    <th colspan="2">Agenda</th>
                                                 </tr>
                                             </thead>
                                             <tbody></tbody>
                                         </table>
-                                        <button class="btn btn-nuevo" type="button">nueva</button>
                                     </div>
                                 </div>
                             </div>
-                            <div class="detalles row">
-                                <div class="cita col-6">
-                                    cita
-                                </div>
-                                <div class="extra col-6 container-fluid">
-                                    <div class="evento row">
-                                        evento
-                                    </div>
-                                    <div class="tareas row">
-                                        tareas
-                                    </div>
-                                </div>
-                            </div>
+                            <div class="detalles row"></div>
                         </div>
                     </div>
                     <div class="botones row">
@@ -199,32 +270,92 @@
                         tabla
                     </div>
                 </div>
-                <div class="siniestro container-fluid">
-                    <div class="resumen row">
-                        <div class="contactos col-6">
-                            contacto
+                <div class="siniestro">
+                    <div class="container-fluid">
+                        <div class="cabecera row">
+                            <div class="num-siniestro col-6">
+                                <h5><strong>Siniestro:</strong>&nbsp<span></span></h5>
+                            </div>
+                            <div class="num-poliza col-5">
+                                <h5><strong>Poliza:</strong>&nbsp<span></span></h5>
+                            </div>
+                            <div class="detalles col-1">
+                                <button class="btn btn-consultar"><i class="material-icons">search</i></button>
+                            </div>
                         </div>
-                        <div class="direccion col-6">
-                            direccion
+                        <div class="cabecera row">
+                            <div class="fecha col-6">
+                                <h6><strong>Fecha:</strong>&nbsp<span></span></h6>
+                            </div>
+                            <div class="estado col-6">
+                                <h6><strong>Estado:</strong>&nbsp<span></span></h6>
+                            </div>
                         </div>
-                    </div>
-                    <div class="tareas row">
-                        <div class="tabla col-6">
-                            tabla
+                        <div class="resumen row">
+                            <div class="contactos col-6">
+                                <div class="cliente">
+                                    <p><strong>Cliente:</strong></p>
+                                    <ul></ul>
+                                </div>
+                                <div class="contactos">
+                                    <p><strong>Contactos:</strong></p>
+                                    <ul></ul>
+                                </div>
+                            </div>
+                            <div class="direccion col-6">
+                                <div><strong>Direccion:</strong></div>
+                                <p></p>
+                                <div class="mapa"></div>
+                            </div>
                         </div>
-                        <div class="detalles col-6">
-                            detalles
+                        <div class="tareas row">
+                            <div class="tabla col-12">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th colspan="3">Tareas</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
                         </div>
-                    </div>
-                    <div class="citas row">
-                        <div class="tabla col-6">
-                            tabla
+                        <div class="tarea row">
+                            tarea
                         </div>
-                        <div class="detalles col-6">
-                            detalles
+                        <div class="citas row">
+                            <div class="tabla col-12">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th colspan="3">Citas</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="cita row">
+                            cita
+                        </div>
+                        <div class="botones row">
+                            <div class="col-12">
+                                <button class="btn btn-volver">volver</button>
+                            </div>
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
+        <div class="relacionar row">
+            <div class="col-2">
+                <i class="relaccion material-icons"></i>
+            </div>
+            <div class="col-8">
+                <div class="cita"></div>
+            </div>
+            <div class="col-2">
+                <i class="relaccion material-icons"></i>
             </div>
         </div>
     </div>

@@ -3,7 +3,7 @@ $(document).ready(function() {
     // Variables
     // ====================================================================== //
     var colorBorde = $('#btn-siniestros').css('background-color'),
-        colorFondo = colorBorde.substring(0, colorBorde.length - 1) + ', 0.1)',
+        colorFondo = colorBorde.substring(0, colorBorde.length - 1) + ', 0.2)',
         sinColor = 'rgb(0, 0, 0, 0)',
         colorFondoNeutro = 'rgb(169, 169, 169)',
         colorBordeNeutro = 'rgb(206, 212, 218)',
@@ -25,7 +25,13 @@ $(document).ready(function() {
         eventos = {
             'listaLlamadas': [],
             'llamadaSeleccionada': null,
-            'posicionSeleccionada': -1
+            'posicionSeleccionada': -1,
+            'agenda': {
+                'cliente': null,
+                'contactos': [],
+                'peritos': [],
+                'grupos': []
+            }
         },
         adicional = {
             'participantes': {
@@ -107,7 +113,7 @@ $(document).ready(function() {
                 }
             }
         },
-        strAux, edicion = false;
+        strAux, edicion = false, edicion_llamada = false;
         
     // Funciones auxiliares
     // ====================================================================== //
@@ -358,9 +364,67 @@ $(document).ready(function() {
                     tbody.append('<tr class="llamada">' + fecha + descripcion + tipo + '</tr>');
                 }
             }
-            tbody.children('tr.llamada').click(llamada_click);
+            tbody.children('tr.llamada').click(evento_click);
         } else {
             tbody.append('<tr class="llamada sin-resultados"><td colspan="3"><h4>Sin eventos registrados</h4></td></tr>');
+        }
+    }
+    
+    function mostrar_agenda(agenda, select) {
+        var i, texto;
+        select.children('option').remove();
+        if (agenda != null) {
+            select.append('<option value="-2">Cliente:</option>');
+            texto = '[' + agenda.cliente.telefono1;
+            if (agenda.cliente.telefono2 && agenda.cliente.telefono2 != null && agenda.cliente.telefono2 != '') {
+                texto += '/' + agenda.cliente.telefono2;
+            }
+            texto += '] ' + agenda.cliente.nombre + agenda.cliente.apellido1;
+            select.append('<option value="cliente" selected>' + texto + '</option>');
+            select.append('<option value="-2"></option>');
+            if (agenda.contactos.length > 0) {
+                select.append('<option value="-2">Contactos:</option>');
+                for (i = 0; i < agenda.contactos.length; i++) {
+                    texto = '[' + agenda.contactos[i].telefono1;
+                    if (agenda.contactos[i].telefono2 && agenda.contactos[i].telefono2 != null && agenda.contactos[i].telefono2 != '') {
+                        texto += '/' + agenda.contactos[i].telefono2;
+                    }
+                    texto += ']';
+                    if (agenda.contactos[i].nombre && agenda.contactos[i].nombre != null && agenda.contactos[i].nombre != '') {
+                        texto += ' ' + agenda.contactos[i].nombre;
+                    }
+                    if (agenda.contactos[i].apellido1 && agenda.contactos[i].apellido1 != null && agenda.contactos[i].apellido1 != '') {
+                        texto += ' ' + agenda.contactos[i].apellido1;
+                    }
+                    select.append('<option value="contacto[' + i + ']">' + texto + '</option>');
+                }
+                select.append('<option value="-2"></option>');
+            }
+            select.append('<option value="-2">Peritos:</option>');
+            for (i = 0; i < agenda.peritos.length; i++) {
+                texto = '[' + agenda.peritos[i].telefono1;
+                if (agenda.peritos[i].telefono2 && agenda.peritos[i].telefono2 != null && agenda.peritos[i].telefono2 != '') {
+                    texto += '/' + agenda.peritos[i].telefono2;
+                }
+                texto += '] ' + agenda.peritos[i].nombre + ' ' + agenda.peritos[i].apellido1;
+                select.append('<option value="perito[' + i + ']">' + texto + '</option>');
+            }
+            select.append('<option value="-2"></option>');
+            if (agenda.grupos.length > 0) {
+                select.append('<option value="-2">Grupos:</option>');
+                var fecha, nombre;
+                for (i = 0; i < agenda.grupos.length; i++) {
+                    fecha = agenda.grupos[i].observaciones.slice(1, agenda.grupos[i].observaciones.indexOf(']'));
+                    fecha = new Date (new Number(fecha));
+                    nombre = agenda.grupos[i].observaciones.slice(agenda.grupos[i].observaciones.indexOf(']') + 2, agenda.grupos[i].observaciones.length);
+                    texto = '[Jor. ' + (fecha.getDate() > 9 ? fecha.getDate() : '0' + fecha.getDate()) + '/' + (fecha.getMonth() > 8 ? fecha.getMonth() + 1 : '0' + (fecha.getMonth() + 1)) + '/' + fecha.getFullYear() + '] ' + nombre;
+                    select.append('<option value="grupo[' + i + ']">' + texto + '</option>');
+                }
+                select.append('<option value="-2"></option>');
+            }
+            select.append('<option value="-1">Nuevo contacto...</option>');
+        } else {
+            select.append('<option value="-2">ERROR!!!</option>');
         }
     }
     
@@ -889,6 +953,7 @@ $(document).ready(function() {
                         contactos.contactoSeleccionado = null;
                         actualizar_detalles_contacto();
                         $.get('http://localhost:8080/ReForms_Provider/wr/contacto/obtenerContactos/' + siniestro.id, respuesta_obtenerContactos, 'json');
+                        $.get('http://localhost:8080/ReForms_Provider/wr/llamada/obtenerEventos/' + siniestro.id, respuesta_obtenerEventos, 'json');
                     },
                     error: function(jqXhr, textStatus, errorThrown){
                         alerta('Error en proveedor', 'no ha sido posible borrar el contacto');
@@ -1470,7 +1535,7 @@ $(document).ready(function() {
         }
     }
     
-    function llamada_click() {
+    function evento_click() {
         if (!edicion) {
             componentes.eventos.tbody.children('tr.llamada').css('background-color', sinColor).removeClass('seleccionada');
             if (eventos.posicionSeleccionada != $(this).index()) {
@@ -1488,14 +1553,229 @@ $(document).ready(function() {
         }
     }
     
-    function llamada_nueva_click() {
+    function evento_nuevo_click() {
         edicion = true;
         eventos.posicionSeleccionada = -1;
-        eventos.llamadaSeleccionada = null;
+        eventos.llamadaSeleccionada = new Llamada();
+        eventos.llamadaSeleccionada.id = -1;
+        eventos.llamadaSeleccionada.evento = new Evento();
         componentes.eventos.tbody.children('tr.llamada').css('background-color', sinColor).removeClass('seleccionada');
         componentes.eventos.nuevo.prop('disabled', true);
         componentes.eventos.detalles.load('Html/evento.html', cargar_evento_nuevo);
         componentes.eventos.detalles.show();
+    }
+    
+    function evento_nuevo_aceptar_click() {
+        var card = componentes.eventos.detalles.children('div.contenedor').children('div.card'),
+            fecha = card.children('div.card-header').children('div.fecha').children('input'),
+            descripcion = card.children('div.card-body').children('div.container-fluid').children('div.descripcion').children('div.col-12').children('textarea'),
+            id, operador = JSON.parse(sessionStorage.usuario);
+        eventos.llamadaSeleccionada.evento.operador = operador[0];
+        eventos.llamadaSeleccionada.evento.siniestro = new Siniestro();
+        eventos.llamadaSeleccionada.evento.siniestro.id = siniestro.id;
+        eventos.llamadaSeleccionada.evento.fecha = new Date(fecha.val());
+        eventos.llamadaSeleccionada.evento.descripcion = descripcion.val() != '' ? descripcion.val() : null;
+        if (eventos.llamadaSeleccionada.cliente != null) {
+            id = eventos.llamadaSeleccionada.cliente.id;
+            eventos.llamadaSeleccionada.cliente = new Cliente();
+            eventos.llamadaSeleccionada.cliente.id = id;
+        } else if (eventos.llamadaSeleccionada.perito != null) {
+            id = eventos.llamadaSeleccionada.perito.id;
+            eventos.llamadaSeleccionada.perito = new Perito();
+            eventos.llamadaSeleccionada.perito.id = id;
+        }
+        $.ajax({
+            url: 'http://localhost:8080/ReForms_Provider/wr/llamada/agregarEvento',
+            dataType: 'json',
+            type: 'post',
+            contentType: 'application/json;charset=UTF-8',
+            data: JSON.stringify(eventos.llamadaSeleccionada),
+            processData: false,
+            success: function(data, textStatus, jQxhr){
+                componentes.eventos.detalles.children('div.contenedor').children('div.card').children('div.card-footer').children('div.container-fluid').children('div.botones').children('div.col-12').children('button.btn-cancelar').click();
+                $.get('http://localhost:8080/ReForms_Provider/wr/contacto/obtenerContactos/' + siniestro.id, respuesta_obtenerContactos, 'json');
+                $.get('http://localhost:8080/ReForms_Provider/wr/llamada/obtenerEventos/' + siniestro.id, respuesta_obtenerEventos, 'json');
+            },
+            error: function(jQxhr, textStatus, errorThrown){
+                alert('fallo en el proveedor');
+            }
+        });
+    }
+    
+    function evento_nuevo_cancelar_click() {
+        edicion = false;
+        eventos.posicionSeleccionada = -1;
+        eventos.llamadaSeleccionada = null;
+        componentes.eventos.nuevo.prop('disabled', false);
+        componentes.eventos.detalles.hide();
+    }
+    
+    function icono_agregar_click() {
+        if (!$(this).parent('div.input-group-prepend').siblings('button.btn-nuevo').prop('disabled')) {
+            $(this).parent('div.input-group-prepend').siblings('button.btn-nuevo').click();
+        }
+    }
+    
+    function llamada_agregar_click() {
+        var card = componentes.eventos.detalles.children('div.contenedor').children('div.card');
+        edicion_llamada = true;
+        eventos.agenda.cliente = siniestro.poliza.cliente;
+        eventos.agenda.contactos = [];
+        eventos.agenda.contactos = contactos.listaContactos;
+        $.get('http://localhost:8080/ReForms_Provider/wr/perito/buscarPeritoPorAseguradora/' + siniestro.poliza.cliente.aseguradora.id, function(data, status) {
+            if (status == 'success') {
+                eventos.agenda.peritos = data;
+                $.get('http://localhost:8080/ReForms_Provider/wr/grupo/obtenerGruposPorSiniestro/' + siniestro.id, function(data, status) {
+                    if (status == 'success') {
+                        var select = componentes.eventos.detalles.children('div.contenedor').children('div.card').children('div.card-body').children('div.container-fluid').children('div.llamada').children('div.col-12').children('div.nueva').children('div.seleccion').children('div.col-6').children('select.telefonos');
+                        eventos.agenda.grupos = data;
+                        mostrar_agenda(eventos.agenda, select);
+                    } else {
+                        eventos.agenda.cliente = null;
+                        eventos.agenda.contactos = [];
+                        eventos.agenda.peritos = [];
+                        eventos.agenda.grupos = [];
+                        alert('fallo en el proveedor');
+                    }
+                }, 'json');
+            } else {
+                eventos.agenda.cliente = null;
+                eventos.agenda.contactos = [];
+                eventos.agenda.peritos = [];
+                eventos.agenda.grupos = [];
+                alert('fallo en el proveedor');
+            }
+        }, 'json');
+        card.children('div.card-header').children('div.fecha').children('input').prop('disabled', true);
+        card.children('div.card-body').children('div.container-fluid').children('div.descripcion').children('div.col-12').children('textarea').prop('disabled', true);
+        card.children('div.card-body').children('div.container-fluid').children('div.llamada').children('div.col-12').children('div.boton, div.detalles').hide();
+        card.children('div.card-body').children('div.container-fluid').children('div.llamada').children('div.col-12').children('div.nueva').show();
+        card.children('div.card-footer').children('div.container-fluid').children('div.botones').children('div.col-12').children('button').prop('disabled', true);
+    }
+    
+    function llamada_aceptar_click() {
+        var card = componentes.eventos.detalles.children('div.contenedor').children('div.card'),
+            llamada = card.children('div.card-body').children('div.container-fluid').children('div.llamada'),
+            telefonos = llamada.children('div.col-12').children('div.nueva').children('div.seleccion').children('div.col-6').children('select.telefonos'),
+            tipo = llamada.children('div.col-12').children('div.nueva').children('div.seleccion').children('div.col-6').children('div.input-group').children('select.tipos'),
+            detalles = llamada.children('div.col-12').children('div.detalles'),
+            textoTelefono = '', textoNombre = '';
+        eventos.llamadaSeleccionada.id = null;
+        eventos.llamadaSeleccionada.tipo = Number.parseInt(tipo.val());
+        eventos.llamadaSeleccionada.cliente = null;
+        eventos.llamadaSeleccionada.contacto = null;
+        eventos.llamadaSeleccionada.perito = null;
+        eventos.llamadaSeleccionada.grupo = null;
+        if (telefonos.val() == 'cliente') {
+            eventos.llamadaSeleccionada.cliente = eventos.agenda.cliente;
+        } else if (telefonos.val() == -1) {
+            var conacto = card.children('div.card-body').children('div.container-fluid').children('div.llamada').children('div.col-12').children('div.nueva').children('div.contacto').children('div.col-12'),
+                nombre = conacto.children('div.nombre').children('div.col-12').children('div.form-group').children('input[name="llamada_contacto_nombre"]'),
+                apellido1 = conacto.children('div.apellidos').children('div.col-12').children('div.form-group').children('div.input-group').children('input[name="llamada_contacto_apellido1"]'),
+                apellido2 = conacto.children('div.apellidos').children('div.col-12').children('div.form-group').children('div.input-group').children('input[name="llamada_contacto_apellido2"]'),
+                telefono1 = conacto.children('div.telefonos').children('div.col-12').children('div.form-group').children('div.input-group').children('input[name="llamada_contacto_telefono1"]'),
+                telefono2 = conacto.children('div.telefonos').children('div.col-12').children('div.form-group').children('div.input-group').children('input[name="llamada_contacto_telefono2"]');
+            eventos.llamadaSeleccionada.contacto = new Contacto();
+            eventos.llamadaSeleccionada.contacto.telefono1 = telefono1.val();
+            if (nombre.val() != '') {
+                eventos.llamadaSeleccionada.contacto.nombre = nombre.val();
+            }
+            if (apellido1.val() != '') {
+                eventos.llamadaSeleccionada.contacto.apellido1 = apellido1.val();
+            }
+            if (nombre.val() != '') {
+                eventos.llamadaSeleccionada.contacto.apellido2 = apellido2.val();
+            }
+            if (nombre.val() != '') {
+                eventos.llamadaSeleccionada.contacto.telefono2 = telefono2.val();
+            }
+        } else {
+            var t = telefonos.val().slice(0, telefonos.val().indexOf('[')),
+                i = Number.parseInt(telefonos.val().slice(telefonos.val().indexOf('[') + 1, telefonos.val().length - 1));
+            switch (t) {
+                case 'contacto': eventos.llamadaSeleccionada.contacto = eventos.agenda.contactos[i]; break;
+                case 'perito': eventos.llamadaSeleccionada.perito = eventos.agenda.peritos[i]; break;
+                case 'grupo': eventos.llamadaSeleccionada.grupo = eventos.agenda.grupos[i]; break;
+            }
+        }
+        if (eventos.llamadaSeleccionada.cliente && eventos.llamadaSeleccionada.cliente != null) {
+            textoNombre = eventos.llamadaSeleccionada.cliente.nombre + ' ' + eventos.llamadaSeleccionada.cliente.apellido1;
+            if (eventos.llamadaSeleccionada.cliente.apellido2 && eventos.llamadaSeleccionada.cliente.apellido2 != null && eventos.llamadaSeleccionada.cliente.apellido2 != '') {
+                textoNombre += ' ' + eventos.llamadaSeleccionada.cliente.apellido2;
+            }
+            textoTelefono = eventos.llamadaSeleccionada.cliente.telefono1;
+            if (eventos.llamadaSeleccionada.cliente.telefono2 && eventos.llamadaSeleccionada.cliente.telefono2 != null && eventos.llamadaSeleccionada.cliente.telefono2 != '') {
+                textoTelefono += ' / ' + eventos.llamadaSeleccionada.cliente.telefono2
+            }
+        } else if (eventos.llamadaSeleccionada.contacto && eventos.llamadaSeleccionada.contacto != null) {
+            if (eventos.llamadaSeleccionada.contacto.nombre && eventos.llamadaSeleccionada.contacto.nombre != null && eventos.llamadaSeleccionada.contacto.nombre != '') {
+                textoNombre += eventos.llamadaSeleccionada.contacto.nombre + ' ';
+            }
+            if (eventos.llamadaSeleccionada.contacto.apellido1 && eventos.llamadaSeleccionada.contacto.apellido1 != null && eventos.llamadaSeleccionada.contacto.apellido1 != '') {
+                textoNombre += eventos.llamadaSeleccionada.contacto.apellido1 + ' ';
+            }
+            if (eventos.llamadaSeleccionada.contacto.apellido2 && eventos.llamadaSeleccionada.contacto.apellido2 != null && eventos.llamadaSeleccionada.contacto.apellido2 != '') {
+                textoNombre += eventos.llamadaSeleccionada.contacto.apellido2;
+            }
+            textoTelefono = eventos.llamadaSeleccionada.contacto.telefono1;
+            if (eventos.llamadaSeleccionada.contacto.telefono2 && eventos.llamadaSeleccionada.contacto.telefono2 != null && eventos.llamadaSeleccionada.contacto.telefono2 != '') {
+                textoTelefono += ' / ' + eventos.llamadaSeleccionada.contacto.telefono2
+            }
+        } else if (eventos.llamadaSeleccionada.perito && eventos.llamadaSeleccionada.perito != null) {
+            textoNombre = eventos.llamadaSeleccionada.perito.nombre + ' ' + eventos.llamadaSeleccionada.perito.apellido1;
+            textoTelefono = eventos.llamadaSeleccionada.perito.telefono1;
+            if (eventos.llamadaSeleccionada.perito.telefono2 && eventos.llamadaSeleccionada.perito.telefono2 != null && eventos.llamadaSeleccionada.perito.telefono2 != '') {
+                textoTelefono += ' / ' + eventos.llamadaSeleccionada.perito.telefono2;
+            }
+        } else if (eventos.llamadaSeleccionada.grupo && eventos.llamadaSeleccionada.grupo != null) {
+            if (eventos.llamadaSeleccionada.grupo.observaciones && eventos.llamadaSeleccionada.grupo.observaciones != null && eventos.llamadaSeleccionada.grupo.observaciones != '') {
+                var fecha = eventos.llamadaSeleccionada.grupo.observaciones.slice(1, eventos.llamadaSeleccionada.grupo.observaciones.indexOf(']'));
+                fecha = new Date (new Number(fecha));
+                textoNombre = eventos.llamadaSeleccionada.grupo.observaciones.slice(eventos.llamadaSeleccionada.grupo.observaciones.indexOf(']') + 2, eventos.llamadaSeleccionada.grupo.observaciones.length);
+                textoTelefono = '[Jor. ' + (fecha.getDate() > 9 ? fecha.getDate() : '0' + fecha.getDate()) + '/' + (fecha.getMonth() > 8 ? fecha.getMonth() + 1 : '0' + (fecha.getMonth() + 1)) + '/' + fecha.getFullYear() + ']';
+            }
+        }
+        detalles.children('div.input-group').children('div.input-group-prepend').children('span.numero').html(textoTelefono);
+        detalles.children('div.input-group').children('span.nombre').html(textoNombre);
+        detalles.children('div.input-group').children('div.input-group-append').children('span.tipo').html(generar_icono_llamada(eventos.llamadaSeleccionada.tipo));
+        edicion_llamada = false;
+        card.children('div.card-header').children('div.fecha').children('input').prop('disabled', false);
+        card.children('div.card-body').children('div.container-fluid').children('div.descripcion').children('div.col-12').children('textarea').prop('disabled', false);
+        card.children('div.card-footer').children('div.container-fluid').children('div.botones').children('div.col-12').children('button').prop('disabled', false);
+        detalles.children('div.input-group').children('div.input-group-append').children('span.tipo').html(generar_icono_llamada(eventos.llamadaSeleccionada.tipo));
+        card.children('div.card-body').children('div.container-fluid').children('div.llamada').children('div.col-12').children('div.boton, div.nueva').hide();
+        detalles.show();
+    }
+    
+    function llamada_cancelar_click() {
+        var card = componentes.eventos.detalles.children('div.contenedor').children('div.card');
+        edicion_llamada = false;
+        card.children('div.card-header').children('div.fecha').children('input').prop('disabled', false);
+        card.children('div.card-body').children('div.container-fluid').children('div.descripcion').children('div.col-12').children('textarea').prop('disabled', false);
+        card.children('div.card-footer').children('div.container-fluid').children('div.botones').children('div.col-12').children('button').prop('disabled', false);
+        card.children('div.card-body').children('div.container-fluid').children('div.llamada').children('div.col-12').children('div.nueva, div.detalles').hide();
+        card.children('div.card-body').children('div.container-fluid').children('div.llamada').children('div.col-12').children('div.boton').show();
+    }
+    
+    function cita_agregar_click() {
+        if (!edicion_llamada) {
+            var card = componentes.eventos.detalles.children('div.contenedor').children('div.card'),
+                fecha = card.children('div.card-header').children('div.fecha').children('input'),
+                descripcion = card.children('div.card-body').children('div.container-fluid').children('div.descripcion').children('div.col-12').children('textarea'),
+                id, operador = JSON.parse(sessionStorage.usuario);
+            eventos.llamadaSeleccionada.evento.operador = operador[0];
+            eventos.llamadaSeleccionada.evento.siniestro = new Siniestro();
+            eventos.llamadaSeleccionada.evento.siniestro.id = siniestro.id;
+            eventos.llamadaSeleccionada.evento.fecha = new Date(fecha.val());
+            eventos.llamadaSeleccionada.evento.descripcion = descripcion.val() != '' ? descripcion.val() : null;
+            sessionStorage.setItem('llamada', JSON.stringify(eventos.llamadaSeleccionada));
+            $('#contenido').load('Html/jornadas.html', function(responseTxt, statusTxt) {
+                if (statusTxt !== 'success') {
+                    sessionStorage.removeItem('llamada');
+                    alert('no se ha podido cargar jornadas.html');
+                }
+            });
+        }
     }
     
     function accion_fecha_nueva_change() {
@@ -1679,12 +1959,33 @@ $(document).ready(function() {
         cantidad_valor.focus();
     }
     
+    function llamada_telefonos_change() {
+        var nueva = componentes.eventos.detalles.children('div.contenedor').children('div.card').children('div.card-body').children('div.container-fluid').children('div.llamada').children('div.col-12').children('div.nueva');
+        if ($(this).val() == -1) {
+            nueva.children('div.botones').children('div.col-12').children('button.btn-aceptar').prop('disabled', true);
+            nueva.children('div.contacto').children('div.col-12').children('div.telefonos').children('div.col-12').children('div.form-group').children('div.input-group').children('input[name="llamada_contacto_telefono1"]').val('');
+            nueva.children('div.contacto').show();
+        } else {
+            nueva.children('div.botones').children('div.col-12').children('button.btn-aceptar').prop('disabled', $(this).val() < 0);
+            nueva.children('div.contacto').hide();
+        }
+    }
+    
+    function llamada_tipo_change() {
+        $(this).siblings('div.input-group-append').children('span.tipo').html(generar_icono_llamada(Number.parseInt($(this).val())));
+    }
+    
     function siniestro_contacto_telefono1_keyup() {
         if ($(this).val() != '' && telefono_valido($(this).val())) {
             componentes.contactos.botones.children('button[name="siniestro_contacto_aceptar"]').prop('disabled', false);
         } else {
             componentes.contactos.botones.children('button[name="siniestro_contacto_aceptar"]').prop('disabled', true);
         }
+    }
+    
+    function siniestro_llamada_telefono1_keyup() {
+        var aceptar = componentes.eventos.detalles.children('div.contenedor').children('div.card').children('div.card-body').children('div.container-fluid').children('div.llamada').children('div.col-12').children('div.nueva').children('div.botones').children('div.col-12').children('button.btn-aceptar');
+        aceptar.prop('disabled', !($(this).val() != '' && telefono_valido($(this).val())));
     }
     
     function tarea_cantidad_keyup() {
@@ -1942,6 +2243,7 @@ $(document).ready(function() {
                         textoTelefono += ' / ' + eventos.llamadaSeleccionada.cliente.telefono2
                     }
                 } else if (eventos.llamadaSeleccionada.contacto && eventos.llamadaSeleccionada.contacto != null) {
+                    textoNombre = '';
                     if (eventos.llamadaSeleccionada.contacto.nombre && eventos.llamadaSeleccionada.contacto.nombre != null && eventos.llamadaSeleccionada.contacto.nombre != '') {
                         textoNombre += eventos.llamadaSeleccionada.contacto.nombre + ' ';
                     }
@@ -1979,7 +2281,7 @@ $(document).ready(function() {
             if (eventos.llamadaSeleccionada.evento.operador.trabajador.apellido1 && eventos.llamadaSeleccionada.evento.operador.trabajador.apellido1 != null && eventos.llamadaSeleccionada.evento.operador.trabajador.apellido1 != '') {
                 textoNombre += ' ' + eventos.llamadaSeleccionada.evento.operador.trabajador.apellido1;
             }
-            card.children('div.card-header').children('h4.nombre').html('Registrado por: ' + textoNombre);
+            card.children('div.card-header').children('h4.nombre').html('<ins>Registrado por:</ins> ' + textoNombre);
             if (eventos.llamadaSeleccionada.evento.descripcion && eventos.llamadaSeleccionada.evento.descripcion != null && eventos.llamadaSeleccionada.evento.descripcion != '') {
                 card.children('div.card-body').children('div.container-fluid').children('div.descripcion').children('div.col-12').children('textarea').val(eventos.llamadaSeleccionada.evento.descripcion);
             }
@@ -1994,6 +2296,7 @@ $(document).ready(function() {
             detalles_llamada.children('div.input-group').children('span.nombre').css({'background-color': colorFondo, 'border-color': colorBorde});
             detalles_llamada.children('div.input-group').children('div.input-group-append').children('span.tipo').css({'background-color': colorFondo, 'border-color': colorBorde});
             card.children('div.card-body').children('div.container-fluid').children('div.llamada, div.cita').children('div.col-12').children('div.boton').hide();
+            card.children('div.card-body').children('div.container-fluid').children('div.llamada').children('div.col-12').children('div.nueva').remove();
             card.children('div.card-footer').remove();
         } else {
             alerta('Error 404', 'no se pudo cargar evento.html');
@@ -2002,14 +2305,39 @@ $(document).ready(function() {
     
     function cargar_evento_nuevo(responseTxt, statusTxt) {
         if (statusTxt == 'success') {
-            alert('cargar_evento_nuevo(responseTxt, statusTxt)');
-            var card = componentes.eventos.detalles.children('div.contenedor').children('div.card');
+            var card = componentes.eventos.detalles.children('div.contenedor').children('div.card'),
+                detalles_llamada = card.children('div.card-body').children('div.container-fluid').children('div.llamada').children('div.col-12').children('div.detalles'),
+                nueva_llamada = card.children('div.card-body').children('div.container-fluid').children('div.llamada').children('div.col-12').children('div.nueva'),
+                textoNombre, fecha = new Date(), operador = JSON.parse(sessionStorage.usuario);
+            textoNombre = operador[0].trabajador.nombre + ' ' + operador[0].trabajador.apellido1;
+            card.children('div.card-header').children('h4.nombre').html('<ins>Registrado por:</ins> ' + textoNombre);
+            fecha = fecha.getFullYear() + '-' + (fecha.getMonth() > 8 ? (fecha.getMonth() + 1) : '0' + (fecha.getMonth() + 1)) + '-' + (fecha.getDate() > 9 ? fecha.getDate() : ('0' + fecha.getDate()));
+            card.children('div.card-header').children('div.fecha').children('input').val(fecha);
+            card.children('div.card-body').children('div.container-fluid').children('div.descripcion').children('div.col-12').children('textarea').prop('readonly', false);
+            card.children('div.card-body').children('div.container-fluid').children('div.llamada').children('div.col-12').children('div.boton').children('div.input-group').children('button.btn-nuevo').click(llamada_agregar_click);
+            card.children('div.card-body').children('div.container-fluid').children('div.cita').children('div.col-12').children('div.boton').children('div.input-group').children('button.btn-nuevo').click(cita_agregar_click);
+            nueva_llamada.children('div.seleccion').children('div.col-6').children('select.telefonos').change(llamada_telefonos_change);
+            nueva_llamada.children('div.seleccion').children('div.col-6').children('div.input-group').children('select.tipos').change(llamada_tipo_change);
+            nueva_llamada.children('div.seleccion').children('div.col-6').children('select.telefonos').change();
+            nueva_llamada.children('div.seleccion').children('div.col-6').children('div.input-group').children('select.tipos').change();
+            nueva_llamada.children('div.botones').children('div.col-12').children('button.btn-aceptar').click(llamada_aceptar_click);
+            nueva_llamada.children('div.botones').children('div.col-12').children('button.btn-cancelar').click(llamada_cancelar_click);
+            nueva_llamada.children('div.contacto').children('div.col-12').children('div.telefonos').children('div.col-12').children('div.form-group').children('div.input-group').children('input[name="llamada_contacto_telefono1"]').keyup(siniestro_llamada_telefono1_keyup);
+            card.children('div.card-footer').children('div.container-fluid').children('div.botones').children('div.col-12').children('button.btn-aceptar').click(evento_nuevo_aceptar_click);
+            card.children('div.card-footer').children('div.container-fluid').children('div.botones').children('div.col-12').children('button.btn-cancelar').click(evento_nuevo_cancelar_click);
             card.css('border-color', colorBorde);
             card.children('div.card-header').css({'background-color': colorBorde, 'border-color': colorBorde});
             card.children('div.card-header').children('div.fecha').css('background-color', 'white');
             card.children('div.card-header').children('div.fecha').children('input').css({'background-color': colorFondo, 'border-color': colorFondo, 'color': colorTextoNeutro});
             card.children('div.card-body, div.card-footer').css({'background-color': colorFondo, 'border-color': colorBorde});
+            detalles_llamada.children('div.input-group').children('div.input-group-prepend').children('span.numero').css({'background-color': colorFondo, 'border-color': colorBorde});
+            detalles_llamada.children('div.input-group').children('span.nombre').css({'background-color': colorFondo, 'border-color': colorBorde});
+            detalles_llamada.children('div.input-group').children('div.input-group-append').children('span.tipo').css({'background-color': colorFondo, 'border-color': colorBorde});
             card.children('div.card-body').children('div.container-fluid').children('div.llamada, div.cita').children('div.col-12').children('div.detalles').hide();
+            card.children('div.card-body').children('div.container-fluid').children('div.llamada').children('div.col-12').children('div.nueva').css({'background-color': colorFondo, 'border-color': colorBorde}).hide();
+            card.children('div.card-body').children('div.container-fluid').children('div.row').children('div.col-12').children('div.boton').css({'background-color': colorFondo, 'border-color': colorBorde});
+            card.children('div.card-body').children('div.container-fluid').children('div.row').children('div.col-12').children('div.boton').children('div.input-group').children('div.input-group-prepend').children('span.input-group-text').css({'background-color': colorBorde, 'border-color': colorBorde, 'color': 'rgb(255, 255, 255, 0.7)'}).click(icono_agregar_click);
+            card.children('div.card-body').children('div.container-fluid').children('div.row').children('div.col-12').children('div.boton').children('div.input-group').children('button.btn-nuevo').css({'background-color': colorFondo, 'border-color': colorBorde});
         } else {
             alerta('Error 404', 'no se pudo cargar evento.html');
         }
@@ -2145,11 +2473,20 @@ $(document).ready(function() {
     
     function respuesta_obtenerTareasPorCita(data, status) {
         if (status == 'success') {
-            var i, tbody = componentes.eventos.detalles.children('div.contenedor').children('div.card').children('div.card-body').children('div.container-fluid').children('div.cita').children('div.col-12').children('div.detalles').children('div.tabla').children('table.table').children('tbody');
+            var i, und, tbody = componentes.eventos.detalles.children('div.contenedor').children('div.card').children('div.card-body').children('div.container-fluid').children('div.cita').children('div.col-12').children('div.detalles').children('div.tabla').children('table.table').children('tbody');
             tbody.children('tr.tarea').remove();
             if (data.length > 0) {
                 for (i = 0; i < data.length; i++) {
-                    tbody.append('<tr class="tarea"><td>' + data[i].tarea.trabajo.codigo + '</td><td>' + data[i].tarea.trabajo.descripcion + '</td></tr>');
+                    switch (data[i].tarea.trabajo.medida) {
+                        case 0: und = ' uds.'; break;
+                        case 1: und = ' m'; break;
+                        case 2: und = ' m<sup>2</sup>'; break;
+                        case 3: und = ' m<sup>3</sup>'; break;
+                        case 4: und = ' h'; break;
+                        case 5: und = ' km'; break;
+                        default: und = ''; break;
+                    }
+                    tbody.append('<tr class="tarea"><td>' + data[i].tarea.trabajo.codigo + '</td><td>' + data[i].tarea.trabajo.descripcion + '</td><td>' + data[i].tarea.cantidad + und + '</td></tr>');
                 }
             } else {
                 tbody.append('<tr class="sin-resultados tarea"><td colspan="2"><h4>Sin tareas asignadas</h4></td></tr>');
@@ -2230,7 +2567,7 @@ $(document).ready(function() {
     componentes.tareas.botones.children('button[name="tarea_actualizar"]').click(tarea_actualizar_click);
     componentes.tareas.botones.children('button[name="tarea_ampliar"]').click(tarea_ampliar_click);
     componentes.tareas.botones.children('button[name="tarea_borrar"]').click(tarea_borrar_click);
-    componentes.eventos.nuevo.click(llamada_nueva_click);
+    componentes.eventos.nuevo.click(evento_nuevo_click);
     componentes.adicional.participantes.nuevo.click(participante_agregar_click);
     componentes.adicional.participantes.botones.children('button[name="adicional_participante_aceptar"]').click(adicional_participante_aceptar_click);
     componentes.adicional.participantes.botones.children('button[name="adicional_participante_cancelar"]').click(adicional_participante_cancelar_click);

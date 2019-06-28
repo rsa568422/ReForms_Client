@@ -4,8 +4,32 @@
     }
 </script>
 
+<style>
+    div.contenedor div.card-tarea {
+        border: 5px solid;
+        border-radius: 10px;
+        margin-bottom: 2%;
+    }
+    
+    div.contenedor div.card-tarea div.row h5,
+    div.contenedor div.card-tarea div.row h6 {
+        text-transform: capitalize;
+    }
+    
+    div.contenedor div.card-tarea div.row input,
+    div.contenedor div.card-tarea div.row select.tarea-estado,
+    div.contenedor div.card-tarea div.row select.tarea-gremio,
+    div.contenedor div.card-tarea div.row select.tarea-codigo {
+        text-align: center;
+    }
+    
+    div.contenedor div.card-tarea div.row input.tarea-importe {
+        margin-bottom: 10%;
+    }
+</style>
+
 <div class="contenedor container-fluid">
-    <div class="card">
+    <div class="card card-tarea">
         <div class="card-header">
             <div class="container-fluid">
                 <div class="row">

@@ -17,16 +17,23 @@
         margin-bottom: 1.25rem;
     }
     
-    div.contenedor div.card div.card-body div.container-fluid div.cita div.col-12 div.detalles div.tabla thead tr th:first-child,
-    div.contenedor div.card div.card-body div.container-fluid div.cita div.col-12 div.detalles div.tabla tbody tr td:first-child {
+    div.contenedor div.card div.card-body div.container-fluid div.cita div.col-12 div.detalles div.tabla thead tr {
         text-align: center;
-        width: 20%;
     }
     
-    div.contenedor div.card div.card-body div.container-fluid div.cita div.col-12 div.detalles div.tabla thead tr th:last-child,
-    div.contenedor div.card div.card-body div.container-fluid div.cita div.col-12 div.detalles div.tabla tbody tr td:last-child {
+    div.contenedor div.card div.card-body div.container-fluid div.cita div.col-12 div.detalles div.tabla tbody tr td {
         text-align: left;
-        width: 80%;
+        width: 60%;
+    }
+    
+    div.contenedor div.card div.card-body div.container-fluid div.cita div.col-12 div.detalles div.tabla tbody tr td:first-child {
+        text-align: center;
+        width: 25%;
+    }
+    
+    div.contenedor div.card div.card-body div.container-fluid div.cita div.col-12 div.detalles div.tabla tbody tr td:last-child {
+        text-align: center;
+        width: 15%;
     }
     
     div.contenedor div.card div.card-body div.container-fluid div.cita div.col-12 div.detalles div.tabla tbody tr.sin-resultados td {
@@ -36,6 +43,29 @@
     div.contenedor div.card div.card-body div.container-fluid div.llamada div.col-12 div.detalles label,
     div.contenedor div.card div.card-body div.container-fluid div.cita div.col-12 div.detalles label {
         text-decoration: underline;
+    }
+    
+    div.contenedor div.card div.card-body div.container-fluid div.row div.col-12 div.boton {
+        border: 3px solid;
+        border-radius: 10px;
+        padding: 3rem;
+    }
+    
+    div.contenedor div.card div.card-body div.container-fluid div.llamada div.col-12 div.nueva {
+        border: 3px solid;
+        border-radius: 10px;
+        padding: 1rem;
+    }
+    
+    div.contenedor div.card div.card-body div.container-fluid div.row div.col-12 div.boton div.input-group {
+        position: relative;
+        left: 36%;
+        margin-bottom: 0rem !important;
+    }
+    
+    div.contenedor div.card div.card-body div.container-fluid div.row div.col-12 div.boton div.input-group button.btn-nuevo {
+        border-top-left-radius: 0px;
+        border-bottom-left-radius: 0px;
     }
 </style>
 
@@ -73,6 +103,66 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="nueva container-fluid">
+                            <div class="seleccion row">
+                                <div class="col-6">
+                                    <select class="telefonos form-control custom-select"></select>
+                                </div>
+                                <div class="col-6">
+                                    <div class="input-group mb-3">
+                                        <select class="tipos form-control custom-select">
+                                            <option value="0" selected>llamada saliente</option>
+                                            <option value="1">llamada entrante</option>
+                                            <option value="2">llamada sin respuesta</option>
+                                            <option value="3">llamada perdida</option>
+                                        </select>
+                                        <div class="input-group-append">
+                                            <span class="tipo input-group-text"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="contacto row">
+                                <div class="col-12 container-fluid">
+                                    <div class="nombre row">
+                                        <div class="col-12">
+                                            <div class="form-group">
+                                                <h6>Nombre</h6>
+                                                <input name="llamada_contacto_nombre" class="form-control" type="text" maxlength="50"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="apellidos row">
+                                        <div class="col-12">
+                                            <div class="form-group">
+                                                <h6>Apellidos</h6>
+                                                <div class="input-group mb-3">
+                                                    <input name="llamada_contacto_apellido1" class="form-control" type="text" maxlength="50"/>
+                                                    <input name="llamada_contacto_apellido2" class="form-control" type="text" maxlength="50"/>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="telefonos row">
+                                        <div class="col-12">
+                                            <div class="form-group">
+                                                <h6>Telefonos *</h6>
+                                                <div class="input-group mb-3">
+                                                    <input name="llamada_contacto_telefono1" class="form-control" type="text" maxlength="9"/>
+                                                    <input name="llamada_contacto_telefono2" class="form-control" type="text" maxlength="9"/>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="botones row">
+                                <div class="col-12">
+                                    <button class="btn btn-aceptar">aceptar</button>
+                                    <button class="btn btn-cancelar">cancelar</button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="cita row">
@@ -102,8 +192,7 @@
                                 <table class="table">
                                     <thead>
                                         <tr>
-                                            <th>Codigo</th>
-                                            <th>Descripcion</th>
+                                            <th colspan="3">Tareas</th>
                                         </tr>
                                     </thead>
                                     <tbody></tbody>

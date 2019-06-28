@@ -4,7 +4,7 @@ $(document).ready(function() {
     // ====================================================================== //
     var googleKey = sessionStorage.googleKey,
         colorBorde = $('#btn-siniestros').css('background-color'),
-        colorFondo = colorBorde.substring(0, colorBorde.length - 1) + ', 0.1)',
+        colorFondo = colorBorde.substring(0, colorBorde.length - 1) + ', 0.2)',
         sinColor = 'rgb(0, 0, 0, 0)',
         componentes = {
             'progreso': {
