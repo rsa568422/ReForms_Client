@@ -114,7 +114,7 @@
         background-color: rgb(255, 255, 255);
     }
     
-    #ventana div.container-fluid div.row div.seleccion-evento div.siniestro div.container-fluid {
+    #ventana > div.container-fluid > div.row > div.seleccion-evento > div.siniestro > div.container-fluid {
         padding: 3%;
     }
     
@@ -176,8 +176,36 @@
         text-align: center;
     }
     
+    #ventana div.container-fluid div.row div.seleccion-grupo div.jornada div.botones button.btn-impresion-agenda,
+    #ventana div.container-fluid div.row div.seleccion-grupo div.jornada div.botones button.btn-impresion-cita {
+        position: absolute;
+        right: 1rem;
+    }
+    
+    #ventana > div.container-fluid > div.row > div.seleccion-evento > div.siniestro > div.container-fluid > div.cabecera > div.icono > img.logo {
+        padding: 0.25%;
+        border: solid 3px;
+        border-radius: 5px;
+        width: 96px;
+        height: 72px;
+    }
+    
+    #ventana > div.container-fluid > div.row > div.seleccion-grupo > div.jornada > div.botones > div.col-6 {
+        text-align: right;
+    }
+    
+    #ventana > div.container-fluid > div.row > div.seleccion-grupo > div.jornada > div.botones > div.col-6 > div.input-group {
+        position: absolute;
+    }
+    
+    #ventana > div.container-fluid > div.row > div.seleccion-evento > div.siniestro > div.container-fluid > div.cabecera > div.info {
+        margin-top: 1%;
+    }
+    
     @media only screen and (max-width: 1200px) {
-        
+        #ventana > div.container-fluid > div.row > div.seleccion-evento {
+            margin-top: 3%;
+        }
     }
 </style>
 
@@ -187,6 +215,9 @@
 <script src="Entidad/Conductor.js"></script>
 <script src="Entidad/Operario.js"></script>
 <script src="Entidad/Vehiculo.js"></script>
+<script src="Entidad/Llamada.js"></script>
+<script src="Entidad/Cita.js"></script>
+<script src="Entidad/TareasCita.js"></script>
 <script src="Controlador/ControladorJornadas.js"></script>
 
 <div id="ventana">
@@ -257,7 +288,17 @@
                         </div>
                     </div>
                     <div class="botones row">
-                        <button class="btn btn-volver">volver</button>
+                        <div class="col-6">
+                            <div class="imprimir-cita input-group mb-3">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text"><i class="material-icons">print</i></span>
+                                </div>
+                                <button class="btn btn-nuevo">cita</button>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <button class="btn btn-volver">volver</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -273,22 +314,27 @@
                 <div class="siniestro">
                     <div class="container-fluid">
                         <div class="cabecera row">
-                            <div class="num-siniestro col-6">
-                                <h5><strong>Siniestro:</strong>&nbsp<span></span></h5>
+                            <div class="icono col-2"></div>
+                            <div class="info col-9 container-fluid">
+                                <div class="negrita row">
+                                    <div class="num-siniestro col-7">
+                                        <h5><strong>Siniestro:</strong>&nbsp<span>numero de siniestro</span></h5>
+                                    </div>
+                                    <div class="num-poliza col-5">
+                                        <h5><strong>Poliza:</strong>&nbsp<span>numero de poliza</span></h5>
+                                    </div>
+                                </div>
+                                <div class="normal row">
+                                    <div class="fecha col-7">
+                                        <h6><strong>Fecha:</strong>&nbsp<span>dd/mm/aaaa</span></h6>
+                                    </div>
+                                    <div class="estado col-5">
+                                        <h6><strong>Estado:</strong>&nbsp<span>estado</span></h6>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="num-poliza col-5">
-                                <h5><strong>Poliza:</strong>&nbsp<span></span></h5>
-                            </div>
-                            <div class="detalles col-1">
+                            <div class="consultar col-1">
                                 <button class="btn btn-consultar"><i class="material-icons">search</i></button>
-                            </div>
-                        </div>
-                        <div class="cabecera row">
-                            <div class="fecha col-6">
-                                <h6><strong>Fecha:</strong>&nbsp<span></span></h6>
-                            </div>
-                            <div class="estado col-6">
-                                <h6><strong>Estado:</strong>&nbsp<span></span></h6>
                             </div>
                         </div>
                         <div class="resumen row">
