@@ -494,7 +494,8 @@ $(document).ready(function() {
     }
     
     function mostrar_cita(cita, card, origen) {
-        var siniestro = cita.evento.descripcion.slice(1, cita.evento.descripcion.indexOf(']')),
+        var aseguradora = cita.evento.descripcion.slice(0, cita.evento.descripcion.indexOf('[')),
+            siniestro = cita.evento.descripcion.slice(cita.evento.descripcion.indexOf('[') + 1, cita.evento.descripcion.indexOf(']')),
             direccion = cita.evento.descripcion.slice(cita.evento.descripcion.indexOf(']') + 1, cita.evento.descripcion.length),
             jornada = cita.grupo.observaciones.slice(1, cita.grupo.observaciones.indexOf(']')),
             grupo = cita.grupo.observaciones.slice(cita.grupo.observaciones.indexOf(']') + 1, cita.grupo.observaciones.length),
@@ -502,7 +503,7 @@ $(document).ready(function() {
         componentes.cardActual = card;
         jornada = new Date(new Number(jornada));
         jornada = (jornada.getDate() > 9 ? jornada.getDate() : '0' + jornada.getDate()) + '/' + (jornada.getMonth() > 8 ? (jornada.getMonth() + 1) : '0' + (jornada.getMonth() + 1)) + '/' + jornada.getFullYear();
-        card.children('div.card-header').children('div.row').children('div.numero').children('h4').children('span').html(siniestro);
+        card.children('div.card-header').children('div.row').children('div.numero').children('h4').children('span').html(aseguradora + ' ' + siniestro);
         card.children('div.card-header').children('div.row').children('div.fecha').children('h4').children('span').html(jornada);
         card.children('div.card-body').children('div.direccion').children('div.col-12').children('span').html(direccion);
         card.children('div.card-body').children('div.grupo').children('div.col-12').children('div.input-group').children('div.input-group-prepend').children('span.dia').html(jornada);
@@ -1489,6 +1490,7 @@ $(document).ready(function() {
                         data: JSON.stringify(relacionar.llamada),
                         processData: false,
                         success: function(data, textStatus, jQxhr){
+                            relacionar.llamada = data;
                             $.ajax({
                                 url: 'http://localhost:8080/ReForms_Provider/wr/cita/agregarCita',
                                 dataType: 'json',
@@ -1521,7 +1523,7 @@ $(document).ready(function() {
                                                 },
                                                 error: function(jQxhr, textStatus, errorThrown){
                                                     // no se ha registrado la tareacita
-                                                    alert('fallo en el proveedor - no se ha registrado la tarea asiciada a la cita');
+                                                    alert('fallo en el proveedor');
                                                 }
                                             });
                                         }

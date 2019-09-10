@@ -359,7 +359,11 @@ $(document).ready(function() {
                     } else {
                         fecha = '<td></td>';
                     }
-                    descripcion = '<td>' + listaLlamadas[i].evento.descripcion + '</td>';
+                    if (listaLlamadas[i].evento.descripcion && listaLlamadas[i].evento.descripcion != null) {
+                        descripcion = '<td>' + listaLlamadas[i].evento.descripcion + '</td>';
+                    } else {
+                        descripcion = '<td></td>';
+                    }
                     tipo = '<td></td>';
                     tbody.append('<tr class="llamada">' + fecha + descripcion + tipo + '</tr>');
                 }
